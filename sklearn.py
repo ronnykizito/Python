@@ -18,3 +18,4 @@ y=iris.target
 knn=KNeighborsClassifier(n_neighbors=1)
 
 
+testar
