@@ -123,6 +123,71 @@ v4['Cum2'] =v4.groupby('Team')['IDx'].rolling(2).sum().reset_index(0,drop=True)
 
 #%%
 
+#Calendar
+
+    #%%
+#the calander
+#dont change anything here
+Min_date='2018-11-01'                   #str(globals()[str(Master_file)+'1'].Datum.min())
+Max_date='2018-12-31'                  #str(globals()[str(Master_file)+'1'].Datum.max())
+
+
+import pandas as pd
+from datetime import timedelta
+#from dateutil.relativedelta import relativedelta
+from pandas.tseries.offsets import MonthEnd
+#df['dates'] = pd.date_range(start='2017-01-01',end='2017-01-31',freq='D')
+
+def create_date_table2(start, end,freq='D'):
+    df = pd.DataFrame({"Date": pd.date_range(start, end)})
+    df["Year"] = df.Date.dt.year
+    df["NextYear"] = df.Date.dt.year+1
+    df["DayofWeek"] = df.Date.dt.weekday_name
+    df["DayNumber"] = df.Date.dt.weekday+1
+    df["MonthNumber"] = df.Date.dt.month
+    df["Week"] = df.Date.dt.weekofyear
+    df["Qtr"] = df.Date.dt.quarter
+    df['MonthBegin'] = df.Date.values.astype('datetime64[M]')
+    df['MonthEnd'] = pd.to_datetime(df.Date, format="%Y%m") + MonthEnd(0)
+    df['date1'] = pd.Timestamp('2019-01-01')
+    df['months_between'] = (df.date1.dt.to_period('M') - df.Date.dt.to_period('M'))
+    df['days_between'] = (df.date1.dt.to_period('D') - df.Date.dt.to_period('D'))
+    df['weeks_between'] = (df.date1.dt.to_period('w') - df.Date.dt.to_period('w'))
+    df['date_N_days_ago'] = df.Date + timedelta(days=2)
+    df['Rank']= df.Date.dt.strftime('%Y%m').astype(int)
+    df['Manad']= df.Date.dt.strftime('%Y-%m')
+    df['MonthName']= df.Date.dt.strftime('%B')
+    df['MonthName1']= df.Date.dt.strftime('%b')
+    df['Previous_month'] = df.Date - pd.DateOffset(months=1)
+    df['Next_month'] = df.Date + pd.DateOffset(months=1)
+    df['Next_Week'] = df.Date + pd.DateOffset(weeks=1)
+    df['Previous_Week'] = df.Date - pd.DateOffset(weeks=1)
+    df['Next_WeekNumber'] = df.Next_Week.dt.weekofyear
+    df['Previous_WeekNumber'] = df.Previous_Week.dt.weekofyear
+    df['yy']= df.Date.dt.strftime('%y')
+    return df
+
+MyCalendar=create_date_table2(start=Min_date, end=Max_date,freq='D')
+
+dataset=MyCalendar
+The_var=('man1')
+New_var=('Month_Swe')
+dataset.loc[dataset[str(The_var)].isin(['jan']), str(New_var)] = '01'
+dataset.loc[dataset[str(The_var)].isin(['feb']), str(New_var)] = '02'
+dataset.loc[dataset[str(The_var)].isin(['mar']), str(New_var)] = '03'
+dataset.loc[dataset[str(The_var)].isin(['apr']), str(New_var)] = '04'
+dataset.loc[dataset[str(The_var)].isin(['maj']), str(New_var)] = '05'
+dataset.loc[dataset[str(The_var)].isin(['jun']), str(New_var)] = '06'
+dataset.loc[dataset[str(The_var)].isin(['jul']), str(New_var)] = '07'
+dataset.loc[dataset[str(The_var)].isin(['aug']), str(New_var)] = '08'
+dataset.loc[dataset[str(The_var)].isin(['sep']), str(New_var)] = '09'
+dataset.loc[dataset[str(The_var)].isin(['okt']), str(New_var)] = '10'
+dataset.loc[dataset[str(The_var)].isin(['nov']), str(New_var)] = '11'
+dataset.loc[dataset[str(The_var)].isin(['dec']), str(New_var)] = '12'
+MyCalendar['Datum_swe']= 'x'+MyCalendar.Month_Swe+'-'+MyCalendar.yy
+MyCalendar['start_next_month'] = MyCalendar.Next_month.values.astype('datetime64[M]')
+#MyCalendar['Date'] = pd.to_datetime(MyCalendar.Date)
+
 '''********************************************************fortknox****************************************************************************************'''
 '''********************************************************Import packages****************************************************************************************'''
 import pandas as pd
