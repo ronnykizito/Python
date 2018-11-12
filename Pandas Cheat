@@ -2,7 +2,7 @@
 """
 Created on Sat Nov 10 17:04:25 2018
 
-@author: Admin
+@author: Ronny
 """
 import pandas as pd
 import numpy as np
@@ -91,6 +91,10 @@ df1.columns = ["_".join(x) for x in df1.columns.ravel()]
 v5x=v4.query('Div in ["E0","E1"] and AR in ["2017"]').groupby(['AR','Team','Div'], as_index=False).agg({"Poang": ["sum"]})
 v5=df.query('(Div in ["E0","E1"] or HomeTeam in  ["Huddersfield"]) and v3 in ["2018"] ').groupby(['AR','Team','Div'], as_index=False).agg({"Poang": ["sum",'count'],"Team":["nunique"]})
 
+Grp_stats=['mean','count']
+
+for stats in Grp_stats:
+    v4['test'+str(stats)]=v4.groupby(['AR','Team'])[['Poang']].transform(np.str(stats))
 
 
 
