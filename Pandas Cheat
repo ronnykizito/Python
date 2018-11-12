@@ -98,6 +98,29 @@ for stats in Grp_stats:
 
 
 
+#%%timeseries
+
+#laggar eller leadar
+for shifts in range(0,3):
+    v4["lastgame"+str(shifts)] = (v4.groupby(['Team', 'AR'])['Goal'].shift(shifts))
+
+
+#insert empty cell with previuos
+for  shifts in range(1,3):
+    print(shifts)
+    v4["lastgame"+str(shifts)] = np.where(v4["lastgame"+str(shifts)].isnull(),v4["lastgame"+str(shifts-1)],v4["lastgame"+str(shifts)])
+
+
+v4['IDx'] = 1
+v4['no_cumulative'] = v4.groupby(['Team','AR'])['Goal'].apply(lambda x: x.cumsum())
+v4['idxx'] = v4.groupby(['Team','AR'])['IDx'].apply(lambda x: x.cumsum())
+
+
+#moving average
+
+v4['MA2'] =v4.groupby('Team')['Goal'].rolling(2).mean().reset_index(0,drop=True)
+v4['Cum2'] =v4.groupby('Team')['IDx'].rolling(2).sum().reset_index(0,drop=True)
+
 #%%
 
 '''********************************************************fortknox****************************************************************************************'''
