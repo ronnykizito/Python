@@ -1,0 +1,821 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Nov 10 17:04:25 2018
+
+@author: Admin
+"""
+import pandas as pd
+import numpy as np
+
+
+
+#%%
+
+df = pd.read_csv('http://www.football-data.co.uk/fixtures.csv')
+
+#substring
+df['v1'] = df.Date.str[0:2]
+df['v2'] = df.Date.str[3:5]
+df['v3'] = '20'+df.Date.str[6:9]
+df['Date1'] =df.v3+'-'+df.v2+'-'+ df.v1
+
+
+
+New_data_type=['HomeTeam','AwayTeam']
+Dataset=df
+for The_Vars in New_data_type:
+    Dataset[str(The_Vars)] = Dataset[str(The_Vars)].values.astype(str)
+
+#to date
+New_data_type=['Date1']
+for The_Vars in New_data_type:
+    Dataset[str(The_Vars)] = Dataset[str(The_Vars)].values.astype("datetime64[s]") 
+
+
+#sort
+
+df.sort_values(['Date1', 'HomeTeam'], ascending=[True, False],inplace=True)
+
+#remove duplicates
+
+df.drop_duplicates(['Date1','HomeTeam','AwayTeam'],keep= 'last', inplace=True)
+
+##date to string
+df['Date2'] = df.Date1.astype(str)
+
+#uppper lower
+
+df.HomeTeam = df.HomeTeam.str.upper()
+df.HomeTeam = df.HomeTeam.str.lower()
+df.HomeTeam= df.HomeTeam.str.title()
+df.columns = df.columns.str.upper()
+
+#where statemaent
+
+df=df.query('Div in ["E0","E1"] and B365H in [3.4]') 
+df=df.query('(Div in ["E0","E1"] or HomeTeam in  ["Huddersfield"]) and v3 in ["2018"] ')
+
+
+
+df.loc[df['HomeTeam'].isin(['Zwolle']), 'test'] = 'sss'
+
+#remove empty rows
+df.test.fillna('isnull', inplace=True)
+df1=df.query('test in ["isnull"]') 
+df2=df.query('test not in ["isnull"]') 
+
+
+#if else;
+
+dataset=df_final
+The_var=('Sammanfattning_')
+New_var=('Rank_var')
+dataset.loc[dataset[str(The_var)].isin(['NettoomsÃ¤ttning']), str(New_var)] = 1
+dataset.loc[dataset[str(The_var)].isin(['Ã–vriga rÃ¶relseintÃ¤kter']), str(New_var)] = 2
+dataset.loc[dataset.HomeTeam.isin([ "Aston Villa", "Everton"]) & (dataset.AwayTeam.isin(["Bolton"])), "HomeTeam1"] = "test"
+dataset.loc[(dataset.Div.isin([ "E0", "E1"]) | dataset.HomeTeam.isin(['FC Koln']) ) & (dataset.AR.isin(["2017"])),"Testvar"]="Test"
+
+
+
+#concatanate
+df['com']=df.HomeTeam.str.cat([df.AwayTeam,df.Date],sep=', ')
+
+#sort
+df.sort_values(['A', 'C'], ascending=[True, False],inplace=True)
+
+#groupby
+df1=df.groupby(['Div','Sheetname'], as_index=False).agg({"FTHG": ["sum","max","min",'count','mean'],"FTAG": ["sum","max","min",'count','mean'],"Team":["nunique"]})
+#denna fixar till namnen som skapas av groupby
+df1.columns = ["_".join(x) for x in df1.columns.ravel()]
+
+v5x=v4.query('Div in ["E0","E1"] and AR in ["2017"]').groupby(['AR','Team','Div'], as_index=False).agg({"Poang": ["sum"]})
+v5=df.query('(Div in ["E0","E1"] or HomeTeam in  ["Huddersfield"]) and v3 in ["2018"] ').groupby(['AR','Team','Div'], as_index=False).agg({"Poang": ["sum",'count'],"Team":["nunique"]})
+
+
+
+
+#%%
+
+'''********************************************************fortknox****************************************************************************************'''
+'''********************************************************Import packages****************************************************************************************'''
+import pandas as pd
+import datetime
+import os
+
+
+
+'''***************************************************************************************************************************************************************'''
+'''***************************************************************************************************************************************************************'''
+
+#the costumer
+
+Kund="3. Arlandastadbil"
+
+#define the main path
+
+Main_Path=r'C:\Users\Admin\Esron BI Analyzr AB\Gruppwebbplats - Dokument\1. BIAnalyzr_Database\Python\1. Costumers\\'+Kund
+
+#dimension tables
+Master_file='Main.csv'
+Master_Budget='Budget.csv'
+Calendar='Calendar.csv'
+
+
+'''***************************************************************************************************************************************************************'''
+'''***************************************************************************************************************************************************************'''
+
+
+'''**************************create folders************************************************************************************************************************'''
+
+folders = ["1. Indata", "2. Data Mining","3. Data","4. Syntax","5. PowerPoint","6. Kundfarger","7. Log","8. Flyspeed","9. Databas"]
+for num, folder_name in enumerate(folders, start=1):
+    newpath = Main_Path+'\\'+folder_name
+    if not os.path.exists(newpath):
+        os.makedirs(newpath)
+
+
+In_folder=Main_Path+'\\1. Indata\\1. Report\\'
+Out_path=Main_Path+'\\2. Data Mining\\'
+
+
+'''***************************************************************************************************************************************************************'''
+
+
+
+'''**************************import files ending with extension***************************************************************************************************'''
+
+files_names = os.listdir(In_folder)
+File_name = [i for i in files_names if i.endswith('.xlsx')] #txt csv xlsx xlsm osv.
+#get the main folder name
+Last_path_name=os.path.basename(os.path.dirname(In_folder))
+
+
+
+'''***************************************************************************************************************************************************************'''
+
+
+
+
+'''***************************************************************************************************************************************************************'''
+
+'''*************************************Program begins************************************************************************************************************'''
+
+
+
+
+'''********************************************Read fortknox files*************************************************************************************************'''
+df = pd.DataFrame()
+for the_files in File_name:
+    xlfname = In_folder+'\\'+the_files
+    xl = pd.ExcelFile(xlfname)
+    for sheet in xl.sheet_names:
+            df_tmp = xl.parse(sheet,header=None,encoding = 'ISO-8859-1')
+            df_tmp['Sheetname']=sheet
+            df_tmp['Filename']=the_files
+            df_tmp['Last_Path_Name']=Last_path_name
+            df_tmp['Created_Date'] = datetime.datetime.now().strftime("%Y-%m-%d")
+            df = df.append(df_tmp, ignore_index=True,sort=False)
+            
+
+Col_names=['Vernr', 'Bokforingsdatum','Registreringsdatum','Konto', 'Benamning','Ks','Projnr', 'Verifikationstext','Transaktionsinfo','Debet', 'Kredit']
+                         #rename the columns
+for num, The_Col_names in enumerate(Col_names, start=0):
+    df.rename(index=str, columns={num: The_Col_names},inplace=True)
+
+df=df.query('Vernr not in ["Vernr"] and Sheetname not in ["obs","Kontoplan"] ')    
+
+
+
+
+#to float or int   
+New_data_type=['Debet','Kredit']
+for The_Vars in New_data_type:
+    df[str(The_Vars)] = df[str(The_Vars)].astype(float)
+    
+#to str 
+New_data_type=['Konto','Vernr']
+for The_Vars in New_data_type:
+    df[str(The_Vars)] = df[str(The_Vars)].astype(str)
+
+#to date
+New_data_type=['Bokforingsdatum','Registreringsdatum']
+for The_Vars in New_data_type:
+    df[str(The_Vars)] = df[str(The_Vars)].values.astype("datetime64[s]")  
+
+#if Nan then change to something
+New_fillna=['Debet','Kredit']
+for the_vars_fillna in New_fillna:
+    df[str(the_vars_fillna)].fillna(0, inplace=True)
+
+
+df['Manad']=df.Bokforingsdatum.dt.strftime('%Y-%m-01')
+df['Summa']=-1*df.Debet+df.Kredit
+df['Summax']=df.Debet-df.Kredit
+
+#substring
+df['Knr'] = df.Konto.str[0:2] 
+
+#concatanate
+df['com']=df.Vernr.str.cat([df.Konto,df.Konto],sep=', ')
+
+
+
+
+
+
+df1 = df[['Vernr','Bokforingsdatum', 'Registreringsdatum', 'Konto','Knr', 'Benamning','Verifikationstext','Debet', 'Kredit','Summa','Manad','Summax','Filename']]
+
+
+'''********************************************************End****************************************************************************************'''
+
+
+
+'''*****************************************read help files********************************************************************************************'''
+
+#read the help file
+
+df = pd.read_excel(Main_Path+'\\1. Indata\\3. Helpfiles\\KontobasPlan.xlsx',header=None,encoding = 'ISO-8859-1')
+
+Col_names=['Knr','Sammanfattning','Sammanfattning1','Sammanfattning2','Sammanfattning3','Kontroll']
+for num, The_Col_names in enumerate(Col_names, start=0):
+    df.rename(index=str, columns={num: The_Col_names},inplace=True)
+
+
+#to str 
+New_data_type=['Knr']
+for The_Vars in New_data_type:
+    df[str(The_Vars)] = df[str(The_Vars)].astype(str)
+    
+df2=df.query('Knr not in ["Knr"]')
+
+
+'''********************************************************end*******************************************************************************************'''
+
+
+'''***************************************************merge files*********************************************************************************************'''
+
+df3=pd.merge(df1,df2[['Knr','Sammanfattning','Sammanfattning1','Sammanfattning2', 'Sammanfattning3','Kontroll']],how="left",left_on=["Knr"],right_on=["Knr"])  
+
+'''********************************************************end*******************************************************************************************'''
+
+'''***************************************************Analys to PBI*********************************************************************************************'''
+
+
+df4=df3.groupby(['Sammanfattning','Manad'], as_index=False).agg({"Summa": ["sum"]})
+#denna fixar till namnen som skapas av groupby
+df4.columns = ["_".join(x) for x in df4.columns.ravel()]
+df4=df4.query('Sammanfattning_ in ["NettoomsÃ¤ttning","Ã–vriga rÃ¶relseintÃ¤kter","RÃ¶relsekostnader",'
+'"Ã–vriga externa rÃ¶relsekostnader","Personalkostnader","Finansiella poster"]')
+
+
+
+
+'''****************************************sum Summa rorelseintÃ¤kter*********************************************************************************************'''
+Dataset=('df5')
+dfx=df3.query('Sammanfattning in ["NettoomsÃ¤ttning","Ã–vriga rÃ¶relseintÃ¤kter"]')
+
+globals()[str(Dataset)]=dfx.groupby(['Manad'], as_index=False).agg({"Summa": ["sum"]})
+#denna fixar till namnen som skapas av groupby
+globals()[str(Dataset)].columns = ["_".join(x) for x in globals()[str(Dataset)].columns.ravel()]
+
+globals()[str(Dataset)].loc[:, 'Sammanfattning_'] = 'Summa rÃ¶relseintÃ¤kter'
+
+
+
+'''****************************************sum Summa Bruttovinst*********************************************************************************************'''
+
+Dataset=('df6')
+dfx=df3.query('Sammanfattning in ["NettoomsÃ¤ttning","Ã–vriga rÃ¶relseintÃ¤kter","RÃ¶relsekostnader"]')
+globals()[str(Dataset)]=dfx.groupby(['Manad'], as_index=False).agg({"Summa": ["sum"]})
+#denna fixar till namnen som skapas av groupby
+globals()[str(Dataset)].columns = ["_".join(x) for x in globals()[str(Dataset)].columns.ravel()]
+
+globals()[str(Dataset)].loc[:, 'Sammanfattning_'] = 'Bruttovinst'
+
+'''****************************************sum Summa Roreskostnader*********************************************************************************************'''
+
+Dataset=('df7')
+dfx=df3.query('Sammanfattning in ["RÃ¶relsekostnader","Ã–vriga externa rÃ¶relsekostnader","Personalkostnader"]')
+globals()[str(Dataset)]=dfx.groupby(['Manad'], as_index=False).agg({"Summa": ["sum"]})
+#denna fixar till namnen som skapas av groupby
+globals()[str(Dataset)].columns = ["_".join(x) for x in globals()[str(Dataset)].columns.ravel()]
+
+globals()[str(Dataset)].loc[:, 'Sammanfattning_'] = 'Summa RÃ¶relsekostnader'
+
+
+'''****************************************rorelseresultat*********************************************************************************************'''
+
+Dataset=('df8')
+dfx=df3.query('Sammanfattning in ["RÃ¶relsekostnader","Ã–vriga externa rÃ¶relsekostnader","Personalkostnader","NettoomsÃ¤ttning","Ã–vriga rÃ¶relseintÃ¤kter"]')
+globals()[str(Dataset)]=dfx.groupby(['Manad'], as_index=False).agg({"Summa": ["sum"]})
+#denna fixar till namnen som skapas av groupby
+globals()[str(Dataset)].columns = ["_".join(x) for x in globals()[str(Dataset)].columns.ravel()]
+
+globals()[str(Dataset)].loc[:, 'Sammanfattning_'] = 'RÃ¶relseresultat'
+
+'''****************************************resultat efter avskrivningar*********************************************************************************************'''
+
+Dataset=('df9')
+dfx=df3.query('Sammanfattning1 in ["Avskrivningar"] or Sammanfattning in ["RÃ¶relsekostnader","Ã–vriga externa rÃ¶relsekostnader","Personalkostnader","NettoomsÃ¤ttning","Ã–vriga rÃ¶relseintÃ¤kter"]')
+globals()[str(Dataset)]=dfx.groupby(['Manad'], as_index=False).agg({"Summa": ["sum"]})
+#denna fixar till namnen som skapas av groupby
+globals()[str(Dataset)].columns = ["_".join(x) for x in globals()[str(Dataset)].columns.ravel()]
+
+globals()[str(Dataset)].loc[:, 'Sammanfattning_'] = 'Resultat efter avskrivningar'
+
+'''****************************************resultatrakning*********************************************************************************************'''
+
+
+
+'''****************************************resultat efter finaiellaposter*********************************************************************************************'''
+Dataset=('df10')
+dfx=df3.query('Sammanfattning1 in ["Avskrivningar"] or  ' 
+'Sammanfattning in ["RÃ¶relsekostnader","Ã–vriga externa rÃ¶relsekostnader","Personalkostnader","NettoomsÃ¤ttning","Ã–vriga rÃ¶relseintÃ¤kter","Finansiella poster"]')
+globals()[str(Dataset)]=dfx.groupby(['Manad'], as_index=False).agg({"Summa": ["sum"]})
+#denna fixar till namnen som skapas av groupby
+globals()[str(Dataset)].columns = ["_".join(x) for x in globals()[str(Dataset)].columns.ravel()]
+
+globals()[str(Dataset)].loc[:, 'Sammanfattning_'] = 'RESULTAT EFTER FINASIELLA POSTER'
+
+'''****************************************resultat efter finaiellaposter och dispositioner****************************************************************'''
+Dataset=('df11')
+dfx=df3.query('Sammanfattning1 in ["Avskrivningar"] or  ' 
+'Sammanfattning in ["RÃ¶relsekostnader","Ã–vriga externa rÃ¶relsekostnader","Personalkostnader","NettoomsÃ¤ttning","Ã–vriga rÃ¶relseintÃ¤kter","Finansiella poster","ExtraordinÃ¤ra poster","Bokslutsdispositioner"]')
+globals()[str(Dataset)]=dfx.groupby(['Manad'], as_index=False).agg({"Summa": ["sum"]})
+#denna fixar till namnen som skapas av groupby
+globals()[str(Dataset)].columns = ["_".join(x) for x in globals()[str(Dataset)].columns.ravel()]
+
+globals()[str(Dataset)].loc[:, 'Sammanfattning_'] = 'RESULTAT efter finansiella poster och dispositioner'
+
+'''****************************************Beraknat resultat****************************************************************'''
+Dataset=('df12')
+dfx=df3.query('Sammanfattning1 in ["Avskrivningar"] or  ' 
+'Sammanfattning in ["RÃ¶relsekostnader","Ã–vriga externa rÃ¶relsekostnader","Personalkostnader","NettoomsÃ¤ttning","Ã–vriga rÃ¶relseintÃ¤kter","Finansiella poster","ExtraordinÃ¤ra poster","Bokslutsdispositioner","Skatt"]')
+globals()[str(Dataset)]=dfx.groupby(['Manad'], as_index=False).agg({"Summa": ["sum"]})
+#denna fixar till namnen som skapas av groupby
+globals()[str(Dataset)].columns = ["_".join(x) for x in globals()[str(Dataset)].columns.ravel()]
+
+globals()[str(Dataset)].loc[:, 'Sammanfattning_'] = 'BERÃ„KNAT RESULTAT'
+
+
+
+'''****************************************resultatrakning*********************************************************************************************'''
+
+df_final=pd.concat([df4,df5,df6,df7,df8,df9,df10,df11,df12],sort=False)
+
+#if else statement
+dataset=df_final
+The_var=('Sammanfattning_')
+New_var=('Rank_var')
+dataset.loc[dataset[str(The_var)].isin(['NettoomsÃ¤ttning']), str(New_var)] = 1
+dataset.loc[dataset[str(The_var)].isin(['Ã–vriga rÃ¶relseintÃ¤kter']), str(New_var)] = 2
+dataset.loc[dataset[str(The_var)].isin(['Summa rÃ¶relseintÃ¤kter']), str(New_var)] = 3
+dataset.loc[dataset[str(The_var)].isin(['RÃ¶relsekostnader']), str(New_var)] = 4
+dataset.loc[dataset[str(The_var)].isin(['Bruttovinst']), str(New_var)] = 5
+dataset.loc[dataset[str(The_var)].isin(['Ã–vriga externa rÃ¶relsekostnader']), str(New_var)] = 6 
+dataset.loc[dataset[str(The_var)].isin(['Personalkostnader']), str(New_var)] = 7
+dataset.loc[dataset[str(The_var)].isin(['Summa RÃ¶relsekostnader']), str(New_var)] = 8
+dataset.loc[dataset[str(The_var)].isin(['RÃ¶relseresultat']), str(New_var)] = 9
+dataset.loc[dataset[str(The_var)].isin(['Resultat efter avskrivningar']), str(New_var)] = 10
+dataset.loc[dataset[str(The_var)].isin(['Finansiella poster']), str(New_var)] = 11
+dataset.loc[dataset[str(The_var)].isin(['RESULTAT EFTER FINASIELLA POSTER']), str(New_var)] = 12
+dataset.loc[dataset[str(The_var)].isin(['RESULTAT efter finansiella poster och dispositioner']), str(New_var)] = 13
+dataset.loc[dataset[str(The_var)].isin(['BERÃ„KNAT RESULTAT']), str(New_var)] = 14
+
+
+
+ 
+df_final.to_csv(Out_path+'\\test.csv',sep=';', index=False,decimal=',',encoding='ISO-8859-1')
+
+
+'''********************************************************end resultatrakning*******************************************************************************************'''
+
+'''*********************************************start balansrakning*******************************************************************************************'''
+
+
+'''****************************************Finansiella anlaggningstillgÃ¥ngar ****************************************************************'''
+
+Dataset=('df5')
+dfx=df3.query('Sammanfattning in ["Finansiella anlÃ¤ggningstillgÃ¥ngar (lÃ¥ngfristiga fordringar)"]')
+globals()[str(Dataset)]=dfx.groupby(['Manad'], as_index=False).agg({"Summa": ["sum"]})
+#denna fixar till namnen som skapas av groupby
+globals()[str(Dataset)].columns = ["_".join(x) for x in globals()[str(Dataset)].columns.ravel()]
+
+globals()[str(Dataset)].loc[:, 'Sammanfattning_'] = 'Finansiella anlÃ¤ggningstillgÃ¥ngar (lÃ¥ngfristiga fordringar)'
+globals()[str(Dataset)].Summa_sum=globals()[str(Dataset)].Summa_sum*-1
+
+
+'''****************************************Finansiella anlaggningstillgÃ¥ngar ****************************************************************'''
+
+Dataset=('df6')
+dfx=df3.query('Sammanfattning1 in ["Summa anlÃ¤ggningstillgÃ¥ngar"]')
+globals()[str(Dataset)]=dfx.groupby(['Manad'], as_index=False).agg({"Summa": ["sum"]})
+#denna fixar till namnen som skapas av groupby
+globals()[str(Dataset)].columns = ["_".join(x) for x in globals()[str(Dataset)].columns.ravel()]
+
+globals()[str(Dataset)].loc[:, 'Sammanfattning_'] = 'Summa anlÃ¤ggningstillgÃ¥ngar'
+globals()[str(Dataset)].Summa_sum=globals()[str(Dataset)].Summa_sum*-1
+globals()[str(Dataset)]['Summa'] = globals()[str(Dataset)].groupby(['Sammanfattning_'])['Summa_sum'].apply(lambda x: x.cumsum())
+
+
+#%%
+
+#%%
+import pandas as pd
+import datetime
+import os
+import time
+import sqlite3
+
+t=time.clock()
+
+encoding="ISO-8859-1" #'utf-8-sig'
+
+
+# The costumer name here
+Kund="1. Din Lon"
+
+Kund_logo={'Kund_logo':['http://www.dinlon.se/wp-content/themes/din-lon/img/logo%20-%20din%20lon%20-%20blue.svg']}
+Kund_logo = pd.DataFrame(Kund_logo)
+
+BI_Logo={'BI_Logo':['http://bianalyzr.se/images/templates/palett/logo.png']}
+BI_Logo = pd.DataFrame(BI_Logo)
+
+
+#Define the main path here 
+Main_Path=r'C:\Users\Admin\Esron BI Analyzr AB\Gruppwebbplats - Dokument\1. BIAnalyzr_Database\Python\1. Costumers\\'+Kund
+
+#create the folders for the rapport
+folders = ["1. Indata", "2. Data Mining","3. Data","4. Syntax","5. PowerPoint","6. Kundfarger","7. Log","8. Flyspeed","9. Databas"]
+for num, folder_name in enumerate(folders, start=1):
+    newpath = Main_Path+'\\'+folder_name
+    if not os.path.exists(newpath):
+        os.makedirs(newpath)
+
+
+#the path for the indata files
+In_folder=Main_Path+'\\fakturamall 2018\\'
+
+#the path for the out data
+Out_path=Main_Path+'\\2. Data Mining\\'
+Out_path_DataBase=Main_Path+'\\9. Databas\\'
+
+#
+##.......................create dimension tables
+
+#the masterfile
+Master_file=('Master_Din_Lon')
+Costumers=('Costumers')
+Calendar=('Calendar')
+Updated=('Updated')
+Status=('Status')
+#...................................................................................................
+
+
+
+#.............................program start
+
+# get all files in the folder with ext 
+files_names = os.listdir(In_folder)
+File_name = [i for i in files_names if i.endswith('.xlsm')] #txt csv xlsx xlsm osv.
+#get the main folder name
+Last_path_name=os.path.basename(os.path.dirname(In_folder))
+
+
+df = pd.DataFrame()
+for the_files in File_name:
+    xlfname = In_folder+'\\'+the_files
+    xl = pd.ExcelFile(xlfname)
+    for sheet in xl.sheet_names:
+            df_tmp = xl.parse(sheet,header=None,usecols = [8,9,10,11,12],nrows=150)
+            df_tmp['Sheetname']=sheet
+            df_tmp['Filename']=the_files
+            df_tmp['Last_Path_Name']=Last_path_name
+            df = df.append(df_tmp, ignore_index=True,sort=False)
+
+
+
+df.rename(index=str, columns={0: "Artikel",1: "Pris",2: "Antal",3: "Summa",4: "Nummer"},inplace=True)
+#substr last n letters opposite will be [:9]
+#df['File_name2'] = df.Filename.str[-9:]
+df['AR'] = df.Last_Path_Name.str.rsplit(" ", expand=True)[1]
+
+#substr
+df['man'] = df.Sheetname.str[0:3]
+
+
+#upcase--str.upper(), lowcase--str.lower() propcase--str.title()
+df['man1'] = df.man.str.lower()
+df['Created_Date'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+
+#if else statement
+#get the swedish monthname by nummber
+dataset=df
+The_var=('man1')
+New_var=('Month_Swe')
+dataset.loc[dataset[str(The_var)].isin(['jan']), str(New_var)] = '01'
+dataset.loc[dataset[str(The_var)].isin(['feb']), str(New_var)] = '02'
+dataset.loc[dataset[str(The_var)].isin(['mar']), str(New_var)] = '03'
+dataset.loc[dataset[str(The_var)].isin(['apr']), str(New_var)] = '04'
+dataset.loc[dataset[str(The_var)].isin(['maj']), str(New_var)] = '05'
+dataset.loc[dataset[str(The_var)].isin(['jun']), str(New_var)] = '06'
+dataset.loc[dataset[str(The_var)].isin(['jul']), str(New_var)] = '07'
+dataset.loc[dataset[str(The_var)].isin(['aug']), str(New_var)] = '08'
+dataset.loc[dataset[str(The_var)].isin(['sep']), str(New_var)] = '09'
+dataset.loc[dataset[str(The_var)].isin(['okt']), str(New_var)] = '10'
+dataset.loc[dataset[str(The_var)].isin(['nov']), str(New_var)] = '11'
+dataset.loc[dataset[str(The_var)].isin(['dec']), str(New_var)] = '12'
+
+
+df['Datum']=df.AR+'-'+df.Month_Swe+'-'+'01'
+
+#remove duplicates
+
+df.drop_duplicates(['Artikel','Pris','Antal','Summa','Nummer','Datum','Filename'],keep= 'last', inplace=True)
+df = df.assign(ID_Kund=(df['Filename']).astype('category').cat.codes)
+#make a unique id, I find this important for my analyses in the BI tools
+df['IDx'] = 1
+df['ID']=df.IDx.cumsum()
+
+
+
+#%%
+#all costumers
+
+
+uniqueVals= df["Filename"].unique()
+
+
+uniqueVals = pd.DataFrame(uniqueVals)
+uniqueVals.rename(index=str, columns={0: "Kund"},inplace=True)
+
+
+#dont change the dataframe name here, change in the beginning of the syntax
+globals()[str(Costumers)+'1'] =uniqueVals
+
+
+globals()[str(Costumers+'1')].to_csv(Out_path+str(Costumers)+'.csv',sep=';', index=False,decimal=',', encoding=encoding)
+
+#%%
+
+#updated
+
+
+uniqueVals= df["Created_Date"].unique()
+
+
+uniqueVals = pd.DataFrame(uniqueVals)
+uniqueVals.rename(index=str, columns={0: "Updated"},inplace=True)
+
+
+#dont change the dataframe name here, change in the beginning of the syntax
+globals()[str(Updated)+'1'] =uniqueVals
+
+
+globals()[str(Updated+'1')].to_csv(Out_path+str(Updated)+'.csv',sep=';', index=False,decimal=',', encoding=encoding)
+
+
+
+
+#%%
+
+#create a status dataframe here
+#match this to the main table by id
+	
+df_status= df.loc[df['Pris'] == 'EJ KLAR']
+df_status = df_status.rename(columns={'Pris': 'Status'})
+df_status = df_status[['Status', 'ID', 'Datum','Filename','ID_Kund']]
+
+
+
+#%%
+#..................................................................
+#waggling the data
+
+#drop all empty rows in a column
+df.dropna(subset=['Artikel','Nummer'], inplace=True)
+#drop all row with value
+
+df=df.query('Artikel not in ["Artikel"]') 
+#df.drop(df.loc[df.Artikel.isin(['Artikel'])].index, inplace=True)	
+	
+
+#a fuction for change from str to num or otherway around
+
+def coerce_df_columns_to_numeric(df, column_list):
+    df[column_list] = df[column_list].apply(pd.to_numeric, errors='coerce')
+
+coerce_df_columns_to_numeric(df, ['Pris','Antal','Summa','Nummer'])
+
+#the sum must be greater than zero in this report
+df = df.loc[(df.Summa>0)  ]
+
+#the keys must insert for chosing a new vars otherwise it brings all colums
+df3= pd.merge(df,df_status[['Filename','Datum','Status']], how="left", left_on=['Filename','Datum'], right_on=['Filename','Datum'],indicator=True)
+#df.info()
+
+#if Nan then change to something
+
+df3.Status.fillna('KLAR', inplace=True)
+
+
+#df_test=df3.Nummer.fillna(df3['Nummer'].mean()) 
+
+#dont change the dataframe name here, change in the beginning of the syntax
+
+globals()[str(Master_file)+'1']=df3[["Sheetname","Filename","Artikel","Pris","Antal","Summa","Nummer","Datum","Status"]]
+
+#df.info()
+globals()[str(Master_file)+'1'].to_csv(Out_path+str(Master_file)+'.csv',sep=';', index=False,decimal=',', encoding=encoding)
+
+
+#%%
+
+#status
+
+
+uniqueVals= globals()[str(Master_file)+'1']["Status"].unique()
+
+
+uniqueVals = pd.DataFrame(uniqueVals)
+uniqueVals.rename(index=str, columns={0: "Status"},inplace=True)
+
+
+#dont change the dataframe name here, change in the beginning of the syntax
+globals()[str(Status)+'1'] =uniqueVals
+
+
+globals()[str(Status+'1')].to_csv(Out_path+str(Status)+'.csv',sep=';', index=False,decimal=',', encoding=encoding)
+        
+#%%
+#the calander
+#dont change anything here
+Min_date=str(globals()[str(Master_file)+'1'].Datum.min())
+Max_date=str(globals()[str(Master_file)+'1'].Datum.max())
+
+
+import pandas as pd
+from datetime import timedelta
+#from dateutil.relativedelta import relativedelta
+from pandas.tseries.offsets import MonthEnd
+#df['dates'] = pd.date_range(start='2017-01-01',end='2017-01-31',freq='D')
+
+def create_date_table2(start, end,freq='D'):
+    df = pd.DataFrame({"Date": pd.date_range(start, end)})
+    df["Year"] = df.Date.dt.year
+    df["NextYear"] = df.Date.dt.year+1
+    df["DayofWeek"] = df.Date.dt.weekday_name
+    df["DayNumber"] = df.Date.dt.weekday+1
+    df["MonthNumber"] = df.Date.dt.month
+    df["Week"] = df.Date.dt.weekofyear
+    df["Qtr"] = df.Date.dt.quarter
+    df['MonthBegin'] = df.Date.values.astype('datetime64[M]')
+    df['MonthEnd'] = pd.to_datetime(df.Date, format="%Y%m") + MonthEnd(0)
+    df['date1'] = pd.Timestamp('2019-01-01')
+    df['months_between'] = (df.date1.dt.to_period('M') - df.Date.dt.to_period('M'))
+    df['days_between'] = (df.date1.dt.to_period('D') - df.Date.dt.to_period('D'))
+    df['weeks_between'] = (df.date1.dt.to_period('w') - df.Date.dt.to_period('w'))
+    df['date_N_days_ago'] = df.Date + timedelta(days=2)
+    df['Rank']= df.Date.dt.strftime('%Y%m').astype(int)
+    df['Manad']= df.Date.dt.strftime('%Y-%m')
+    df['MonthName']= df.Date.dt.strftime('%B')
+    df['MonthName1']= df.Date.dt.strftime('%b')
+    df['Previous_month'] = df.Date - pd.DateOffset(months=1)
+    df['Next_month'] = df.Date + pd.DateOffset(months=1)
+    df['Next_Week'] = df.Date + pd.DateOffset(weeks=1)
+    df['Previous_Week'] = df.Date - pd.DateOffset(weeks=1)
+    df['Next_WeekNumber'] = df.Next_Week.dt.weekofyear
+    df['Previous_WeekNumber'] = df.Previous_Week.dt.weekofyear
+    df['yy']= df.Date.dt.strftime('%y')
+    return df
+
+MyCalendar=create_date_table2(start=Min_date, end=Max_date,freq='D')
+
+
+dataset=MyCalendar
+The_var=('man1')
+New_var=('Month_Swe')
+dataset.loc[dataset[str(The_var)].isin(['jan']), str(New_var)] = '01'
+dataset.loc[dataset[str(The_var)].isin(['feb']), str(New_var)] = '02'
+dataset.loc[dataset[str(The_var)].isin(['mar']), str(New_var)] = '03'
+dataset.loc[dataset[str(The_var)].isin(['apr']), str(New_var)] = '04'
+dataset.loc[dataset[str(The_var)].isin(['maj']), str(New_var)] = '05'
+dataset.loc[dataset[str(The_var)].isin(['jun']), str(New_var)] = '06'
+dataset.loc[dataset[str(The_var)].isin(['jul']), str(New_var)] = '07'
+dataset.loc[dataset[str(The_var)].isin(['aug']), str(New_var)] = '08'
+dataset.loc[dataset[str(The_var)].isin(['sep']), str(New_var)] = '09'
+dataset.loc[dataset[str(The_var)].isin(['okt']), str(New_var)] = '10'
+dataset.loc[dataset[str(The_var)].isin(['nov']), str(New_var)] = '11'
+dataset.loc[dataset[str(The_var)].isin(['dec']), str(New_var)] = '12'
+
+
+MyCalendar['Datum_swe']= 'x'+MyCalendar.Month_Swe+'-'+MyCalendar.yy
+
+#MyCalendar['start_next_month'] = datetime.datetime(MyCalendar.v.year, MyCalendar.v.month, 1)
+#MyCalendar['Date'] = pd.to_datetime(MyCalendar.Date)
+
+
+#dont change the dataframe name here, change in the beginning of the syntax
+globals()[str(Calendar)+'1']=MyCalendar[["Date","Year","NextYear","DayofWeek","Datum_swe",'Rank']]
+
+globals()[str(Calendar)+'1'].to_csv(Out_path+str(Calendar)+'.csv',sep=';', index=False,decimal=',',encoding=encoding)
+
+#globals()[str(Calendar)+'1'].info()
+#%%
+
+BI_Logo.to_csv(Out_path+'BI_Logo.csv',sep=';', index=False,decimal=',',encoding=encoding)
+Kund_logo.to_csv(Out_path+'Kund_logo.csv',sep=';', index=False,decimal=',',encoding=encoding)
+
+#%%
+
+print(time.clock()-t/100)
+
+
+#%%
+
+#create a database(sqlite3) for the out files, 
+
+sqlite3_table=[str(Calendar),str(Costumers),str(Master_file),str(Updated),str(Status),'BI_Logo','Kund_logo']
+conn = sqlite3.connect(Out_path_DataBase+'\MY_SQLITE_DATABSE.db')
+c = conn.cursor()
+
+for tables in sqlite3_table:
+    dropTableStatement = 'DROP TABLE IF EXISTS'+' '+  tables
+    c.execute(dropTableStatement)
+
+globals()[str(Calendar)+'1'].to_sql(str(Calendar), conn, if_exists='replace')
+globals()[str(Costumers)+'1'].to_sql(str(Costumers), conn, if_exists='replace')
+globals()[str(Master_file)+'1'].to_sql(str(Master_file), conn, if_exists='replace')
+globals()[str(Updated+'1')].to_sql(str(Updated), conn, if_exists='replace')
+globals()[str(Status+'1')].to_sql(str(Status), conn, if_exists='replace')
+BI_Logo.to_sql('BI_Logo', conn, if_exists='replace')
+Kund_logo.to_sql('Kund_logo', conn, if_exists='replace')
+
+
+
+#please close the connection
+conn.close()
+
+#%%
+#%a 	Weekday, short version 	Wed 	
+#%A 	Weekday, full version 	Wednesday 	
+#%w 	Weekday as a number 0-6, 0 is Sunday 	3 	
+#%d 	Day of month 01-31 	31 	
+#%b 	Month name, short version 	Dec 	    
+#%B 	Month name, full version 	December 	
+#%m 	Month as a number 01-12 	12 	
+#%y 	Year, short version, without century 	18 	
+#%Y 	Year, full version 	2018 	
+#%H 	Hour 00-23 	17 	
+#%I 	Hour 00-12 	05 	
+#%p 	AM/PM 	PM 	
+#%M 	Minute 00-59 	41 	
+#%S 	Second 00-59 	08 	
+#%f 	Microsecond 000000-999999 	548513 	
+#%z 	UTC offset 	+0100 	
+#%Z 	Timezone 	CST 	
+#%j 	Day number of year 001-366 	365 	
+#%U 	Week number of year, Sunday as the first day of week, 00-53 	52 	
+#%W 	Week number of year, Monday as the first day of week, 00-53 	52 	
+#%c 	Local version of date and time 	Mon Dec 31 17:41:00 2018 	
+#%x 	Local version of date 	12/31/18 	
+#%X 	Local version of time 	17:41:00 	
+#%% 	A % character 	%
+#https://www.programiz.com/python-programming/library/strftime*/
+
+
+
+#%%
+Data = {'col_1': ['(908)235-4490', 'ronny123', 'Ronnysentongo@hotmail.com', 'ronny.kizito@gmail.com','ronny.sentongo@uc.se']}
+df=pd.DataFrame.from_dict(Data)
+df[['Name','email']] = df.col_1.str.rsplit('@',1, expand=True)
+df[['Domain','ext']] = df.email.str.rsplit('.',1, expand=True)
+df[['FirstName','LastName']] = df.Name.str.rsplit('.',1, expand=True)
+
+#%%
+
+Data = {'col_1': ['Judith S Reaveley', 'Ralf F. Morgan', 'Jess Ennis', 'Carol Echols','Kelly Hansen Huff','Judith','Nick','Jones','George W. Bush',
+'George W Bush','George Bush','Dr. Smith T. Bauer MD','Samuel I Rodriguez M.D.','Will Glader MD']}
+df=pd.DataFrame.from_dict(Data)
+
+df['BrandName'] = [x.strip().replace('Dr.','') for x in df.col_1]
+df['BrandName'] = df['BrandName'].str.strip()
+
+
+
+#%%
+
+
+df = pd.DataFrame({
+    'Date': ['2017-1-1', '2017-1-1', '2017-1-2', '2017-1-2', '2017-1-3'],
+    'Groups': ['one', 'one', 'one', 'two', 'two'],
+    'data': range(1, 6)})
+    
+df2=df.groupby(['Date','Groups'], as_index=False).agg({"data": ["sum"]})
+#denna fixar till namnen som skapas av groupby
+df2.columns = ["_".join(x) for x in df2.columns.ravel()]
+
+
+df3=df.pivot_table(index='Date',columns='Groups',aggfunc=sum)
+
+
