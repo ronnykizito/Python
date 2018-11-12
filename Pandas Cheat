@@ -32,6 +32,10 @@ for The_Vars in New_data_type:
     Dataset[str(The_Vars)] = Dataset[str(The_Vars)].values.astype("datetime64[s]") 
 
 
+#Merge
+
+df3=pd.merge(table1,table2[["COL1","COL2"]],how="left",left_on=["VAR1","T1"],right_on=["VAR2",T3],indicator=True)
+
 #sort
 
 df.sort_values(['Date1', 'HomeTeam'], ascending=[True, False],inplace=True)
