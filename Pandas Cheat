@@ -192,6 +192,99 @@ MyCalendar['Datum_swe']= 'x'+MyCalendar.Month_Swe+'-'+MyCalendar.yy
 MyCalendar['start_next_month'] = MyCalendar.Next_month.values.astype('datetime64[M]')
 #MyCalendar['Date'] = pd.to_datetime(MyCalendar.Date)
 
+/*
+dateformats
+
+
+Directive 	Description 	Example 	Try it
+%a 	Weekday, short version 	Wed 	
+%A 	Weekday, full version 	Wednesday 	
+%w 	Weekday as a number 0-6, 0 is Sunday 	3 	
+%d 	Day of month 01-31 	31 	
+%b 	Month name, short version 	Dec 	
+%B 	Month name, full version 	December 	
+%m 	Month as a number 01-12 	12 	
+%y 	Year, short version, without century 	18 	
+%Y 	Year, full version 	2018 	
+%H 	Hour 00-23 	17 	
+%I 	Hour 00-12 	05 	
+%p 	AM/PM 	PM 	
+%M 	Minute 00-59 	41 	
+%S 	Second 00-59 	08 	
+%f 	Microsecond 000000-999999 	548513 	
+%z 	UTC offset 	+0100 	
+%Z 	Timezone 	CST 	
+%j 	Day number of year 001-366 	365 	
+%U 	Week number of year, Sunday as the first day of week, 00-53 	52 	
+%W 	Week number of year, Monday as the first day of week, 00-53 	52 	
+%c 	Local version of date and time 	Mon Dec 31 17:41:00 2018 	
+%x 	Local version of date 	12/31/18 	
+%X 	Local version of time 	17:41:00 	
+%% 	A % character 	%
+https://www.programiz.com/python-programming/library/strftime*/
+
+
+
+
+################################SQLlite
+
+import pandas as pd
+import time
+import datetime
+import sqlite3
+
+sqlite3_table='Data'
+table1='test'
+conn = sqlite3.connect(r'C:\Users\rso363\RONSEN\Python\Konton\Database\Mytest.db')
+c = conn.cursor()
+
+t=time.clock()
+
+
+
+dropTableStatement = 'DROP TABLE IF EXISTS'+' '+  table1
+c.execute(dropTableStatement)
+
+
+Col_names=['Extr_Datum','Personnr','Abonnentnr','Huvudabonnent','Kontoid','Kontonr','Engagemangs_Datum','Limit,Saldo','Kredittyp','Skötselkod','Konto_Slutdatum','Laddatum','Limit_Sw','Saldo_Sw','batchid','Oldkontonr','Forandring','Ny_limit_sw','Ny_saldo_sw','Start_Datum']
+
+
+#rename
+
+
+
+Main_Path=r'C:\Users\rso363\RONSEN\Python\Konton\Indata\Test_data2.csv'
+chunksize = 10000*1000
+
+
+
+for df in pd.read_csv(Main_Path, sep=';',encoding = "ISO-8859-1", low_memory=False,iterator=True,chunksize=chunksize,header=None):
+    df.to_sql('data', conn, if_exists='append')
+
+print((time.clock()-t)/100)
+
+df2 = pd.read_sql_query('SELECT count(*) FROM data ', conn)
+
+
+t=time.clock()
+sql= """
+
+SELECT  distinct Extr_datum ,Engagemangs_Datum  FROM Data    
+where Konto_slutdatum in ("1900-01-01") and Kredittyp in ("1","2","3","4","5") and date(Extr_datum)=date(Extr_datum,"start of month") and 
+(strftime("%m",  Extr_datum) + 12*strftime("%Y", Extr_datum))-(strftime("%m",  Engagemangs_Datum) + 12*strftime("%Y", Engagemangs_Datum))=2 
+LIMIT 5
+
+"""
+
+df2 = pd.read_sql_query(sql, conn)
+print((time.clock()-t)/60)
+
+df2.info()
+
+# Be sure to close the connection
+conn.close()
+
+
 '''********************************************************fortknox****************************************************************************************'''
 '''********************************************************Import packages****************************************************************************************'''
 import pandas as pd
