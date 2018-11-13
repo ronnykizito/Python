@@ -864,6 +864,7 @@ def create_date_table2(start, end,freq='D'):
     df["Week"] = df.Date.dt.weekofyear
     df["Qtr"] = df.Date.dt.quarter
     df['MonthBegin'] = df.Date.values.astype('datetime64[M]')
+    df['YearBegin'] = df.Date.values.astype('datetime64[Y]')
     df['MonthEnd'] = pd.to_datetime(df.Date, format="%Y%m") + MonthEnd(0)
     df['date1'] = pd.Timestamp('2019-01-01')
     df['months_between'] = (df.date1.dt.to_period('M') - df.Date.dt.to_period('M'))
@@ -995,7 +996,8 @@ df=pd.DataFrame.from_dict(Data)
 df['BrandName'] = [x.strip().replace('Dr.','') for x in df.col_1]
 df['BrandName'] = df['BrandName'].str.strip()
 
-
+df['firstnamn']=df.col_1.str.split('@').apply(lambda x: x[0])
+df['lastnamn']=df.col_1.str.split('@').apply(lambda x: x[-1])
 
 #%%
 
