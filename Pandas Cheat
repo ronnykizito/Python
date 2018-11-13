@@ -127,6 +127,11 @@ v4['Cum2'] =v4.groupby('Team')['IDx'].rolling(2).sum().reset_index(0,drop=True)
 
 #%%
 
+
+#%%
+#ledinzeros
+df['test']=df.Var.str.pad(width=5,fillchar='0')
+
 #Calendar
 
     #%%
