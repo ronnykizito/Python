@@ -9,7 +9,7 @@ import numpy as np
 
 
 Array_sum=['B365H','B365D','B365A','FTHG']
-df['total']=test.loc[:,Array_sum].sum(axis=1)
+df['total']=df.loc[:,Array_sum].sum(axis=1)
 
 
 #%%
