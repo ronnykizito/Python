@@ -8,6 +8,9 @@ import pandas as pd
 import numpy as np
 
 
+Array_sum=['B365H','B365D','B365A','FTHG']
+test['total']=test.loc[:,Array_sum].sum(axis=1)
+
 
 #%%
 
@@ -288,6 +291,86 @@ df2.info()
 
 # Be sure to close the connection
 conn.close()
+
+
+
+sqlite3_table=[str(Calendar),str(Costumers),str(Master_file),str(Updated),str(Status),'BI_Logo','Kund_logo']
+conn = sqlite3.connect(Out_path_DataBase+'\MY_SQLITE_DATABSE.db')
+c = conn.cursor()
+
+for tables in sqlite3_table:
+    dropTableStatement = 'DROP TABLE IF EXISTS'+' '+  tables
+    c.execute(dropTableStatement)
+
+globals()[str(Calendar)+'1'].to_sql(str(Calendar), conn, if_exists='replace')
+globals()[str(Costumers)+'1'].to_sql(str(Costumers), conn, if_exists='replace')
+globals()[str(Master_file)+'1'].to_sql(str(Master_file), conn, if_exists='replace')
+globals()[str(Updated+'1')].to_sql(str(Updated), conn, if_exists='replace')
+globals()[str(Status+'1')].to_sql(str(Status), conn, if_exists='replace')
+BI_Logo.to_sql('BI_Logo', conn, if_exists='replace')
+Kund_logo.to_sql('Kund_logo', conn, if_exists='replace')
+
+
+
+#please close the connection
+conn.close()
+
+**********************************************************************************************
+
+
+
+******************mail
+
+import smtplib
+import email
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+
+fromAddr="ronny.kizito@gmail.com"
+toAddr="ronnysentongo@hotmail.com"
+
+content ='Hello World'
+#msg=MIMEMultipart()
+#msg['from']=fromAddr
+#msg['to']=toAddr
+#msg['Subject']='test email'
+#body='this is the content'
+#msg.attach(MIMEText(body,'plain'))
+#
+#mail = smtplib.SMTP('smtp.gmail.com',587)
+
+mail.ehlo()
+
+mail.starttls()
+mail.login('ronny.kizito@gmail.com','1299se1299se')
+
+
+
+mail.sendmail(fromAddr,toAddr,content)
+
+mail.close()
+
+
+**********************************zip
+import zipfile
+import pandas as pd
+
+Main_Path=r'C:\Users\rso363\RONSEN\Master.zip'
+
+with zipfile.ZipFile(Main_Path) as zippa:
+   with zippa.open("New_file.xlsx") as file:
+      df = pd.read_excel(file, header=None)
+
+
+start_time = time.time()
+# your code
+elapsed_time = time.time() - start_time
+t=time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
+print(t)
+df['elapsed_time']=t
+
+
 
 
 '''********************************************************fortknox****************************************************************************************'''
