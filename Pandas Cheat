@@ -10,7 +10,8 @@ import numpy as np
 
 Array_sum=['B365H','B365D','B365A','FTHG']
 df['total']=df.loc[:,Array_sum].sum(axis=1)
-
+col_list=['GDM1','GDM2','GDM3','GDM4','GDM5','GDM6']
+df["PCT_B"]=df[col_list].sum(axis=1)
 
 #%%
 
