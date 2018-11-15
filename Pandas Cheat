@@ -104,7 +104,21 @@ Grp_stats=['mean','count']
 for stats in Grp_stats:
     v4['test'+str(stats)]=v4.groupby(['AR','Team'])[['Poang']].transform(np.str(stats))
 
+#rename
 
+#df.rename(columns={'GD<-5':'GDM1','GD=-5':'GDM2','GD=-4':'GDM3','GD=-3':'GDM4',
+                'GD=-2':'GDM5','GD=-1':'GDM6','GD=1':'GDP1','GD=2':'GDP2',
+                  'GD=3':'GDP3','GD=4':'GDP4','GD=5':'GDP5','GD>5':'GDP6','GD=0':'PCT_D'},inplace=True)
+
+
+#rename vars
+ #make sure of the order of the old vars
+dataset=df
+Old_cols  = ['GD<-5','GD=-5','GD=-4','GD=-3','GD=-2','GD=-1','GD=0','GD=1','GD=2','GD=3','GD=4','GD=5','GD>5']
+new_names = ['GDM1','GDM2','GDM3','GDM4','GDM5','GDM6','PCT_D','GDP1','GDP2','GDP3','GDP4','GDP5','GDP6']
+column_indices=[dataset.columns.get_loc(c) for c in dataset.columns if c in Old_cols]
+old_names = dataset.columns[column_indices]
+dataset.rename(columns=dict(zip(old_names, new_names)), inplace=True)
 
 #%%timeseries
 
@@ -258,7 +272,7 @@ c.execute(dropTableStatement)
 Col_names=['Extr_Datum','Personnr','Abonnentnr','Huvudabonnent','Kontoid','Kontonr','Engagemangs_Datum','Limit,Saldo','Kredittyp','Skötselkod','Konto_Slutdatum','Laddatum','Limit_Sw','Saldo_Sw','batchid','Oldkontonr','Forandring','Ny_limit_sw','Ny_saldo_sw','Start_Datum']
 
 
-#rename
+
 
 
 
