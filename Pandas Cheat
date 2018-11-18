@@ -35,6 +35,20 @@ New_data_type=['Date1']
 for The_Vars in New_data_type:
     Dataset[str(The_Vars)] = Dataset[str(The_Vars)].values.astype("datetime64[s]") 
 
+#multi excel
+
+files=('all-euro-data-2017-2018.xlsx','all-euro-data-2016-2017.xlsx')
+sheets=['E0','E1']
+
+
+#files=('Footballteams - Copy.xlsx')
+df = pd.DataFrame()
+for file in files:
+    df_dict = pd.read_excel(team_path+'\\'+ str(file), sheet_name=None)
+    dfx = pd.concat(df_dict.values(), axis=0,sort=False,keys=sheets)
+    dfx['Filename']=str(file)
+    dfx['xx']=dfx.index.get_values()
+    df = df.append(dfx, ignore_index=True,sort=False)
 
 #Merge
 
