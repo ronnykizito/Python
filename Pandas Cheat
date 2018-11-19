@@ -8,6 +8,11 @@ import pandas as pd
 import numpy as np
 
 
+#delete dataframes
+import gc        
+del [[df,df2,df_date,Datum]]
+gc.collect()
+
 #begin dates
 
 *dates
