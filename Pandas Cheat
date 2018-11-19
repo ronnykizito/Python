@@ -77,6 +77,10 @@ df.columns = df.columns.str.upper()
 df=df.query('Div in ["E0","E1"] and B365H in [3.4]') 
 df=df.query('(Div in ["E0","E1"] or HomeTeam in  ["Huddersfield"]) and v3 in ["2018"] ')
 
+##date between two dates
+##df1 = df[df.Date.isin(pd.date_range("2015-08-08", "2015-08-08"))]
+##df1 = df[-df.Date.isin(pd.date_range("2015-08-08", "2015-08-08"))]      
+#      #%%
 
 
 df.loc[df['HomeTeam'].isin(['Zwolle']), 'test'] = 'sss'
