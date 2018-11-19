@@ -1153,4 +1153,16 @@ df2.columns = ["_".join(x) for x in df2.columns.ravel()]
 
 df3=df.pivot_table(index='Date',columns='Groups',aggfunc=sum)
 
+#delete files
+import os
 
+Delete_files=('testar - kopia.csv','testar - kopia (2).csv','testar - kopia.xlsx')
+Main_Path=r'C:\Users\rso363\RONSEN\file1\\'
+
+for Delete_file in Delete_files:
+    myfile=Main_Path+Delete_file
+    ## If file exists, delete it ##
+    if os.path.isfile(myfile):
+     os.remove(myfile)
+    else:    ## Show an error ##
+         print("Error: %s file not found" % myfile)
