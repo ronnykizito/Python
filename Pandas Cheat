@@ -8,6 +8,29 @@ import pandas as pd
 import numpy as np
 
 
+#begin dates
+
+*dates
+
+import pandas as pd
+from pandas.tseries.offsets import MonthEnd
+
+Datum='2018-11-19'
+dataset="df_date"
+globals()[str(dataset)] = pd.DataFrame({'Date1': [Datum]})
+globals()[str(dataset)].Date1 = globals()[str(dataset)].Date1.values.astype("datetime64[s]")
+globals()[str(dataset)]['Previous_month'] = globals()[str(dataset)].Date1 - pd.DateOffset(months=24)
+globals()[str(dataset)]['Next_month'] = globals()[str(dataset)].Date1 + pd.DateOffset(months=1)
+globals()[str(dataset)]['Previous_Day'] = globals()[str(dataset)].Date1 - pd.DateOffset(days=1)
+globals()[str(dataset)]['Previous_monthMonthBegin'] = globals()[str(dataset)].Previous_month.values.astype('datetime64[M]')
+globals()[str(dataset)]['PreviousMonthEnd'] = pd.to_datetime(globals()[str(dataset)].Previous_month, format="%Y%m") + MonthEnd(0)
+
+Mindate=globals()[str(dataset)].Previous_month.min()
+Maxdate=globals()[str(dataset)].Date1.min()
+
+df1=df.query('(Date >=@Mindate and Date<=@Maxdate) and Country in ["ESP"]')
+
+
 Array_sum=['B365H','B365D','B365A','FTHG']
 df['total']=df.loc[:,Array_sum].sum(axis=1)
 col_list=['GDM1','GDM2','GDM3','GDM4','GDM5','GDM6']
