@@ -124,6 +124,18 @@ date2="2018-04-30"
 sql=''' SELECT distinct Engagemangs_Datum,Abonnentnr FROM data1 WHERE Engagemangs_Datum  between '%s' and '%s'  and  Abonnentnr  in ("%s") ''' %(date1,date2,Abonnent)
 df2 = pd.read_sql_query(sql  ,conn)
 
+kredittyper=(1,2,5)
+for kredittyp in kredittyper:
+    dropTableStatement = 'DROP TABLE IF EXISTS'+' '+  'Ktp_'+str(kredittyp)
+    c.execute(dropTableStatement)
+    conn.execute(''' 
+                 create table Ktp_%s as
+                 SELECT  Engagemangs_Datum as Datum,count(*) as Antal_%s,sum(Saldo) as Saldo_%s FROM data1 
+                 WHERE Kredittyp  =%s 
+                 group by Engagemangs_Datum
+                 ''' %(kredittyp,kredittyp,kredittyp,kredittyp) )
+
+
 ##date between two dates
 ##df1 = df[df.Date.isin(pd.date_range("2015-08-08", "2015-08-08"))]
 ##df1 = df[-df.Date.isin(pd.date_range("2015-08-08", "2015-08-08"))]      
@@ -1190,3 +1202,24 @@ for Delete_file in Delete_files:
      os.remove(myfile)
     else:    ## Show an error ##
          print("Error: %s file not found" % myfile)
+
+
+#sql server
+
+
+
+#conn =  "DRIVER={ODBC Driver 17 for SQL Server};SERVER=IP_ADDRESS;DATABASE=DataLake;UID=USER;PWD=PASS"
+import pandas as pd
+import pyodbc
+     
+server = "DESKTOP-VPI7EHV\BIANALYZRTABULAR"
+db = "RONSEN"
+conn = pyodbc.connect('DRIVER={SQL Server};SERVER=' + server + ';DATABASE=' + db)
+
+c = conn.cursor()
+
+
+sql='''
+select * from crm where Area='Works' and Status='Cancelled'
+'''
+df = pd.read_sql_query(sql, conn)
