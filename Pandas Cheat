@@ -105,6 +105,25 @@ df.columns = df.columns.str.upper()
 df=df.query('Div in ["E0","E1"] and B365H in [3.4]') 
 df=df.query('(Div in ["E0","E1"] or HomeTeam in  ["Huddersfield"]) and v3 in ["2018"] ')
 
+df3=df.query('Abonnentnr in @Abonnent and (Engagemangs_Datum>=@date1 and Engagemangs_Datum<=@date2 )')
+
+
+
+Abonnent=("C2622","A8VX1","D3130")
+date1="2018-03-31"
+date2="2018-04-30"
+sql=''' SELECT distinct Engagemangs_Datum,Abonnentnr FROM data1 WHERE Engagemangs_Datum  between '%s' and '%s'  and  Abonnentnr  in %s ''' %(date1,date2,Abonnent)
+df2 = pd.read_sql_query(sql  ,conn)
+
+
+#if one abbonent
+
+Abonnent=("C2622")
+date1="2018-03-31"
+date2="2018-04-30"
+sql=''' SELECT distinct Engagemangs_Datum,Abonnentnr FROM data1 WHERE Engagemangs_Datum  between '%s' and '%s'  and  Abonnentnr  in ("%s") ''' %(date1,date2,Abonnent)
+df2 = pd.read_sql_query(sql  ,conn)
+
 ##date between two dates
 ##df1 = df[df.Date.isin(pd.date_range("2015-08-08", "2015-08-08"))]
 ##df1 = df[-df.Date.isin(pd.date_range("2015-08-08", "2015-08-08"))]      
