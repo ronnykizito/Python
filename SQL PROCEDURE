@@ -23,20 +23,30 @@ drop proc MyStoreProcedure;
 
 #parameters
 
+
 use RONSEN
 go --begins a new batch
 
 --parameters VARCHAR(MAX) INT
+--create or alter
 alter proc MyStoreProcedure1 
 	(
-	@Area as VARCHAR(MAX)
-	, @Status as VARCHAR(MAX)
+		@Area as VARCHAR(MAX)
+	,	@Status as VARCHAR(MAX)
+	,	@MinDate as VARCHAR(MAX)
+	,	@MaxDate as VARCHAR(MAX)
 	)  
  as
 begin
-SELECT * FROM CRM where Area=@Area and Status=@Status
+with q1 as (SELECT
+*,SUBSTRING("Received Date", 1, 10) as Dat,CAST(replace("# Items",'.','') as  INT) as Item
+FROM
+  CRM) 
+  select sum(item) as CT from q1 
+  where Dat>=@MinDate and Dat<=@MaxDate  and Area=@Area and "Status"=@Status
+
 end
 
+--make sure to have '' for strings
+execute MyStoreProcedure1 @Area='Works',@Status='Closed',@MinDate='2016-11-28',@MaxDate='2017-11-28'
 
-
-execute MyStoreProcedure1 @Area='IP',@Status='Cancelled'
