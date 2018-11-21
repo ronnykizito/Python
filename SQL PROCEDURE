@@ -17,3 +17,26 @@ alter proc MyStoreProcedure as
 begin
 SELECT * FROM CRM where Area='Works' and Status='Cancelled'
 end
+
+#drop
+drop proc MyStoreProcedure;
+
+#parameters
+
+use RONSEN
+go --begins a new batch
+
+--parameters VARCHAR(MAX) INT
+alter proc MyStoreProcedure1 
+	(
+	@Area as VARCHAR(MAX)
+	, @Status as VARCHAR(MAX)
+	)  
+ as
+begin
+SELECT * FROM CRM where Area=@Area and Status=@Status
+end
+
+
+
+execute MyStoreProcedure1 @Area='IP',@Status='Cancelled'
