@@ -11,3 +11,9 @@ end
 execute MyStoreProcedure
 
 #modify
+use RONSEN
+go --begins a new batch
+alter proc MyStoreProcedure as
+begin
+SELECT * FROM CRM where Area='Works' and Status='Cancelled'
+end
