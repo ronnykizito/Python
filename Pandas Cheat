@@ -1224,3 +1224,18 @@ sql='''
 select * from crm where Area='Works' and Status='Cancelled'
 '''
 df = pd.read_sql_query(sql, conn)
+
+
+#tales
+sql='''
+select * from information_schema.tables
+'''
+df1 = pd.read_sql_query(sql, conn)
+
+#columns
+sql='''
+select top 10 * from crm
+'''
+df1_info = pd.read_sql_query(sql, conn)
+df1_info.info()
+conn.close()
