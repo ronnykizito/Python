@@ -21,7 +21,7 @@ database='RONSEN'
  
 params = urllib.parse.quote_plus(r'DRIVER={SQL Server};SERVER='+server_out+';DATABASE='+database+';Trusted_Connection=yes')
 conn_str = 'mssql+pyodbc:///?odbc_connect={}'.format(params)
-conn = create_engine(conn_str)
+conn_out = create_engine(conn_str)
 
 df.to_sql(name='test2',con=conn,index=False,if_exists='replace')
 
