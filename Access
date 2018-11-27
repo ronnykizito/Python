@@ -1,0 +1,24 @@
+import pyodbc
+import pandas as pd
+
+conn = pyodbc.connect(r'Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=C:\RONSEN\ACCESS\DATABASE\ContosoSales.accdb;')
+c = conn.cursor()
+
+
+#from df to sql server
+server_out='PF15AYH5'
+database='ContosoSales'
+ 
+params = urllib.parse.quote_plus(r'DRIVER={SQL Server};SERVER='+server_out+';DATABASE='+database+';Trusted_Connection=yes')
+conn_str = 'mssql+pyodbc:///?odbc_connect={}'.format(params)
+conn_out = create_engine(conn_str)
+
+tables=('DimChannel','DimDate','DimEntity','DimProduct','DimProductSubcategory','DimPromotion','FactSales')
+for table in tables:
+    sql=''' select * from %s '''%(table)
+    df1 = pd.read_sql_query(sql, conn)
+    #from ContosoSales to sql server
+    df1.to_sql(name=str(table),con=conn_out,index=False,if_exists='replace')
+
+
+conn.close()
