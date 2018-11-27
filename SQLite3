@@ -27,3 +27,14 @@ create table  test as select * from test2
 pd.io.sql.execute(create_query, conn)
 
 conn.close()
+
+
+pd.io.sql.execute('DROP TABLE IF EXISTS test', conn)
+
+create_query='''
+create table test as 
+with q1 as (
+SELECT * FROM test2) select name from q1
+
+'''
+pd.io.sql.execute(create_query, conn)
