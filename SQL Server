@@ -1,0 +1,30 @@
+import pyodbc
+from sqlalchemy import create_engine
+import urllib
+import pandas as pd
+
+server='PF15AYH5'
+database='AdventureWorks2017'
+ 
+params = urllib.parse.quote_plus(r'DRIVER={SQL Server};SERVER='+server+';DATABASE='+database+';Trusted_Connection=yes')
+conn_str = 'mssql+pyodbc:///?odbc_connect={}'.format(params)
+conn = create_engine(conn_str)
+
+sql=''' 
+SELECT * FROM Sales.Store
+'''
+df = pd.read_sql_query(sql, conn)
+
+
+server_out='PF15AYH5'
+database='RONSEN'
+ 
+params = urllib.parse.quote_plus(r'DRIVER={SQL Server};SERVER='+server_out+';DATABASE='+database+';Trusted_Connection=yes')
+conn_str = 'mssql+pyodbc:///?odbc_connect={}'.format(params)
+conn = create_engine(conn_str)
+
+df.to_sql(name='test2',con=conn,index=False,if_exists='replace')
+
+
+drop_table='test2'
+pd.io.sql.execute('DROP TABLE IF EXISTS '+ drop_table, conn)
