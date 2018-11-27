@@ -1,0 +1,29 @@
+import pandas as pd
+import sqlite3
+
+
+
+path=r'C:\RONSEN\PYTHON\\'
+new_databae='Mytest.db'
+conn = sqlite3.connect(path+new_databae)
+
+df.to_sql(name='test2',con=conn,index=False,if_exists='replace')
+
+
+drop_table='test2'
+pd.io.sql.execute('DROP TABLE IF EXISTS '+ drop_table, conn)
+
+
+
+
+
+pd.io.sql.execute('DROP TABLE IF EXISTS test', conn)
+
+create_query='''
+
+create table  test as select * from test2
+
+'''
+pd.io.sql.execute(create_query, conn)
+
+conn.close()
