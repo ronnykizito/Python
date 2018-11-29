@@ -41,24 +41,25 @@ pd.io.sql.execute(create_query, conn)
 
 
 
-pd.io.sql.execute('DROP TABLE IF EXISTS test3', conn)
+table='test3'
+pd.io.sql.execute('DROP TABLE IF EXISTS '+ table, conn)
+
 
 create_table='''
-CREATE TABLE  test3 
+CREATE TABLE  %s 
 (
 Vernr  text,
 Bokforingsdatum text ,
 Registreringsdatum text,
-Konto  BLOB,
+Konto  NUMERIC,
 Verifikationstext text,
 Debet NUMERIC,
 Kredit  NUMERIC,
 Created_Date text 
 )
-
-'''
+'''%(table)
 pd.io.sql.execute(create_table, conn)
 	
 
 
-dataset.to_sql(name='test3',con=conn,index=False,if_exists='append')
+dataset.to_sql(name=str(table),con=conn,index=False,if_exists='append')
