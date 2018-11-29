@@ -28,3 +28,75 @@ df.to_sql(name='test2',con=conn,index=False,if_exists='replace')
 
 drop_table='test2'
 pd.io.sql.execute('DROP TABLE IF EXISTS '+ drop_table, conn)
+
+
+######################
+#%%
+#sql server
+
+
+import pyodbc
+from sqlalchemy import create_engine
+import urllib
+import pandas as pd
+
+
+server_out='PF15AYH5'
+database='RONSEN'
+ 
+params = urllib.parse.quote_plus(r'DRIVER={SQL Server};SERVER='+server_out+';DATABASE='+database+';Trusted_Connection=yes')
+conn_str = 'mssql+pyodbc:///?odbc_connect={}'.format(params)
+conn_out = create_engine(conn_str)
+
+
+#first drop and then create an empty table in sql server
+pd.io.sql.execute('DROP TABLE IF EXISTS test2', conn_out)
+
+
+
+create_table='''
+
+CREATE TABLE test2
+(
+Vernr  NVARCHAR(max),
+Bokforingsdatum DATE ,
+Registreringsdatum DATE,
+Konto  NUMERIC,
+Verifikationstext NVARCHAR(max),
+Debet FLOAT,
+Kredit  FLOAT,
+Created_Date DATE 
+
+)
+
+'''
+
+pd.io.sql.execute(create_table, conn_out)
+
+dataset.to_sql(name='test2',con=conn_out,index=False,if_exists='append')
+
+################
+
+
+
+
+
+#create empty table
+USE RONSEN;
+GO
+DROP TABLE IF EXISTS test2;
+GO
+CREATE TABLE test2
+(
+Vernr  NVARCHAR(max),
+Bokforingsdatum DATE ,
+Registreringsdatum DATE,
+Konto  NUMERIC,
+Verifikationstext NVARCHAR(max),
+Debet FLOAT,
+Kredit  FLOAT,
+Created_Date DATE 
+
+)
+
+'''
