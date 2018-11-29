@@ -38,3 +38,27 @@ SELECT * FROM test2) select name from q1
 
 '''
 pd.io.sql.execute(create_query, conn)
+
+
+
+pd.io.sql.execute('DROP TABLE IF EXISTS test3', conn)
+
+create_table='''
+CREATE TABLE  test3 
+(
+Vernr  text,
+Bokforingsdatum text ,
+Registreringsdatum text,
+Konto  BLOB,
+Verifikationstext text,
+Debet NUMERIC,
+Kredit  NUMERIC,
+Created_Date text 
+)
+
+'''
+pd.io.sql.execute(create_table, conn)
+	
+
+
+dataset.to_sql(name='test3',con=conn,index=False,if_exists='append')
