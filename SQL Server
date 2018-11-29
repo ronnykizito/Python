@@ -50,13 +50,13 @@ conn_out = create_engine(conn_str)
 
 
 #first drop and then create an empty table in sql server
-pd.io.sql.execute('DROP TABLE IF EXISTS test2', conn_out)
+table='test22'
+pd.io.sql.execute('DROP TABLE IF EXISTS '+ table, conn_out)
 
 
 
 create_table='''
-
-CREATE TABLE test2
+CREATE TABLE %s
 (
 Vernr  NVARCHAR(max),
 Bokforingsdatum DATE ,
@@ -66,14 +66,12 @@ Verifikationstext NVARCHAR(max),
 Debet FLOAT,
 Kredit  FLOAT,
 Created_Date DATE 
-
 )
-
-'''
+'''%(table)
 
 pd.io.sql.execute(create_table, conn_out)
 
-dataset.to_sql(name='test2',con=conn_out,index=False,if_exists='append')
+dataset.to_sql(name=str(table),con=conn_out,index=False,if_exists='append')
 
 ################
 
