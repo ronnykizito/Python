@@ -242,9 +242,9 @@ from datetime import timedelta
 #from dateutil.relativedelta import relativedelta
 from pandas.tseries.offsets import MonthEnd
 #df['dates'] = pd.date_range(start='2017-01-01',end='2017-01-31',freq='D')
-
-def create_date_table2(start, end,freq='D'):
-    df = pd.DataFrame({"Date": pd.date_range(start, end)})
+#daily D, Monthy MS, Yearly YS
+def create_date_table2(start, end):
+    df = pd.DataFrame({"Date": pd.date_range(start, end,freq='D')})
     df["Year"] = df.Date.dt.year
     df["NextYear"] = df.Date.dt.year+1
     df["DayofWeek"] = df.Date.dt.weekday_name
@@ -272,7 +272,7 @@ def create_date_table2(start, end,freq='D'):
     df['yy']= df.Date.dt.strftime('%y')
     return df
 
-MyCalendar=create_date_table2(start=Min_date, end=Max_date,freq='D')
+MyCalendar=create_date_table2(start=Min_date, end=Max_date)
 
 dataset=MyCalendar
 The_var=('man1')
