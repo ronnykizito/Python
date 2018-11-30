@@ -421,7 +421,7 @@ from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 
 fromAddr="ronny.kizito@gmail.com"
-toAddr="ronnysentongo@hotmail.com"
+toAddr=("ronny.sentongo@enfogroup.com","ronnysentongo@hotmail.com")
 
 content ='Hello World'
 #msg=MIMEMultipart()
@@ -430,8 +430,8 @@ content ='Hello World'
 #msg['Subject']='test email'
 #body='this is the content'
 #msg.attach(MIMEText(body,'plain'))
-#
-#mail = smtplib.SMTP('smtp.gmail.com',587)
+
+mail = smtplib.SMTP('smtp.gmail.com',587)
 
 mail.ehlo()
 
@@ -443,7 +443,6 @@ mail.login('ronny.kizito@gmail.com','1299se1299se')
 mail.sendmail(fromAddr,toAddr,content)
 
 mail.close()
-
 
 **********************************zip
 import zipfile
