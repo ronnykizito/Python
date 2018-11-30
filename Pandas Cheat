@@ -456,6 +456,16 @@ with zipfile.ZipFile(Main_Path) as zippa:
       df = pd.read_excel(file, header=None)
 
 
+from zipfile import ZipFile
+
+Main_Path=r'C:\Users\F2531197\Downloads\data.zip'
+zip_file = ZipFile(Main_Path)
+dfs = {text_file.filename: pd.read_csv(zip_file.open(text_file.filename))
+       for text_file in zip_file.infolist()
+       if text_file.filename.endswith('.csv')}
+dfx = pd.concat(dfs.values(), axis=0,sort=False)
+dfx['Filename']=Main_Path
+
 start_time = time.time()
 # your code
 elapsed_time = time.time() - start_time
