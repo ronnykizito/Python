@@ -100,7 +100,7 @@ df.HomeTeam = df.HomeTeam.str.upper()
 df.HomeTeam = df.HomeTeam.str.lower()
 df.HomeTeam= df.HomeTeam.str.title()
 df.columns = df.columns.str.upper()
-
+df.columns = [col.replace(' ','_').upper() for col in df.columns]
 #where statemaent
 
 df=df.query('Div in ["E0","E1"] and B365H in [3.4]') 
