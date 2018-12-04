@@ -9,7 +9,7 @@ from pandas.tseries.offsets import MonthEnd
 
 start='2010-01-01'
 end='2119-01-01'
-#the min month the calender should start
+#the max month the calender should end from todays date
 month=36
 
 
