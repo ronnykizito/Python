@@ -975,6 +975,8 @@ df_status = df_status[['Status', 'ID', 'Datum','Filename','ID_Kund']]
 df.dropna(subset=['Artikel','Nummer'], inplace=True)
 #drop all row with value
 
+#drp all empty columns df=df.dropna(how='all')
+
 df=df.query('Artikel not in ["Artikel"]') 
 #df.drop(df.loc[df.Artikel.isin(['Artikel'])].index, inplace=True)	
 	
