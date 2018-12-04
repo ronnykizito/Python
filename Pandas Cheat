@@ -8,6 +8,9 @@ import pandas as pd
 import numpy as np
 
 
+df1=df.describe(include=[np.number]).T
+df1=df.describe(include=[np.object,pd.Categorical]).T
+
 #delete dataframes
 import gc        
 del [[df,df2,df_date,Datum]]
