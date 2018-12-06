@@ -1,0 +1,54 @@
+
+import os
+import shutil
+from zipfile import ZipFile
+import pandas as pd
+
+#define the path and the extension
+# make sure that these path exist
+source = r"C:\RONSEN\PYTHON\SSIS_KURS\ftproot\\"
+destination_path = r"C:\RONSEN\PYTHON\SSIS_KURS\SourceFiles\Workfiles\\"
+archive_path=r'C:\RONSEN\PYTHON\SSIS_KURS\SourceFiles\Archive\\'
+
+ext='.csv'
+
+##############################################################################
+#you mustnt change anythig below
+
+#this loop moves all files from the source to the defined destination path
+for file in os.listdir(source):
+    #print (file)  # testing
+    src_file = os.path.join(source, file)
+    dst_file = os.path.join(destination_path, file)
+    shutil.move(src_file, dst_file)
+
+
+
+#the loop lists all files with the chosed extension (ext)
+files_names = os.listdir(destination_path)
+File_name = [i for i in files_names if i.endswith(ext)] #txt csv xlsx xlsm osv.
+
+#a dataframe is created for making a list for the filenames och what the zipfiles will be called
+zipnames = pd.DataFrame({'files': File_name})
+zipnames['zipfilenames']=zipnames.files.str.split('.').apply(lambda x: x[0])
+
+
+
+
+
+#this loop creates a zipfile for all chosed files and move these the the archived path
+zipnames['files']=zipnames.zipfilenames+ext
+zipfilenames=zipnames.iloc[:,1].tolist()
+files=zipnames.iloc[:,0].tolist()
+for file, zipfilename in zip(files,zipfilenames):
+    with ZipFile(archive_path + zipfilename+'.zip', 'w') as myzip:
+        myzip.write(os.path.join(destination_path, file), arcname=file)
+
+#this loop will delete all files in the destination path
+for Delete_file in files:
+    myfile=destination_path+Delete_file
+    ## If file exists, delete it ##
+    if os.path.isfile(myfile):
+     os.remove(myfile)
+    else:    ## Show an error ##
+        print("Error: %s file not found" % myfile)
