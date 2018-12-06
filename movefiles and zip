@@ -52,3 +52,71 @@ for Delete_file in files:
      os.remove(myfile)
     else:    ## Show an error ##
         print("Error: %s file not found" % myfile)
+      
+      
+      #all files
+      
+      # -*- coding: utf-8 -*-
+"""
+Created on Thu Dec  6 18:38:18 2018
+
+@author: F2531197
+"""
+
+
+import os
+import shutil
+from zipfile import ZipFile
+import datetime
+
+Today=datetime.datetime.now().strftime("%Y%m%d") #the date when you read the files
+#define the path and the extension
+# make sure that these path exist
+source = r"C:\RONSEN\PYTHON\SSIS_KURS\ftproot\\" #this is the destination where the costumer/you put the infiles
+destination_path = r"C:\RONSEN\PYTHON\SSIS_KURS\SourceFiles\Workfiles\\" #this is the path where you read yours files from
+archive_path=r'C:\RONSEN\PYTHON\SSIS_KURS\SourceFiles\Archive\\' #this is the path where we keep the history files
+
+zipname='test' #what will the zip file be called?
+#%%
+
+##############################################################################
+#you mustnt change anythig below
+
+#this loop moves all files from the source to the defined destination path
+for file in os.listdir(source):
+    #print (file)  # testing
+    src_file = os.path.join(source, file)
+    dst_file = os.path.join(destination_path, file)
+    shutil.move(src_file, dst_file)
+
+
+
+#get all files from this path
+def get_all_file_paths(destination_path):
+    file_paths = []
+
+    for root, directories, files in os.walk(destination_path):
+        for filename in files:
+            filepath = os.path.join(root, filename)
+            file_paths.append(filepath)
+        return file_paths
+
+file_paths = get_all_file_paths(destination_path)
+
+
+
+    
+#zip all files in source path and put those in archive path
+with ZipFile(archive_path+zipname+'_'+Today+'.zip','w') as myzip:
+    for file in file_paths:
+        myzip.write(file, os.path.basename(file))             
+
+
+
+#this loop will delete all files in the destination path
+for Delete_file in file_paths:
+    ## If file exists, delete it ##
+    if os.path.isfile(Delete_file):
+     os.remove(Delete_file)
+    else:    ## Show an error ##
+        print("Error: %s file not found" % Delete_file)   
