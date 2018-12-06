@@ -1,0 +1,83 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Dec  5 11:14:09 2018
+
+@author: F2531197
+"""
+#%%
+import pandas as pd
+import pyodbc
+from sqlalchemy import create_engine
+import urllib
+import time  
+import gc
+
+#%%
+
+server_out='PF15AYH5'
+database='RONSEN'
+ 
+params = urllib.parse.quote_plus(r'DRIVER={SQL Server};SERVER='+server_out+';DATABASE='+database+';Trusted_Connection=yes')
+conn_str = 'mssql+pyodbc:///?odbc_connect={}'.format(params)
+conn_out = create_engine(conn_str)
+
+
+#%%
+
+
+
+table='test22'
+pd.io.sql.execute('DROP TABLE IF EXISTS '+ table, conn_out)
+
+
+create_table='''
+
+CREATE TABLE %s
+(
+
+IDNummer NUMERIC,
+ChipNr NVARCHAR(max),
+RegNr NVARCHAR(max),
+RasKod NVARCHAR(max),
+HundNamn NVARCHAR(max),
+HundKon NVARCHAR(max),
+HundFodelseDatum DATE,
+HundFargbeteckning NVARCHAR(max),
+HundHarlag NVARCHAR(max),
+HundStorlek NVARCHAR(max),
+HundHD NVARCHAR(max),
+HundFadernsRegNr NVARCHAR(max),
+HundModernsRegNr NVARCHAR(max),
+HundUppfodarNr NVARCHAR(max),
+UppfodarNamn NVARCHAR(max),
+HundFargKod NVARCHAR(max),
+CurrentOwner NVARCHAR(max),
+Filename NVARCHAR(max),
+elapsed_time NVARCHAR(max)
+)
+'''%(table)
+
+
+pd.io.sql.execute(create_table, conn_out)
+
+    #%%
+
+path=r'C:\RONSEN\PYTHON\SSIS_KURS\ftproot\\'
+chunksize = 10000
+separator = "|"
+encoding="ISO-8859-1" #encoding="ISO-8859-1" #'utf-8-sig'
+file=('dogs')
+
+
+start_time = time.time()
+
+
+for df in pd.read_csv(path+file+'.csv', sep=separator,encoding = encoding, low_memory=False,iterator=True,chunksize=chunksize):
+    df['Filename']=str(file)
+    elapsed_time = time.time() - start_time
+    t=time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
+    df['elapsed_time']=t
+    df.to_sql(name=str(table),con=conn_out,index=False,if_exists='append') 
+   
+del [[df]]
+gc.collect()
