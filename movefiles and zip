@@ -1,4 +1,74 @@
 
+
+import pandas as pd
+from zipfile import ZipFile
+import datetime
+import pyodbc
+from sqlalchemy import create_engine
+import urllib
+import gc
+
+
+server_out='PF15AYH5'
+database='RONSEN'
+ 
+params = urllib.parse.quote_plus(r'DRIVER={SQL Server};SERVER='+server_out+';DATABASE='+database+';Trusted_Connection=yes')
+conn_str = 'mssql+pyodbc:///?odbc_connect={}'.format(params)
+conn_out = create_engine(conn_str)
+
+chunksize = 1000000
+separator = "|"
+encoding="ISO-8859-1" #encoding="ISO-8859-1" #'utf-8-sig'
+
+Main_Path=r'C:\RONSEN\PYTHON\SSIS_KURS\SourceFiles\Archive\test_20181206.zip'
+
+
+files_in_zipfile = ZipFile(Main_Path)
+
+files = files_in_zipfile.namelist()
+
+df_files = pd.DataFrame({'files':files})
+df_files['filename']=df_files.files.str.split('.').apply(lambda x: x[0])
+df_files['extension']=df_files.files.str.split('.').apply(lambda x: x[-1])
+df_files=df_files.query('extension in ["csv"] ')  
+
+
+files=list(df_files.files)
+filenames=list(df_files.filename)
+
+#for file,filename in zip(files,filenames):
+#    globals()[str(filename)]=pd.DataFrame()
+#    globals()[str(filename)] = pd.read_csv(files_in_zipfile.open(str(file)), sep=separator,encoding = encoding, low_memory=False)
+#    globals()[str(filename)]['File']=str(filename)
+#    globals()[str(filename)]['ImportedDate']=str(Today) 
+#    table=str(filename)
+#    globals()[str(filename)].to_sql(name=str(table),con=conn_out,index=False,if_exists='replace')
+#    del [[globals()[str(filename)]]]
+#    gc.collect()
+    
+for filename in (filenames):
+    globals()[str(filename)]=pd.DataFrame()
+    
+for file,filename in zip(files,filenames):
+    for dfx in pd.read_csv(files_in_zipfile.open(str(file)), sep=separator,encoding = encoding, low_memory=False,iterator=True,chunksize=chunksize):
+        globals()[str(filename)] = globals()[str(filename)].append(dfx, ignore_index=True,sort=False)
+        Today=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        globals()[str(filename)]['File']=str(filename)
+        globals()[str(filename)]['ImportedDate']=str(Today) 
+        globals()[str(filename)].to_sql(name=str(filename),con=conn_out,index=False,if_exists='replace')
+   
+
+
+del [[dfx]]
+gc.collect()
+
+
+
+
+
+
+
+
 import os
 import shutil
 from zipfile import ZipFile
