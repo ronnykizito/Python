@@ -55,7 +55,7 @@ def create_date_table2(start=Min_date, end=Max_date,freq='D'):
     df['Previous_Week'] = df.Date - pd.DateOffset(weeks=1)
     df['Next_WeekNumber'] = df.Next_Week.dt.weekofyear
     df['Previous_WeekNumber'] = df.Previous_Week.dt.weekofyear
-    df['yy']= df.Date.dt.strftime('%Y')
+    df['yy']= df.Date.dt.strftime('%y')
     df['man'] = df.Date.dt.strftime('%b')
     df['man1'] = df.man.str.lower()
     df.loc[df['man1'].isin(['jan']), 'Month_Swe'] = 'jan'
@@ -70,7 +70,7 @@ def create_date_table2(start=Min_date, end=Max_date,freq='D'):
     df.loc[df['man1'].isin(['oct']), 'Month_Swe'] = 'okt'
     df.loc[df['man1'].isin(['nov']), 'Month_Swe'] = 'nov'
     df.loc[df['man1'].isin(['dec']), 'Month_Swe'] = 'dec'
-    df['Datum_swe']= df.Month_Swe+'-'+df.yy
+    df['Datum_swe']= 'x'+df.Month_Swe+'-'+df.yy
     df['start_next_month'] = df.Next_month.values.astype('datetime64[M]')
     return df
 
