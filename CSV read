@@ -27,12 +27,18 @@ run;
 data v2;
 set test;
 my_vars=cats('"', Test, '"',":","str");
+my_vars1=catx(' ',Test,"NVARCHAR(max),");
 run;
 
 Proc sql noprint;
 select distinct my_vars into :  listv  separated by ',' from v2;
 quit;
 %put &listv;
+
+Proc sql noprint;
+select distinct my_vars1 into :  listv1  separated by ' ' from v2;
+quit;
+%put &listv1;
 
 
 
