@@ -4,6 +4,50 @@ Created on Wed Dec  5 11:14:09 2018
 
 @author: F2531197
 """
+
+
+
+fix datatypes in SAS before. Read csv with like 100row then df.info() put all columns in excel and then SAS
+%let data =IDNummer	ChipNr	RegNr	RasKod	HundNamn	HundKon	HundFodelseDatum	HundFargbeteckning	HundHarlag	HundStorlek	HundHD	HundFadernsRegNr	
+HundModernsRegNr	HundUppfodarNr	UppfodarNamn	HundFargKod	CurrentOwner;
+
+
+data test;
+	str="&data.";
+
+	do i=1 to countw(str, " ");
+		Test=strip(scan(str, i, " "));
+		ID=i;
+		output;
+	end;
+	drop str i;
+	
+run;
+
+data v2;
+set test;
+my_vars=cats('"', Test, '"',":","str");
+run;
+
+Proc sql noprint;
+select distinct my_vars into :  listv  separated by ',' from v2;
+quit;
+%put &listv;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #%%
 import pandas as pd
 import pyodbc
