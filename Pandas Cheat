@@ -57,15 +57,15 @@ df['Date1'] =df.v3+'-'+df.v2+'-'+ df.v1
 #remove space in columns
 df.columns = df.columns.str.replace(' ', '')
 
-New_data_type=['HomeTeam','AwayTeam']
-Dataset=df
-for The_Vars in New_data_type:
-    Dataset[str(The_Vars)] = Dataset[str(The_Vars)].values.astype(str)
+string_Vars=['Home','Away']
+df[string_Vars] = df[string_Vars].values.astype(str)
 
-#to date
-New_data_type=['Date1']
-for The_Vars in New_data_type:
-    Dataset[str(The_Vars)] = Dataset[str(The_Vars)].values.astype("datetime64[s]") 
+
+date_Vars=['Date']
+
+df[date_Vars] = df[date_Vars].values.astype("datetime64[s]") 
+
+
 
 #multi excel
 
