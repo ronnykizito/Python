@@ -57,16 +57,23 @@ df['Date1'] =df.v3+'-'+df.v2+'-'+ df.v1
 #remove space in columns
 df.columns = df.columns.str.replace(' ', '')
 
-int_Vars=['Debet','Kredit','Konto']
-df[int_Vars] = df[int_Vars].apply(pd.to_numeric, errors='coerce')
+
+#change char
+object_to_int=['Debet','Kredit','Konto']
+df[object_to_int] = df[object_to_int].apply(pd.to_numeric, errors='coerce')
+df.update(df[object_to_int].fillna(0))
 
 
-string_Vars=['Vernr','Sheetname']
-df[string_Vars] = df[string_Vars].values.astype(str)
+object_to_str=['Vernr','Sheetname']
+df[object_to_str] = df[object_to_str].values.astype(str)
 
-date_Vars=['Bokforingsdatum','Registreringsdatum']
+object_to_date=['Bokforingsdatum','Registreringsdatum']
 
-df[date_Vars] = df[date_Vars].values.astype("datetime64[s]") 
+df[object_to_date] = df[object_to_date].values.astype("datetime64[s]") 
+
+
+import datetime as dt
+df['From date to str'] = df.Bokforingsdatum.apply(lambda x: dt.datetime.strftime(x, '%Y-%m-%d'))
 
 
 
