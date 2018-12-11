@@ -127,6 +127,9 @@ df1=df.loc[df['Home'].str.contains('^M[a-z]*',flags=re.I,regex=True)   ]
 #begins with m M or Bb
 df1=df.loc[df['Home'].str.contains('^M[a-z]*|^b[a-z]*',flags=re.I,regex=True)   ]
 
+#ends with 
+df1=df.loc[df['Home'].str.contains('city$[a-z]*',flags=re.I,regex=True)   ]
+
 Abonnent=("C2622","A8VX1","D3130")
 date1="2018-03-31"
 date2="2018-04-30"
