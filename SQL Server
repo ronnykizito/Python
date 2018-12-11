@@ -1,3 +1,6 @@
+
+ --Left(CONVERT(varchar,a.DateKey,112), 6) AS DateMonth,
+
 import pyodbc
 from sqlalchemy import create_engine
 import urllib
