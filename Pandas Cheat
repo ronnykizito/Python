@@ -112,8 +112,20 @@ df=df.query('(Div in ["E0","E1"] or HomeTeam in  ["Huddersfield"]) and v3 in ["2
 df3=df.query('Abonnentnr in @Abonnent and (Engagemangs_Datum>=@date1 and Engagemangs_Datum<=@date2 )')
 
 #like statement
-df1=df[(df['Home'].str.contains('Man|pool|Gala')) ]
-df1=df[(df['Home'].str.contains('Man|pool|Gala')) & (df['Away'].str.contains('Nap|Tot'))]
+df1=df.loc[(df['Home'].str.contains('Man|pool|Gala')) ]
+df1=df.loc[(df['Home'].str.contains('Man|pool|Gala')) & (df['Away'].str.contains('Nap|Tot'))]
+df1=df.loc[(df['Home'].str.contains('Man|pool|Gala')) | (df['Away'].str.contains('Atl|Tot'))]
+#tvätmot
+df1=df.loc[(-df['Home'].str.contains('Man|pool|Gala')) & (-df['Away'].str.contains('Atl|Tot'))]
+
+#like statement not case sensitive
+import re
+df1=df.loc[df['Home'].str.contains('maN|pooL|gala',flags=re.I,regex=True)   ]
+df1=df.loc[(df['Home'].str.contains('Man|pool|Gala',flags=re.I,regex=True)) | (df['Away'].str.contains('Atl|Tot'))]
+#begins with M or m
+df1=df.loc[df['Home'].str.contains('^M[a-z]*',flags=re.I,regex=True)   ]
+#begins with m M or Bb
+df1=df.loc[df['Home'].str.contains('^M[a-z]*|^b[a-z]*',flags=re.I,regex=True)   ]
 
 Abonnent=("C2622","A8VX1","D3130")
 date1="2018-03-31"
