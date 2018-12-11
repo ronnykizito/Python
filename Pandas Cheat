@@ -111,7 +111,9 @@ df=df.query('(Div in ["E0","E1"] or HomeTeam in  ["Huddersfield"]) and v3 in ["2
 
 df3=df.query('Abonnentnr in @Abonnent and (Engagemangs_Datum>=@date1 and Engagemangs_Datum<=@date2 )')
 
-
+#like statement
+df1=df[(df['Home'].str.contains('Man|pool|Gala')) ]
+df1=df[(df['Home'].str.contains('Man|pool|Gala')) & (df['Away'].str.contains('Nap|Tot'))]
 
 Abonnent=("C2622","A8VX1","D3130")
 date1="2018-03-31"
