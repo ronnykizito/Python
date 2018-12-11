@@ -1341,8 +1341,8 @@ df = pd.read_sql_query(sql, conn_out)
 
 
 
-PWBI_repalce_numeric=['bonus']
-df[PWBI_repalce_numeric] = df[PWBI_repalce_numeric].values.astype(str) 
+PWBI_replace_numeric=['bonus']
+df[PWBI_replace_numeric] = df[PWBI_replace_numeric].values.astype(str) 
 
-for replace_dot_comma in PWBI_repalce_numeric:
+for replace_dot_comma in PWBI_replace_numeric:
     df[replace_dot_comma] = df[replace_dot_comma].str.replace('.', ',')
