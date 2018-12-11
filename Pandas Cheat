@@ -1315,3 +1315,34 @@ for yyyymm,yymm in zip(period_l, period_s):
         df_tmp['Sheetname']=sheet
         df_tmp['Created_Date'] = datetime.datetime.now().strftime("%Y-%m-%d")
         df = df.append(df_tmp, ignore_index=True,sort=False)
+
+
+
+import pyodbc
+from sqlalchemy import create_engine
+import urllib
+import pandas as pd
+
+
+server_out='PF15AYH5'
+database='AdventureWorks2017'
+ 
+params = urllib.parse.quote_plus(r'DRIVER={SQL Server};SERVER='+server_out+';DATABASE='+database+';Trusted_Connection=yes')
+conn_str = 'mssql+pyodbc:///?odbc_connect={}'.format(params)
+conn_out = create_engine(conn_str)
+
+sql=''' 
+SELECT sum(bonus) as bonus
+  FROM Sales.SalesPerson
+'''
+df = pd.read_sql_query(sql, conn_out)
+
+
+
+
+
+PWBI_repalce_numeric=['bonus']
+df[PWBI_repalce_numeric] = df[PWBI_repalce_numeric].values.astype(str) 
+
+for replace_dot_comma in PWBI_repalce_numeric:
+    df[replace_dot_comma] = df[replace_dot_comma].str.replace('.', ',')
