@@ -8,8 +8,12 @@ Created on Wed Dec  5 11:14:09 2018
 
 
 fix datatypes in SAS before. Read csv with like 100row then df.info() put all columns in excel and then SAS
-%let data =IDNummer	ChipNr	RegNr	RasKod	HundNamn	HundKon	HundFodelseDatum	HundFargbeteckning	HundHarlag	HundStorlek	HundHD	HundFadernsRegNr	
-HundModernsRegNr	HundUppfodarNr	UppfodarNamn	HundFargKod	CurrentOwner;
+%let data =IDNummer	ChipNr	RegNr	RasKod	HundNamn	
+HundKon	HundFodelseDatum	HundFargbeteckning	
+HundHarlag	HundStorlek	HundHD	HundFadernsRegNr	
+HundModernsRegNr	HundUppfodarNr	UppfodarNamn	
+HundFargKod	CurrentOwner	Filename	ImportedDate
+;
 
 
 data test;
@@ -27,18 +31,20 @@ run;
 data v2;
 set test;
 my_vars=cats('"', Test, '"',":","str");
-my_vars1=catx(' ',Test,"NVARCHAR(max),");
+my_vars1=catx(' ',Test,"text,");
+/*my_vars1=catx(' ',Test,"NVARCHAR(max),");*/
 run;
 
 Proc sql noprint;
-select distinct my_vars into :  listv  separated by ',' from v2;
+select distinct my_vars1 into :  listv  separated by ' ' from v2 order by id;
 quit;
 %put &listv;
 
 Proc sql noprint;
-select distinct my_vars1 into :  listv1  separated by ' ' from v2;
+select distinct my_vars into :  listv1  separated by ',' from v2 order by id;
 quit;
 %put &listv1;
+
 
 
 
