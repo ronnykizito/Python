@@ -1,0 +1,212 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Dec 11 14:19:29 2018
+
+@author: F2531197
+"""
+
+from sqlalchemy import create_engine
+import urllib
+import pandas as pd
+import gc
+import datetime
+
+Today=datetime.datetime.now().strftime("%Y-%m-%d")
+
+#define the period for the report
+
+#daily D, Monthy MS, Yearly YS
+def create_date_table2(start, end):
+    df = pd.DataFrame({"Date": pd.date_range(start, end,freq='MS')})
+    df['Month']= df.Date.dt.strftime('%Y%m').astype(int)
+    df=df.query('Month>=200911  and Month <=200912')
+    return df
+df=create_date_table2(start='2007-01-01', end='2009-12-31')
+
+
+periods=list(df.Month)
+
+#...........................................................................
+#...........................................................................
+#...........................................................................
+
+#connection in
+server='PF15AYH5'
+database_in='ContosoSales'
+
+driver='{ODBC Driver 17 for SQL Server}'
+params_in = urllib.parse.quote_plus(r'DRIVER='+driver+';SERVER='+server+';DATABASE='+database_in+';Trusted_Connection=yes')
+conn_str_in = 'mssql+pyodbc:///?odbc_connect={}'.format(params_in)
+conn_in = create_engine(conn_str_in)
+
+#...........................................................................
+#...........................................................................
+#...........................................................................
+
+#connection out
+
+database_out='RONSEN'
+params_out = urllib.parse.quote_plus(r'DRIVER='+driver+';SERVER='+server+';DATABASE='+database_out+';Trusted_Connection=yes')
+conn_str_out = 'mssql+pyodbc:///?odbc_connect={}'.format(params_out)
+conn_out = create_engine(conn_str_out)
+
+#...........................................................................
+#...........................................................................
+#...........................................................................
+
+#get the dim tables and create them in the database
+
+file='DimChannel'
+
+#get the table from the source to dataframe
+sql_query='''  SELECT ChannelKey,ChannelName FROM %s  '''%(file)
+globals()[str(file)] = pd.read_sql_query(sql_query, conn_in)
+
+#first drop and then create an empty table in sql server new database(conn_out)
+create_table='''
+CREATE TABLE  %s 
+(
+ ChannelKey NUMERIC ,ChannelName NVARCHAR(max)
+)
+'''%(file) #this statement creates an empty table
+pd.io.sql.execute('DROP TABLE IF EXISTS '+ file, conn_out) #delete if exists
+pd.io.sql.execute(create_table, conn_out) #create the new empty table
+#from the dataframe to the new database
+globals()[str(file)].to_sql(name=str(file),con=conn_out,index=False,if_exists='append')
+
+#...........................................................................
+
+file='DimProduct'
+
+#get the table from the source to dataframe
+sql_query='''  SELECT ProductKey,ProductName,ProductDescription,ProductSubcategoryKey,
+  Manufacturer,BrandName
+FROM %s  '''%(file)
+globals()[str(file)] = pd.read_sql_query(sql_query, conn_in)
+
+#first drop and then create an empty table in sql server new database(conn_out)
+create_table='''
+CREATE TABLE  %s 
+(
+ProductKey NUMERIC,ProductName NVARCHAR(max),ProductDescription NVARCHAR(max),
+ProductSubcategoryKey NUMERIC,Manufacturer NVARCHAR(max),BrandName NVARCHAR(max)
+)
+'''%(file) #this statement creates an empty table
+pd.io.sql.execute('DROP TABLE IF EXISTS '+ file, conn_out) #delete if exists
+pd.io.sql.execute(create_table, conn_out) #create the new empty table
+#from the dataframe to the new database
+globals()[str(file)].to_sql(name=str(file),con=conn_out,index=False,if_exists='append')
+
+#...........................................................................
+
+file='DimProductSubcategory'
+
+#get the table from the source to dataframe
+sql_query='''SELECT ProductSubcategoryKey,ProductSubcategoryName,ProductCategoryKey
+FROM %s  '''%(file)
+globals()[str(file)] = pd.read_sql_query(sql_query, conn_in)
+
+#first drop and then create an empty table in sql server new database(conn_out)
+create_table='''
+CREATE TABLE  %s 
+(
+ ProductSubcategoryKey NUMERIC,ProductSubcategoryName NVARCHAR(max),ProductCategoryKey Numeric
+)
+'''%(file) #this statement creates an empty table
+pd.io.sql.execute('DROP TABLE IF EXISTS '+ file, conn_out) #delete if exists
+pd.io.sql.execute(create_table, conn_out) #create the new empty table
+#from the dataframe to the new database
+globals()[str(file)].to_sql(name=str(file),con=conn_out,index=False,if_exists='append')
+
+#...........................................................................
+file='DimPromotion'
+
+#get the table from the source to dataframe
+sql_query='''SELECT PromotionKey,PromotionName
+FROM %s  '''%(file)
+globals()[str(file)] = pd.read_sql_query(sql_query, conn_in)
+
+#first drop and then create an empty table in sql server new database(conn_out)
+create_table='''
+CREATE TABLE  %s 
+(
+ PromotionKey NUMERIC,PromotionName NVARCHAR(max) 
+)
+'''%(file) #this statement creates an empty table
+pd.io.sql.execute('DROP TABLE IF EXISTS '+ file, conn_out) #delete if exists
+pd.io.sql.execute(create_table, conn_out) #create the new empty table
+#from the dataframe to the new database
+globals()[str(file)].to_sql(name=str(file),con=conn_out,index=False,if_exists='append')
+
+
+#..............................................................................
+#..............................................................................
+#..............................................................................
+
+master_file='master' #this is the masterfile for PWBI
+pd.io.sql.execute('DROP TABLE IF EXISTS '+ master_file, conn_out)
+
+#order the colums for the master_file table
+columns=['DateMonth','DateKey','ChannelKey'	,'StoreKey'	,'ProductKey',	
+         'PromotionKey','Sum_TotalCost','Sum_SalesAmount','ChannelName',	
+         'ProductName','ProductDescription','ProductSubcategoryKey','Manufacturer',	
+         'BrandName','ProductSubcategoryName','ProductCategoryKey','PromotionName','Updated']
+
+
+
+																
+create_table='''
+CREATE TABLE  %s 
+(
+ DateMonth Numeric, DateKey Date, ChannelKey Numeric, 
+ StoreKey Numeric, ProductKey Numeric, PromotionKey Numeric, 
+ Sum_TotalCost float, Sum_SalesAmount float, ChannelName NVARCHAR(max), 
+ ProductName NVARCHAR(max), ProductDescription NVARCHAR(max), ProductSubcategoryKey NVARCHAR(max),
+ Manufacturer NVARCHAR(max), BrandName NVARCHAR(max), ProductSubcategoryName NVARCHAR(max), 
+ ProductCategoryKey Numeric, PromotionName NVARCHAR(max),Updated Date)
+'''%(master_file)
+
+pd.io.sql.execute(create_table, conn_out) #create the new empty table
+
+
+
+#get the fact table
+
+for period in periods:
+    sql_query=''' 
+
+SELECT
+  Left(CONVERT(varchar,a.DateKey,112), 6) AS DateMonth,a.DateKey,a.ChannelKey,a.StoreKey,
+  a.ProductKey,a.PromotionKey,Sum(a.TotalCost) AS Sum_TotalCost,Sum(a.SalesAmount) AS Sum_SalesAmount
+FROM
+  FactSales a
+WHERE
+  Left(CONVERT(varchar,a.DateKey,112), 6) = %s
+GROUP BY
+  Left(CONVERT(varchar,a.DateKey,112), 6),a.DateKey,a.channelKey,a.StoreKey,a.ProductKey,a.PromotionKey
+  
+  
+'''%(period)
+
+    df = pd.read_sql_query(sql_query, conn_in)
+    df1=pd.merge(df,DimChannel,how="left",left_on=["ChannelKey"],right_on=["ChannelKey"])
+    del [[df]]
+    gc.collect()
+    df2=pd.merge(df1,DimProduct,how="left",left_on=["ProductKey"],right_on=["ProductKey"])
+    del [[df1]]
+    gc.collect()
+    df3=pd.merge(df2,DimProductSubcategory,how="left",left_on=["ProductSubcategoryKey"],right_on=["ProductSubcategoryKey"])
+    del [[df2]]
+    gc.collect()
+    df4=pd.merge(df3,DimPromotion,how="left",left_on=["PromotionKey"],right_on=["PromotionKey"])
+    del [[df3]]
+    gc.collect()
+    df4['Updated']=Today
+    df4=df4[columns].copy()
+    df4.to_sql(name=str(master_file),con=conn_out,index=False,if_exists='append')
+    
+
+del [[DimChannel,DimProduct,DimProductSubcategory,DimPromotion]]
+gc.collect()
+
+print('The files have been exported to the database successfully')
