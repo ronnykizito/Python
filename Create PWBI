@@ -9,7 +9,10 @@ from sqlalchemy import create_engine
 import urllib
 import pandas as pd
 import gc
+from datetime import datetime, timedelta
 import datetime
+from pandas.tseries.offsets import MonthEnd
+
 
 Today=datetime.datetime.now().strftime("%Y-%m-%d")
 
@@ -24,7 +27,7 @@ def create_date_table2(start, end):
 df=create_date_table2(start='2007-01-01', end='2009-12-31')
 
 
-periods=list(df.Month)
+
 
 #...........................................................................
 #...........................................................................
@@ -49,6 +52,90 @@ database_out='RONSEN'
 params_out = urllib.parse.quote_plus(r'DRIVER='+driver+';SERVER='+server+';DATABASE='+database_out+';Trusted_Connection=yes')
 conn_str_out = 'mssql+pyodbc:///?odbc_connect={}'.format(params_out)
 conn_out = create_engine(conn_str_out)
+
+#...........................................................................
+#...........................................................................
+#...........................................................................
+
+
+
+
+#define the calendar
+
+Min_date=str(df.Date.min())
+
+Max_date=str(df.Date.max())
+
+
+
+
+def create_date_table2(start=Min_date, end=Max_date,freq='D'):
+    df = pd.DataFrame({"Date": pd.date_range(start, end)})
+    df["Year"] = df.Date.dt.year
+    df["NextYear"] = df.Date.dt.year+1
+    df["DayofWeek"] = df.Date.dt.weekday_name
+    df["DayNumber"] = df.Date.dt.weekday+1
+    df["MonthNumber"] = df.Date.dt.month
+    df["Week"] = df.Date.dt.weekofyear
+    df["Qtr"] = df.Date.dt.quarter
+    df['MonthBegin'] = df['Date'].values.astype('datetime64[M]')
+    df['MonthEnd'] = pd.to_datetime(df['Date'], format="%Y%m") + MonthEnd(0)
+    df['date1'] = pd.Timestamp('2019-01-01')
+    df['months_between'] = (df['date1'].dt.to_period('M') -df['Date'].dt.to_period('M'))
+    df['days_between'] = (df['date1'].dt.to_period('D') -df['Date'].dt.to_period('D'))
+    df['weeks_between'] = (df['date1'].dt.to_period('w') -df['Date'].dt.to_period('w'))
+    df['date_N_days_ago'] = df['Date'] + timedelta(days=2)
+    df['Rank']= df.Date.dt.strftime('%Y%m').astype(int)
+    df['Manad']= df.Date.dt.strftime('%Y-%m')
+    df['MonthName']= df.Date.dt.strftime('%B')
+    df['MonthName1']= df.Date.dt.strftime('%b')
+    df['Previous_month'] = df.Date - pd.DateOffset(months=1)
+    df['Next_month'] = df.Date + pd.DateOffset(months=1)
+    df['Next_Week'] = df.Date + pd.DateOffset(weeks=1)
+    df['Previous_Week'] = df.Date - pd.DateOffset(weeks=1)
+    df['Next_WeekNumber'] = df.Next_Week.dt.weekofyear
+    df['Previous_WeekNumber'] = df.Previous_Week.dt.weekofyear
+    df['yy']= df.Date.dt.strftime('%Y')
+    df['man'] = df.Date.dt.strftime('%b')
+    df['man1'] = df.man.str.lower()
+    df.loc[df['man1'].isin(['jan']), 'Month_Swe'] = 'jan'
+    df.loc[df['man1'].isin(['feb']), 'Month_Swe'] = 'feb'
+    df.loc[df['man1'].isin(['mar']), 'Month_Swe'] = 'mar'
+    df.loc[df['man1'].isin(['apr']), 'Month_Swe'] = 'apr'
+    df.loc[df['man1'].isin(['may']), 'Month_Swe'] = 'maj'
+    df.loc[df['man1'].isin(['jun']), 'Month_Swe'] = 'jun'
+    df.loc[df['man1'].isin(['jul']), 'Month_Swe'] = 'jul'
+    df.loc[df['man1'].isin(['aug']), 'Month_Swe'] = 'aug'
+    df.loc[df['man1'].isin(['sep']), 'Month_Swe'] = 'sep'
+    df.loc[df['man1'].isin(['oct']), 'Month_Swe'] = 'okt'
+    df.loc[df['man1'].isin(['nov']), 'Month_Swe'] = 'nov'
+    df.loc[df['man1'].isin(['dec']), 'Month_Swe'] = 'dec'
+    df['Datum_swe']= df.Month_Swe+'-'+df.yy
+    df['start_next_month'] = df.Next_month.values.astype('datetime64[M]')
+    return df
+
+df=create_date_table2()
+
+Calendar_Columns=['Date','NextYear','Week','Qtr','MonthBegin','MonthEnd','Manad','Rank','Datum_swe']
+
+file='Calendar'
+
+globals()[str(file)]=df[Calendar_Columns].copy()
+
+
+
+#first drop and then create an empty table in sql server new database(conn_out)
+create_table='''
+CREATE TABLE  %s 
+(
+Date Date,NextYear NUMERIC,Week NUMERIC,Qtr NUMERIC,MonthBegin Date,MonthEnd Date,
+Manad NVARCHAR(max),Rank NUMERIC,Datum_swe NVARCHAR(max)
+)
+'''%(file) #this statement creates an empty table
+pd.io.sql.execute('DROP TABLE IF EXISTS '+ file, conn_out) #delete if exists
+pd.io.sql.execute(create_table, conn_out) #create the new empty table
+#from the dataframe to the new database
+globals()[str(file)].to_sql(name=str(file),con=conn_out,index=False,if_exists='append')
 
 #...........................................................................
 #...........................................................................
@@ -210,3 +297,4 @@ del [[DimChannel,DimProduct,DimProductSubcategory,DimPromotion]]
 gc.collect()
 
 print('The files have been exported to the database successfully')
+
