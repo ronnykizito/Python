@@ -12,7 +12,16 @@ import gc
 from datetime import datetime, timedelta
 import datetime
 from pandas.tseries.offsets import MonthEnd
+import time
 
+#...........................................................................
+#...........................................................................
+#...........................................................................
+start_time = time.time()
+
+
+period_start='2009-10-01'
+period_end='2009-12-01'
 
 Today=datetime.datetime.now().strftime("%Y-%m-%d")
 
@@ -22,12 +31,12 @@ Today=datetime.datetime.now().strftime("%Y-%m-%d")
 def create_date_table2(start, end):
     df = pd.DataFrame({"Date": pd.date_range(start, end,freq='MS')})
     df['Month']= df.Date.dt.strftime('%Y%m').astype(int)
-    df=df.query('Month>=200911  and Month <=200912')
+    df=df.query('Month>=200910  and Month <=200912')
     return df
-df=create_date_table2(start='2007-01-01', end='2009-12-31')
+df=create_date_table2(start=period_start, end=period_end)
 
 
-
+periods=list(df.Month)
 
 #...........................................................................
 #...........................................................................
@@ -248,14 +257,15 @@ CREATE TABLE  %s
  DateMonth Numeric, DateKey Date, ChannelKey Numeric, 
  StoreKey Numeric, ProductKey Numeric, PromotionKey Numeric, 
  Sum_TotalCost float, Sum_SalesAmount float, ChannelName NVARCHAR(max), 
- ProductName NVARCHAR(max), ProductDescription NVARCHAR(max), ProductSubcategoryKey NVARCHAR(max),
+ ProductName NVARCHAR(max), ProductDescription NVARCHAR(max), ProductSubcategoryKey Numeric,
  Manufacturer NVARCHAR(max), BrandName NVARCHAR(max), ProductSubcategoryName NVARCHAR(max), 
  ProductCategoryKey Numeric, PromotionName NVARCHAR(max),Updated Date)
 '''%(master_file)
 
 pd.io.sql.execute(create_table, conn_out) #create the new empty table
 
-
+object_to_int=['DateMonth','ChannelKey','StoreKey','ProductKey','PromotionKey','Sum_TotalCost','Sum_SalesAmount','ProductSubcategoryKey','ProductCategoryKey']
+object_to_date=['DateKey','Updated']
 
 #get the fact table
 
@@ -296,5 +306,6 @@ GROUP BY
 del [[DimChannel,DimProduct,DimProductSubcategory,DimPromotion]]
 gc.collect()
 
-print('The files have been exported to the database successfully')
+
+print('The files have been exported to the database successfully total time '+ time.strftime("%H:%M:%S", time.gmtime(time.time() - start_time))+' min')
 
