@@ -307,5 +307,5 @@ del [[DimChannel,DimProduct,DimProductSubcategory,DimPromotion]]
 gc.collect()
 
 
-print('The files have been exported to the database successfully total time '+ time.strftime("%H:%M:%S", time.gmtime(time.time() - start_time))+' min')
+print('The files have been exported to the database successfully total time '+ time.strftime("%H:%M:%S", time.gmtime(time.time() - start_time)))
 
