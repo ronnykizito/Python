@@ -13,7 +13,7 @@ end='2119-01-01'
 month=36
 
 
-
+#daily D, Monthy MS, Yearly YS
 def create_date_table2(start, end):
     df = pd.DataFrame({"Date": pd.date_range(start, end,freq='YS')})
     df['Start']= df.Date.dt.strftime('%Y-%m-%d').astype(str)
@@ -27,6 +27,84 @@ Min_date=str(df1.Start.min())
 Max_date=str(df1.End.min())
 
 
+
+def create_date_table2(start=Min_date, end=Max_date,freq='D'):
+    df = pd.DataFrame({"Date_ID": pd.date_range(start, end)})
+    df["Date"] = df.Date_ID
+    df["NextYear"] = df.Date.dt.year+1
+    df['Day']= df.Date.dt.strftime('%d')
+    df['DayName']= df.Date.dt.strftime('%a')
+    df['LongDayName']= df.Date.dt.strftime('%A')
+    df['MonthNo']= df.Date.dt.month
+    df['MonthName']= df.Date.dt.strftime('%b')
+    df['LongMonthName']= df.Date.dt.strftime('%B')
+    df['QuaterNo']= df.Date.dt.quarter
+    df['WeekNo']= df.Date.dt.weekofyear
+    df["Year"] = df.Date.dt.year
+    df['Year_Month']= df.Date.dt.strftime('%Y-%b')
+    df['Year_Quarter']=df.Date.dt.year.astype(str)+'Q'+df.Date.dt.quarter.astype(str)
+    df['SortDay']= df.Date.dt.strftime('%d')
+    df['SortDayName']= df.Date.dt.dayofweek
+    df["DayNumber"] = df.Date.dt.weekday+1
+    df['SortWeekNo']= df.Date.dt.strftime('%W')
+    df['SortYearMonth']= df.Date.dt.strftime('%Y%m').astype(int)
+    df['SortYearQuater']= df.Date.dt.strftime('%Y').astype(str)+df.Date.dt.quarter.astype(str).str.pad(width=2,fillchar='0')
+    df['NextDate'] = df.Date + pd.DateOffset(days=1)
+    df['PreviousDate'] = df.Date - pd.DateOffset(days=1)
+    df['FirstDateOfWeek'] = df.Date.dt.to_period('W').apply(lambda r: r.start_time).dt.date
+    df['LastDateOfWeek'] = df.Date.dt.to_period('W').apply(lambda r: r.end_time).astype("datetime64[s]").dt.date
+    df['FirstDateOfMonth'] = df['Date'].values.astype('datetime64[M]')
+    df['LastDateOfMonth'] = pd.to_datetime(df['Date'], format="%Y%m") + MonthEnd(0)
+    df["DayOfYear"] = df.Date.dt.dayofyear
+    df["IsLeapYear"] = df.Date.dt.is_leap_year
+    df['date1'] = pd.Timestamp('2019-01-01')
+    df['months_between'] = (df['date1'].dt.to_period('M') -df['Date'].dt.to_period('M'))
+    df['days_between'] = (df['date1'].dt.to_period('D') -df['Date'].dt.to_period('D'))
+    df['weeks_between'] = (df['date1'].dt.to_period('w') -df['Date'].dt.to_period('w'))
+    df['date_N_days_ago'] = df.Date + timedelta(days=2)
+    df['Previous_month'] = df.Date - pd.DateOffset(months=1)
+    df['Next_month'] = df.Date + pd.DateOffset(months=1)
+    df['Next_Week'] = df.Date + pd.DateOffset(weeks=1)
+    df['Previous_Week'] = df.Date - pd.DateOffset(weeks=1)
+    df['Next_WeekNumber'] = df.Next_Week.dt.weekofyear
+    df['Previous_WeekNumber'] = df.Previous_Week.dt.weekofyear
+    df['yy']= df.Date.dt.strftime('%Y')
+    df['man'] = df.Date.dt.strftime('%b')
+    df['man1'] = df.man.str.lower()
+    df.loc[df['man1'].isin(['jan']), 'Month_Swe'] = 'jan'
+    df.loc[df['man1'].isin(['feb']), 'Month_Swe'] = 'feb'
+    df.loc[df['man1'].isin(['mar']), 'Month_Swe'] = 'mar'
+    df.loc[df['man1'].isin(['apr']), 'Month_Swe'] = 'apr'
+    df.loc[df['man1'].isin(['may']), 'Month_Swe'] = 'maj'
+    df.loc[df['man1'].isin(['jun']), 'Month_Swe'] = 'jun'
+    df.loc[df['man1'].isin(['jul']), 'Month_Swe'] = 'jul'
+    df.loc[df['man1'].isin(['aug']), 'Month_Swe'] = 'aug'
+    df.loc[df['man1'].isin(['sep']), 'Month_Swe'] = 'sep'
+    df.loc[df['man1'].isin(['oct']), 'Month_Swe'] = 'okt'
+    df.loc[df['man1'].isin(['nov']), 'Month_Swe'] = 'nov'
+    df.loc[df['man1'].isin(['dec']), 'Month_Swe'] = 'dec'
+    df['Datum_swe']= df.Month_Swe+'-'+df.yy
+    df['start_next_month'] = df.Next_month.values.astype('datetime64[M]')
+    return df
+  
+
+DimDate=create_date_table2()
+
+
+
+
+
+df=pd.DataFrame()
+df['DayTime'] = pd.date_range(start='1/1/2018', end='1/2/2018', freq='1min').time
+df['TimeKey'] = df.DayTime.astype(str).str.replace(':', '') 
+df['HourIndex'] = df.DayTime.astype(str).str[0:2]
+df['MinuteIndex'] = df.TimeKey.astype(str).str[2:4]
+df['TimeOfDay'] = df.TimeKey.astype(str).str[9:10]
+df['TimeOfDaySort'] = df.TimeKey.astype(str).str[9:10]
+df['IDx'] = 1
+df['idxx'] = df.groupby(['IDx'])['IDx'].apply(lambda x: x.cumsum())
+DimTime=df.query('idxx <=1440').copy() 
+DimTime.drop(['IDx', 'idxx'], axis=1,inplace=True)
 
 
 def create_date_table2(start=Min_date, end=Max_date,freq='D'):
