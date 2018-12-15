@@ -7,10 +7,17 @@ from dateutil.relativedelta import relativedelta
 import datetime
 from pandas.tseries.offsets import MonthEnd
 
-start='2010-01-01'
-end='2119-01-01'
+
+
+#days months years
+start = date.today() + relativedelta(years=-6)
+
+
+end=datetime.datetime.now().strftime("%Y-%m-%d")
 #the max month the calender should end from todays date
 month=36
+
+
 
 
 #daily D, Monthy MS, Yearly YS
