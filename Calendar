@@ -28,6 +28,7 @@ Max_date=str(df1.End.min())
 
 
 
+
 def create_date_table2(start=Min_date, end=Max_date,freq='D'):
     df = pd.DataFrame({"Date_ID": pd.date_range(start, end)})
     df["Date"] = df.Date_ID
@@ -68,23 +69,22 @@ def create_date_table2(start=Min_date, end=Max_date,freq='D'):
     df['Previous_Week'] = df.Date - pd.DateOffset(weeks=1)
     df['Next_WeekNumber'] = df.Next_Week.dt.weekofyear
     df['Previous_WeekNumber'] = df.Previous_Week.dt.weekofyear
-    df['yy']= df.Date.dt.strftime('%Y')
-    df['man'] = df.Date.dt.strftime('%b')
-    df['man1'] = df.man.str.lower()
-    df.loc[df['man1'].isin(['jan']), 'Month_Swe'] = 'jan'
-    df.loc[df['man1'].isin(['feb']), 'Month_Swe'] = 'feb'
-    df.loc[df['man1'].isin(['mar']), 'Month_Swe'] = 'mar'
-    df.loc[df['man1'].isin(['apr']), 'Month_Swe'] = 'apr'
-    df.loc[df['man1'].isin(['may']), 'Month_Swe'] = 'maj'
-    df.loc[df['man1'].isin(['jun']), 'Month_Swe'] = 'jun'
-    df.loc[df['man1'].isin(['jul']), 'Month_Swe'] = 'jul'
-    df.loc[df['man1'].isin(['aug']), 'Month_Swe'] = 'aug'
-    df.loc[df['man1'].isin(['sep']), 'Month_Swe'] = 'sep'
-    df.loc[df['man1'].isin(['oct']), 'Month_Swe'] = 'okt'
-    df.loc[df['man1'].isin(['nov']), 'Month_Swe'] = 'nov'
-    df.loc[df['man1'].isin(['dec']), 'Month_Swe'] = 'dec'
-    df['Datum_swe']= df.Month_Swe+'-'+df.yy
+    df['man'] = df.Date.dt.strftime('%b').str.lower()
+    df.loc[df['man'].isin(['jan']), 'Month_Swe'] = 'jan'
+    df.loc[df['man'].isin(['feb']), 'Month_Swe'] = 'feb'
+    df.loc[df['man'].isin(['mar']), 'Month_Swe'] = 'mar'
+    df.loc[df['man'].isin(['apr']), 'Month_Swe'] = 'apr'
+    df.loc[df['man'].isin(['may']), 'Month_Swe'] = 'maj'
+    df.loc[df['man'].isin(['jun']), 'Month_Swe'] = 'jun'
+    df.loc[df['man'].isin(['jul']), 'Month_Swe'] = 'jul'
+    df.loc[df['man'].isin(['aug']), 'Month_Swe'] = 'aug'
+    df.loc[df['man'].isin(['sep']), 'Month_Swe'] = 'sep'
+    df.loc[df['man'].isin(['oct']), 'Month_Swe'] = 'okt'
+    df.loc[df['man'].isin(['nov']), 'Month_Swe'] = 'nov'
+    df.loc[df['man'].isin(['dec']), 'Month_Swe'] = 'dec'
+    df['Datum_swe']= df.Month_Swe+'-'+df.Date.dt.strftime('%Y')
     df['start_next_month'] = df.Next_month.values.astype('datetime64[M]')
+    df.drop(['man', 'Month_Swe'], axis=1,inplace=True)
     return df
   
 
