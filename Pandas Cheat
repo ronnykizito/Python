@@ -87,7 +87,7 @@ sheets=['E0','E1']
 df = pd.DataFrame()
 for file in files:
     df_dict = pd.read_excel(team_path+'\\'+ str(file), sheet_name=None)
-    dfx = pd.concat(df_dict.values(), axis=0,sort=False,keys=sheets)
+    dfx = pd.concat([df_dict.values()], axis=0,sort=False,keys=sheets)
     dfx['Filename']=str(file)
     dfx['xx']=dfx.index.get_values()
     df = df.append(dfx, ignore_index=True,sort=False)
