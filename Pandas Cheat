@@ -46,7 +46,11 @@ for yyyymm,yymm in zip(period_l, period_s):
     print(yyyymm,yymm)
 
 
+list = ["boat", "car", "plane"]
 
+# Call enumerate to loop over indexes and values.
+for i, v in enumerate(list):
+    print(i, v)
 
 df.drop(['IDx', 'idxx'], axis=1,inplace=True) 
 df1=df.describe(include=[np.number]).T
