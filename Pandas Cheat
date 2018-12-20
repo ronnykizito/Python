@@ -117,7 +117,8 @@ df.HomeTeam= df.HomeTeam.str.title()
 df.columns = df.columns.str.upper()
 df.columns = [col.replace(' ','_').upper() for col in df.columns]
 #where statemaent
-
+df['IsPreviousWeek']=0
+df.loc[(df.BookedDate >=df.FirstDateOfWeek) & (df.BookedDate<=df.LastDateOfWeek), 'IsPreviousWeek'] = 1
 df=df.query('Div in ["E0","E1"] and B365H in [3.4]') 
 df=df.query('(Div in ["E0","E1"] or HomeTeam in  ["Huddersfield"]) and v3 in ["2018"] ')
 
