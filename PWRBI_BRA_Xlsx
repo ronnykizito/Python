@@ -1,6 +1,5 @@
 
 
-
 import pyodbc
 import pandas as pd
 import sqlite3
@@ -8,7 +7,7 @@ import time
 import os
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
-import xlsxwriter
+import gc
 
 #...................Execution plan for the query and memory for the dataframes.
 
@@ -19,28 +18,25 @@ st['Date']=datetime.strptime(time.strftime("%Y-%m-%d"), '%Y-%m-%d')
 st['WeekNo']= st.Date.dt.strftime('%W')
 
 
-                         
-chuck_sum=0
-chunksize=1000*10
-print('Program begins' )
+SQLITE3 = sqlite3.connect(path+'\\9. Database\\'+costumer+'.db')      
 
-#..........difine the costumer and the path for your report....................
-
-#....these folders will be created, you may add/change or remove...............
-
-#create the folders for the rapport
-folders = ["1. Syntax", "2. Indata","3. Outdata","4. PWRBI","5. Remove me after testing","8. ReadMe","9. Database"]
-for num, folder_name in enumerate(folders, start=1):
-    newpath = path+'\\'+folder_name
-    if not os.path.exists(newpath):
-        os.makedirs(newpath)
+SQLITE3_cursor = SQLITE3.cursor()
 
 
-       
+
+#..............................................................................
+#..............................................................................
+#....read the tables exactly how they were read in PWRBI.......................
+
+
 
 
 
 ###read tables
+
+
+
+
 
 table='fTicketCoupons'
 sql_query= """
@@ -131,7 +127,7 @@ SELECT
 	,Carrier_ID = fFL.FlightNumberCarrier_ID
 	,fFL.FlightNumber_ID
 	,Citypair_ID = fFL.ScheduledCitypair_ID
-	,dAST.SeatCountTotal
+	,dAST.SeatCountTotal,cp.AreaRegionCode
 FROM 
 	vfFlightLegsFlownAndScheduled AS fFL
 INNER JOIN 
@@ -160,8 +156,7 @@ AND
 	dLS.FlightLegStateBKEY IN ('ARR','SKD')
 AND
 	IsForcedReturn = 0
-AND
-	cp.AreaRegionCode > 999
+
     
     """%(period_start,period_end)
 
@@ -170,7 +165,7 @@ create_table='''
 CREATE TABLE  %s 
 (
 DepartureDate_ID real,Carrier_ID real,FlightNumber_ID real,
-Citypair_ID real,SeatCountTotal real, Month Date,Month_Year text
+Citypair_ID real,SeatCountTotal real, Month Date,Month_Year text,AreaRegionCode real
 )
 '''%(table)
 
@@ -182,6 +177,7 @@ pd.io.sql.execute(create_table, SQLITE3) #create the new empty table
 
 df_database = pd.read_sql_query(sql_query, SQLServer,chunksize=chunksize) #get data from SQLServer
 for df in df_database:
+    df=df.query('AreaRegionCode >999 ')
     df['Month'] =(df.DepartureDate_ID.astype(str).str[0:4]+'-'+df.DepartureDate_ID.astype(str).str[4:6]+'-01').values.astype("datetime64[s]")
     df['Month_Year']= df.Month.dt.strftime('%b-%Y')
     print('chucksize to dataframe ',time.strftime("%H:%M:%S"),time.strftime("%H:%M:%S", time.gmtime(time.time() - start_time)),df.shape,chuck_sum)
@@ -190,11 +186,10 @@ for df in df_database:
 
 
 
-
-
 #..............................................................................
 
-
+dDepartureDate_start = (datetime.today()- relativedelta(years=1)).strftime("%Y0101")
+Today=time.strftime("%Y-%m-%d")
 table='dDepartureDate'  
 sql_query= """   
     SELECT
@@ -211,30 +206,41 @@ sql_query= """
 FROM 
 	dDate
 WHERE
-	Date_ID >= 20160101
+	Date_ID >= %s
 AND
 	DayDate < DATEADD(YEAR,2,GETDATE())
-    """
+    """%(dDepartureDate_start)
 
 
 create_table='''
-CREATE TABLE  %s 
+CREATE TABLE  dBookedDate
 (
-DepartureDate_ID real, DepartureDate date, WeekCode_ISO real, DepartureMonthCode real, DayOfWeek real,
+BookedDate_ID real, BookedDate date, WeekCode_ISO real, DepartureMonthCode real, DayOfWeek real,
 DayOfWeekNameSwedish text,  DayOfWeekNameEnglish text, MonthOfYearNumber real,
-MonthNameEnglish text, MonthNameSwedish text
+MonthNameEnglish text, MonthNameSwedish text, IsPreviousWeek real
 )
-'''%(table)
+'''
 
 #first drop and then create an empty table in sqlite3
-pd.io.sql.execute('DROP TABLE IF EXISTS '+ table, SQLITE3)
+pd.io.sql.execute('DROP TABLE IF EXISTS dBookedDate', SQLITE3)
 pd.io.sql.execute(create_table, SQLITE3) #create the new empty table
  
 
 
-for df in pd.read_sql_query(sql_query, SQLServer,chunksize=chunksize): #get data from SQLServer:
-    df.to_sql(name=table,con=SQLITE3,index=False,if_exists='append')
 
+for df in pd.read_sql_query(sql_query, SQLServer,chunksize=chunksize): #get data from SQLServer:
+    df.rename(columns={'DepartureDate_ID':'BookedDate_ID','DepartureDate':'BookedDate'},inplace=True)
+    df.BookedDate=df.BookedDate.astype("datetime64[s]")
+    df['Today']=Today
+    df['Today']=df.Today.astype("datetime64[s]")
+    df['FirstDateOfWeek'] = ((df.Today.dt.to_period('W').apply(lambda r: r.start_time).dt.date)- pd.DateOffset(days=1)- pd.DateOffset(weeks=1))+pd.DateOffset(days=1)
+    df['LastDateOfWeek'] = (df.FirstDateOfWeek+ pd.DateOffset(days=7))-pd.DateOffset(days=1)
+    df['IsPreviousWeek']=0
+    df.loc[(df.BookedDate >=df.FirstDateOfWeek) & (df.BookedDate<=df.LastDateOfWeek), 'IsPreviousWeek'] = 1
+    df=df[['BookedDate_ID','BookedDate','WeekCode_ISO','DepartureMonthCode',
+       'DayOfWeek','DayOfWeekNameSwedish','DayOfWeekNameEnglish','MonthOfYearNumber',
+       'MonthNameEnglish','MonthNameSwedish','IsPreviousWeek']].copy()
+    df.to_sql(name='dBookedDate',con=SQLITE3,index=False,if_exists='append')
 
 
 #..............................................................................
@@ -388,7 +394,8 @@ WITH
       b.CitypairOriginCountryCode,
       b.CitypairDestinationCountryCode,
       b.CitypairSortOrder,
-      b.CitypairBKEY
+      b.CitypairBKEY,
+      a.Citypair_ID
     FROM
       fTicketCoupons a
       INNER JOIN dCityPair b ON b.Citypair_ID = a.Citypair_ID
@@ -403,13 +410,15 @@ WITH
       b.CitypairOriginCountryCode,
       b.CitypairDestinationCountryCode,
       b.CitypairSortOrder,
-      b.CitypairBKEY),
+      b.CitypairBKEY,
+      a.Citypair_ID),
   q2 AS (SELECT
       b.CitypairName,
       Sum(a.SeatCountTotal) AS Capacity,
       a.Month,
       a.Month_Year,
-      b.CitypairBKEY
+      b.CitypairBKEY,
+      b.Citypair_ID
     FROM
       fFlights a
       INNER JOIN dCityPair b ON b.Citypair_ID = a.Citypair_ID
@@ -417,7 +426,8 @@ WITH
       b.CitypairName,
       a.Month,
       a.Month_Year,
-      b.CitypairBKEY),
+      b.CitypairBKEY,
+      b.Citypair_ID),
   q3 AS (SELECT
       q1.CitypairName,
       q1.Bkdrev,
@@ -433,7 +443,7 @@ WITH
       q1.CitypairBKEY
     FROM
       q1
-      INNER JOIN q2 ON q2.CitypairName = q1.CitypairName AND q2.Month = q1.Month),
+      INNER JOIN q2 ON q2.Citypair_ID = q1.Citypair_ID AND q2.Month = q1.Month),
   q4 AS (SELECT
       b.CitypairName,
       Sum(a.Amount) AS Bkdrev_week,
@@ -443,8 +453,8 @@ WITH
       c.WeekCode_ISO
     FROM
       fTicketCoupons a
-      INNER JOIN dCityPair b ON b.Citypair_ID = a.Citypair_ID
-      INNER JOIN dBookedDate c ON c.BookedDate_ID = a.BookedDate_ID
+       JOIN dCityPair b ON b.Citypair_ID = a.Citypair_ID
+       JOIN dBookedDate c ON c.BookedDate_ID = a.BookedDate_ID
     WHERE
       c.IsPreviousWeek = 1
     GROUP BY
@@ -453,13 +463,13 @@ WITH
       c.WeekCode_ISO)
 SELECT
   q3.*,
-  Bkdrev_week,
-  Bkdpax_week,
-  Bkdrev_pax_week,
-  WeekCode_ISO
+  q4.Bkdrev_week,
+  q4.Bkdpax_week,
+  q4.Bkdrev_pax_week,
+  q4.WeekCode_ISO
 FROM
   q3
-  INNER JOIN q4 ON q4.CitypairName = q3.CitypairName AND q4.Month = q3.Month
+  LEFT JOIN q4 ON q4.CitypairName = q3.CitypairName AND q4.Month = q3.Month
     
      """   
 
@@ -558,18 +568,19 @@ with q1 as (SELECT
   "Domestic" AS CitypairName,
   Sum(a.Bkdrev) AS Bkdrev,
   Sum(a.Bkdpax) AS Bkdpax,
-  Sum(a.Bkdrev_pax) Bkdrev_pax,
+  Sum(a.Bkdrev)/Sum(a.Bkdpax) as Bkdrev_pax,
   Sum(a.Capacity) AS Capacity,
   sum(a.Bkdrev_week) as Bkdrev_week,
   sum(a.Bkdpax_week) as Bkdpax_week,
-  sum(a.Bkdrev_pax_week) as Bkdrev_pax_week,
+  sum(a.Bkdrev_week)/sum(a.Bkdpax_week) as Bkdrev_pax_week,
   a.Month_Year,
   1 as CitypairSortOrder,
   a.Month
 FROM
   master a where a.DomesticOrInternational='Domestic'
 GROUP BY
-  a.Month_Year ,a.Month) select q1.*,Bkdpax/Capacity as LoadFact from q1
+  a.Month_Year ,a.Month) select q1.*
+  ,Bkdpax/Capacity as LoadFact from q1
     
      """   
 df = pd.read_sql_query(sql_query, SQLITE3)
@@ -621,11 +632,12 @@ with q1 as (SELECT
   "International" AS CitypairName,
   Sum(a.Bkdrev) AS Bkdrev,
   Sum(a.Bkdpax) AS Bkdpax,
-  Sum(a.Bkdrev_pax) Bkdrev_pax,
+  Sum(a.Bkdrev)/Sum(a.Bkdpax) as Bkdrev_pax,
   Sum(a.Capacity) AS Capacity,
   sum(a.Bkdrev_week) as Bkdrev_week,
   sum(a.Bkdpax_week) as Bkdpax_week,
-  sum(a.Bkdrev_pax_week) as Bkdrev_pax_week,
+ 
+sum(a.Bkdrev_week)/sum(a.Bkdpax_week) as Bkdrev_pax_week,
   a.Month_Year,
   1 as CitypairSortOrder,
   a.Month
@@ -658,13 +670,14 @@ with q1 as (SELECT
   "Total" AS CitypairName,
   Sum(a.Bkdrev) AS Bkdrev,
   Sum(a.Bkdpax) AS Bkdpax,
-  Sum(a.Bkdrev_pax) Bkdrev_pax,
+  Sum(a.Bkdrev)/Sum(a.Bkdpax) as Bkdrev_pax,
   Sum(a.Capacity) AS Capacity,
   a.Month_Year,
     Sum(a.Capacity) AS Capacity,
   sum(a.Bkdrev_week) as Bkdrev_week,
   sum(a.Bkdpax_week) as Bkdpax_week,
-  sum(a.Bkdrev_pax_week) as Bkdrev_pax_week,
+  
+sum(a.Bkdrev_week)/sum(a.Bkdpax_week) as Bkdrev_pax_week,
   1 as CitypairSortOrder,
   a.Month
 FROM
@@ -738,9 +751,10 @@ period3="".join(list(period.period[0]))
 
 sheet_name='fbwv'+str(week)
 
-
+updated=time.strftime("%Y%m%d")
+OutFileName='Outfile'
 #writer = pd.ExcelWriter('C:\RONSEN\Costumers\BRA\3. Outdata\Outfile.xlsx', engine='xlsxwriter')
-writer = pd.ExcelWriter(path+'\\3. Outdata\Outfile.xlsx', engine='xlsxwriter')
+writer = pd.ExcelWriter(path+'\\3. Outdata\\'+OutFileName+'_'+updated+'_'+sheet_name+'.xlsx', engine='xlsxwriter')
 df_out.to_excel(writer, index=False, sheet_name=sheet_name,startrow=4)
 workbook = writer.book
 worksheet = writer.sheets[sheet_name]
@@ -770,6 +784,13 @@ writer.save()
 SQLITE3.close()
 SQLServer.close()
 
+del [[alla,df,df_out,df1,df2,df3,df4,dom,dom1,intx,intx1,period,st,tot,wk]]
+gc.collect()
+
 print('SQLITE3 and SQLServer are closed')
 
 print('The xlsx file have been exported successfully total time '+ time.strftime("%H:%M:%S", time.gmtime(time.time() - start_time)))
+
+
+updated=time.strftime("%Y-%m-%d %H:%M:%S")
+df=pd.DataFrame({'Excelfile':['The xlsx file have been exported successfully @'+path+'\\3. Outdata\\'+OutFileName+'.xlsx','Updated '+ updated]})
