@@ -42,7 +42,8 @@ period_l=list(df.Period) #period_l = df1.Period.tolist()
 
 
 period_s=list(df.Periodx)  #period_s = df1.Periodx.tolist()
-
+for yyyymm,yymm in zip(period_l, period_s):
+    print(yyyymm,yymm)
 
 
 
