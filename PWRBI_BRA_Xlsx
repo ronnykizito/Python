@@ -22,7 +22,9 @@ SQLITE3 = sqlite3.connect(path+'\\9. Database\\'+costumer+'.db')
 
 SQLITE3_cursor = SQLITE3.cursor()
 
-
+#create a database this is for production. Please remove SQLITE3.close() 
+#from sqlalchemy import create_engine
+#SQLITE3 = create_engine('sqlite:///:memory:', echo=False)
 
 #..............................................................................
 #..............................................................................
