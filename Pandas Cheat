@@ -13,6 +13,40 @@ updated=time.strftime("%Y%m%d")
 period_start = (datetime.today()- relativedelta(months=1)).strftime("%Y%m01")
 period_end = (datetime.today()+ relativedelta(months=4)).strftime("%Y%m%d")
 
+#loop thru periods
+
+
+#daily D, Monthy MS, Yearly YS
+
+import pandas as pd
+from dateutil.relativedelta import relativedelta
+import time
+from datetime import datetime
+
+Today=time.strftime("%Y-%m-%d")
+period_start = (datetime.today()- relativedelta(months=0)).strftime("%Y-%m-01")
+period_end = (datetime.today()+ relativedelta(years=2)).strftime("%Y-%m-%d")
+def create_date_table2(start, end):
+    df = pd.DataFrame({"Date": pd.date_range(start, end,freq='YS')})
+    df['AR1']= df.Date.dt.strftime('%Y').astype(int)
+    df['AR2']= df.AR1-1
+    df['Period']=df.AR2.astype(str).str.cat([df.AR1.astype(str)],sep='-')
+    df['AR1x']= df.Date.dt.strftime('%y').astype(int)
+    df['AR2x']= df.AR1x-1
+    df['Periodx']=df.AR2x.astype(str).str.cat([df.AR1x.astype(str)],sep='')
+    return df
+df=create_date_table2(start=period_start, end=period_end)
+
+
+period_l=list(df.Period) #period_l = df1.Period.tolist()
+
+
+period_s=list(df.Periodx)  #period_s = df1.Periodx.tolist()
+
+
+
+
+
 df.drop(['IDx', 'idxx'], axis=1,inplace=True) 
 df1=df.describe(include=[np.number]).T
 df1=df.describe(include=[np.object,pd.Categorical]).T
