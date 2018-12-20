@@ -76,6 +76,8 @@ def create_date_table2(start=Min_date, end=Max_date,freq='D'):
     df['Previous_Week'] = df.Date - pd.DateOffset(weeks=1)
     df['Next_WeekNumber'] = df.Next_Week.dt.weekofyear
     df['Previous_WeekNumber'] = df.Previous_Week.dt.weekofyear
+    df['FirstdayofweekMonday'] = ((df.Date.dt.to_period('W').apply(lambda r: r.start_time).dt.date)- pd.DateOffset(days=1)- pd.DateOffset(weeks=1))+pd.DateOffset(days=1)
+    df['LastdayofweekSunday'] = (df.FirstdayofweekMonday+ pd.DateOffset(days=7))-pd.DateOffset(days=1)
     df['man'] = df.Date.dt.strftime('%b').str.lower()
     df.loc[df['man'].isin(['jan']), 'Month_Swe'] = 'jan'
     df.loc[df['man'].isin(['feb']), 'Month_Swe'] = 'feb'
