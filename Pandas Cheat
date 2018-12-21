@@ -19,13 +19,13 @@ period_end = (datetime.today()+ relativedelta(months=4)).strftime("%Y%m%d")
 #daily D, Monthy MS, Yearly YS
 
 import pandas as pd
-from dateutil.relativedelta import relativedelta
+import dateutil.relativedelta
 import time
 from datetime import datetime
 
 Today=time.strftime("%Y-%m-%d")
-period_start = (datetime.today()- relativedelta(months=0)).strftime("%Y-%m-01")
-period_end = (datetime.today()+ relativedelta(years=2)).strftime("%Y-%m-%d")
+period_start = (datetime.today() - dateutil.relativedelta.relativedelta(months=1)).strftime("%Y-%m-%d")
+period_end = (datetime.today() - dateutil.relativedelta.relativedelta(months=1)).strftime("%Y-%m-%d")
 def create_date_table2(start, end):
     df = pd.DataFrame({"Date": pd.date_range(start, end,freq='YS')})
     df['AR1']= df.Date.dt.strftime('%Y').astype(int)
