@@ -1,0 +1,18 @@
+import pandas as pd
+import geopy
+from geopy.geocoders import Nominatim
+
+df=pd.DataFrame({'Adress':['3666 21st St','Björnsonsgatan 52B'],
+                 'City':['San Francisco','16843'],
+                 'State':['CA 94114','Bromma'],
+                 'Country':['USA','Sweden']})
+
+    
+nom=Nominatim()
+
+df['Adress']=df.Adress+', '+df.City+', '+df.State+', '+df.Country
+df['Coordinates']=df.Adress.apply(nom.geocode)
+
+
+df['latitude']=df.Coordinates.apply(lambda x: x.latitude if x !=None else None)
+df['longitude']=df.Coordinates.apply(lambda x: x.longitude if x !=None else None)
