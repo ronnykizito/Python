@@ -40,7 +40,21 @@ df=create_date_table2(start=period_start, end=period_end)
 
 period_l=list(df.Period) #period_l = df1.Period.tolist()
 
-#
+#qlist
+
+lista="age guy girl boy n"
+
+new_list=lista.split(' ')
+while ("" in new_list):
+    new_list.remove("")
+
+new_tuple=tuple(lista.split(' '))
+
+df=pd.DataFrame({"Col_name":new_list})
+df['ID']=df.index+1
+df['Dtype']='text'
+df.loc[(df.ID ==1) , 'Dtype'] = 'date'
+df['New_col']=df.Col_name+' '+df.Dtype
 
 lista=("vernr Bokforingsdatum Registreringsdatum Konto Benamning"
        "Ks Projnr Verifikationstext Transaktionsinfo Debet Kredit")
