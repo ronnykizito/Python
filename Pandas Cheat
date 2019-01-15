@@ -40,6 +40,16 @@ df=create_date_table2(start=period_start, end=period_end)
 
 period_l=list(df.Period) #period_l = df1.Period.tolist()
 
+#
+
+lista=("vernr Bokforingsdatum Registreringsdatum Konto Benamning"
+       "Ks Projnr Verifikationstext Transaktionsinfo Debet Kredit")
+Col_names=lista.split(' ')
+while ("" in Col_names):
+    Col_names.remove("")
+
+df_tmp.columns=Col_names
+
 
 period_s=list(df.Periodx)  #period_s = df1.Periodx.tolist()
 for yyyymm,yymm in zip(period_l, period_s):
