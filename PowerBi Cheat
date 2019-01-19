@@ -1,0 +1,175 @@
+    Read folder and keep “Binary” 
+
+    Add Column “Import”     Excel.Workbook([Content]) 
+
+    Remove Binary 
+
+    Expand and just choose DATA, ITEM name, also untick 
+
+    Rename Item to Sheet_name 
+
+    Add column NOheaders ----- Table.PromoteHeaders([Data]) 
+
+    Remove DATA 
+
+    Expand 
+
+    Group the column (the way you delete duplicates)? Ask the costumer 
+
+    Choose all TEXT 
+
+    Important to addcolumn the date: create 3x duplicates – Transform – date-- Text.PadStart(Text.From([Month]),2,"0") 
+
+    Add UPDATED in the first column in TEXT: DateTime.LocalNow() 
+
+    Rename INDATA to e.g. Costumer Sales 
+
+    Remove all empty cells in e.g. DATE 
+
+    Save and name the TAB to =point 9. 
+
+    Check the COUNT, check this with the end report 
+
+    Make the new TAB to refresh when you open it 
+
+    Now add additional info 
+
+    Remove duplicates (Right Click) 
+
+    Merge the files (remember same format) 
+
+    Expand and untick “Use Original name prefix” 
+
+    Check you get the same result as 12 
+
+    If you want to TRIM: right click and choose TRANSFORM 
+
+    Combine to columns; [Name1.2.2]&" "&[Name1.2.1] 
+
+    Date filter shows “in previous”  
+
+Last 2 month + this month 
+
+ 
+
+ 
+
+ 
+
+    RPTMONTH : substr ----Text.Range([Entry Date],0,7) 
+
+    if [Level] = "Executive" and [Target Met] = "Yes" then [Salary]*.05 else 
+
+ 
+
+if [Level] = "Manager" and [Target Met] = "Yes" then [Salary]*.10  
+
+else 0 
+
+    Extract dates is done transform date. First create 3 copys 
+
+ 
+
+    Leding zeros :    Text.PadStart(Text.From([Month]),2,"0") 
+
+ 
+
+    Date filter: Between “in the previous x month” or is in year “this year” 
+
+ 
+
+    Loop Iteration http://blogs.adatis.co.uk/callumgreen/post/Loop-through-Multiple-Web-Pages-using-Power-Query  
+
+ 
+
+(Year as number) as table => 
+
+ 
+
+let 
+
+    Source = Web.Page(Web.Contents("http://footballdatabase.com/ranking/europe/" & Number.ToText(Year))), 
+
+    Data0 = Source{0}[Data], 
+
+    #"Changed Type" = Table.TransformColumnTypes(Data0,{{"Rank", type text}, {"Club / Country", type text}, {"Points", type text}, {"1-yr change", type text}}) 
+
+in 
+
+    #"Changed Type" 
+
+ 
+
+ 
+
+Sidbrytning 
+
+ 
+
+Excel 
+
+let 
+
+    Källa = Folder.Files("C:\Users\rso363\RONSEN\Football\excel"), 
+
+    #"Borttagna kolumner" = Table.RemoveColumns(Källa,{"Date accessed", "Date modified", "Date created", "Attributes", "Folder Path"}), 
+
+    #"Lägg till egen" = Table.AddColumn(#"Borttagna kolumner", "Import", each Excel.Workbook([Content])), 
+
+    #"Borttagna kolumner1" = Table.RemoveColumns(#"Lägg till egen",{"Content"}), 
+
+    #"Expanderad Import" = Table.ExpandTableColumn(#"Borttagna kolumner1", "Import", {"Data", "Item"}, {"Data", "Item"}), 
+
+    #"Omdöpta kolumner" = Table.RenameColumns(#"Expanderad Import",{{"Item", "Sheet_name"}}), 
+
+    #"Lägg till egen1" = Table.AddColumn(#"Omdöpta kolumner", "Noheaders", each Table.PromoteHeaders([Data])) 
+
+in 
+
+    #"Lägg till egen1" 
+
+ 
+
+ 
+
+CSV 
+
+Importera som vanligt, 
+
+Adda kolumn enligt 
+
+= Table.AddColumn(Source, "Custom", each Table.PromoteHeaders(Csv.Document([Content],[Delimiter=";", Encoding=1252]))) 
+
+ 
+
+ 
+
+Sharepoint: 
+
+    Lägg in url tex https://bianalyzr.sharepoint.com  
+
+    Höger klicka på adressen och redigera 
+
+    Byt Tables to Contents 
+
+     
+
+ 
+
+ 
+
+http://exceleratorbi.com.au/consolidate-multiple-excel-files-in-sharepoint-using-powerquery/  
+
+ 
+
+logo 
+
+https://www.youtube.com/watch?v=BFNR04X6cso  
+
+ 
+
+vald group 
+
+ 
+
+Vald_Period = IF(ISFILTERED('Calendar'[Date_7]); "" & CONCATENATEX('Calendar';'Calendar'[Date_7];", "); "Välj Period") 
