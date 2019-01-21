@@ -1,4 +1,15 @@
-
+SELECT
+      a.OnlinePromotionDescription,
+      CASE
+          WHEN a.OnlinePromotionDescription LIKE '%RABATT%'
+          THEN substring(OnlinePromotionDescription,1,instr(OnlinePromotionDescription,"%") -1)
+          ELSE 0
+      END AS RABATT
+FROM
+    dOnlinePromotion a
+ 
+ 
+ 
  --Left(CONVERT(varchar,a.DateKey,112), 6) AS DateMonth,
 
 import pyodbc
