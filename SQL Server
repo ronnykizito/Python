@@ -1,12 +1,11 @@
 SELECT
       a.OnlinePromotionDescription,
-      CASE
-          WHEN a.OnlinePromotionDescription LIKE '%RABATT%'
-          THEN substring(OnlinePromotionDescription,1,instr(OnlinePromotionDescription,"%") -1)
-          ELSE 0
-      END AS RABATT
+      substring(OnlinePromotionDescription,1,CHARINDEX('%', OnlinePromotionDescription)) as Firstname,
+	  substring(OnlinePromotionDescription, CHARINDEX('%', OnlinePromotionDescription)+1, len(OnlinePromotionDescription)-(CHARINDEX(' ', OnlinePromotionDescription)-1)) as lastname,
+	  substring(OnlinePromotionDescription,2,len(OnlinePromotionDescription)-1) as test---substr(v1,1)
+
 FROM
-    dOnlinePromotion a
+[dm].[dOnlinePromotion] a
  
  
  
