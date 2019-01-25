@@ -9,6 +9,36 @@ FROM
  
  
  
+ *********
+ 
+ 
+ select
+  DateKey,
+  YearMonth,
+  DayDate,
+  YearCode,
+  CONCAT(
+    lower(substring(MonthNameSwedish, 1, 3)),'-',yearcode) as MonthNameSwedishShort
+from
+  dm.dDate 
+where
+  datekey between (
+    select
+      min(datekey)
+    from
+      [reports].[v_CoopOnline_R101_Försäljning_Kunder_1_1]
+  )
+  and (
+    select
+      max(datekey)
+    from
+      [reports].[v_CoopOnline_R101_Försäljning_Kunder_1_1])
+      
+      
+      
+      *********
+ 
+ 
  --Left(CONVERT(varchar,a.DateKey,112), 6) AS DateMonth,
 
 import pyodbc
