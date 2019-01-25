@@ -42,6 +42,16 @@ period_l=list(df.Period) #period_l = df1.Period.tolist()
 
 #qlist
 
+
+lista='london paris frag2_3 v b gggg khk hgg    jjj'
+
+qlist=pd.DataFrame({'Cols':lista.split(' ')})
+qlist=qlist.query('Cols not in [""]')
+qlist['ff']='x.'+qlist.Cols
+data=list(qlist.ff)
+data=tuple(qlist.ff)
+
+
 lista="age guy girl boy n"
 
 new_list=lista.split(' ')
