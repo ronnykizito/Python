@@ -58,6 +58,9 @@ qlist['ff']='x.'+qlist.Cols
 data=list(qlist.ff)
 data=tuple(qlist.ff)
 
+#Y M Q W: first last days
+df['xx'] = df.Date.dt.to_period("Y").dt.end_time
+df['xxc'] = df.Date.dt.to_period("W").dt.start_time
 
 lista="age guy girl boy n"
 
