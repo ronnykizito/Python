@@ -1,5 +1,101 @@
 
 
+
+import pandas as pd
+Min_date='2019-01-01'
+
+Max_date='2019-12-31'
+
+
+def create_date_table2(start=Min_date, end=Max_date,freq='D'):
+    df = pd.DataFrame({"Date": pd.date_range(start, end)})
+    df['DateKey']=df.index+1
+    df["Date_ID"] = df.Date.dt.strftime('%Y%m%d')
+    df["YearMonthDay"] = df.Date.dt.strftime('%Y%m%d')
+    df["YearMonth"] = df.Date.dt.strftime('%Y%m')
+    df["DayDate"] = df.Date
+    df['YearCode']= df.Date.dt.strftime('%Y')
+    df["IsLeapYear"] = df.Date.dt.is_leap_year
+    df['FirstDateOfYear']= df.Date.dt.to_period("Y").dt.start_time
+    df['LastDateOfYear']= df.Date.dt.to_period("Y").dt.end_time
+    df['QuarterCode']= df.Date.dt.strftime('%Y').astype(str)+df.Date.dt.quarter.astype(str).str.pad(width=2,fillchar='0')
+    df['QuaterNumber']= df.Date.dt.quarter
+    df['QuaterName']= 'Q'+df.Date.dt.quarter.astype(str)
+    df['QuaterLongName']= df.Date.dt.strftime('%Y').astype(str)+'Q'+df.Date.dt.quarter.astype(str)
+    df['FirstMonthOfQuarter'] = (df.Date.dt.to_period("Q").dt.start_time).dt.strftime('%m')
+    df['LastMonthOfQuarter'] = (df.Date.dt.to_period("Q").dt.end_time).dt.strftime('%m')
+    df['FirstDateOfQuarter'] = df.Date.dt.to_period("Q").dt.start_time
+    df['LastDateOfQuarter'] = df.Date.dt.to_period("Q").dt.end_time
+    df["MonthCode"] = df.Date.dt.strftime('%Y%m')
+    df["MonthOfYearNumber"] = df.Date.dt.strftime('%m')
+    df['MonthNameEnglishLong']= df.Date.dt.strftime('%B')
+    df['MonthNameEnglishShort']= df.Date.dt.strftime('%b')
+    df.loc[df['MonthNameEnglishLong'].isin(['January']), 'MonthNameSwedishLong'] = 'Januari'
+    df.loc[df['MonthNameEnglishLong'].isin(['February']), 'MonthNameSwedishLong'] = 'Februari'
+    df.loc[df['MonthNameEnglishLong'].isin(['March']), 'MonthNameSwedishLong'] = 'Mars'
+    df.loc[df['MonthNameEnglishLong'].isin(['April']), 'MonthNameSwedishLong'] = 'April'
+    df.loc[df['MonthNameEnglishLong'].isin(['May']), 'MonthNameSwedishLong'] = 'Maj'
+    df.loc[df['MonthNameEnglishLong'].isin(['June']), 'MonthNameSwedishLong'] = 'Juni'
+    df.loc[df['MonthNameEnglishLong'].isin(['July']), 'MonthNameSwedishLong'] = 'Juli'
+    df.loc[df['MonthNameEnglishLong'].isin(['August']), 'MonthNameSwedishLong'] = 'Augusti'
+    df.loc[df['MonthNameEnglishLong'].isin(['September']), 'MonthNameSwedishLong'] = 'September'
+    df.loc[df['MonthNameEnglishLong'].isin(['October']), 'MonthNameSwedishLong'] = 'Oktober'
+    df.loc[df['MonthNameEnglishLong'].isin(['November']), 'MonthNameSwedishLong'] = 'November'
+    df.loc[df['MonthNameEnglishLong'].isin(['December']), 'MonthNameSwedishLong'] = 'December'
+    df['MonthNameSwedishShort']= df.MonthNameSwedishLong.str[0:3].str.lower() #title upper lower
+    df['FirstDateOfMonth']= df.Date.dt.to_period("m").dt.start_time
+    df['LastDateOfMonth']= df.Date.dt.to_period("m").dt.end_time
+    df['NumberOfDaysInMonth']= df.Date.dt.daysinmonth
+    df['WeekCode']= df.Date.dt.strftime('%Y').astype(str)+df.Date.dt.weekofyear.astype(str).str.pad(width=2,fillchar='0') 
+    df['WeekOfYearNumber']= df.Date.dt.weekofyear
+    df['WeekName']= 'W'+df.Date.dt.weekofyear.astype(str).str.pad(width=2,fillchar='0')
+    df['WeekLongName']= df.Date.dt.strftime('%Y').astype(str)+'W'+df.Date.dt.weekofyear.astype(str).str.pad(width=2,fillchar='0') 
+    df['FirstDateOfWeek']= df.Date.dt.to_period("W").dt.start_time
+    df['LastDateOfWeek']= df.Date.dt.to_period("W").dt.end_time
+    df["DayOfYear"] = df.Date.dt.dayofyear
+    df['one']=1
+    df['DayOfQuarter'] = df.groupby(['QuarterCode'])['one'].apply(lambda x: x.cumsum())
+    df.drop(['one'], axis=1,inplace=True)
+    df["DayOfMonth"] = df.Date.dt.day
+    df["DayOfWeek"] = df.Date.dt.dayofweek+1
+    df['DayOfWeekNameEnglishLong']= df.Date.dt.strftime('%A')
+    df['DayOfWeekNameEnglishShort']= df.Date.dt.strftime('%a')
+    df.loc[df['DayOfWeekNameEnglishLong'].isin(['Monday']), 'DayOfWeekNameSwedishLong'] = 'Måndag'
+    df.loc[df['DayOfWeekNameEnglishLong'].isin(['Tuesday']), 'DayOfWeekNameSwedishLong'] = 'Tisdag'
+    df.loc[df['DayOfWeekNameEnglishLong'].isin(['Wednesday']), 'DayOfWeekNameSwedishLong'] = 'Onsdag'
+    df.loc[df['DayOfWeekNameEnglishLong'].isin(['Thursday']), 'DayOfWeekNameSwedishLong'] = 'Torsdag'
+    df.loc[df['DayOfWeekNameEnglishLong'].isin(['Friday']), 'DayOfWeekNameSwedishLong'] = 'Fredag'
+    df.loc[df['DayOfWeekNameEnglishLong'].isin(['Saturday']), 'DayOfWeekNameSwedishLong'] = 'Lördag'
+    df.loc[df['DayOfWeekNameEnglishLong'].isin(['Sunday']), 'DayOfWeekNameSwedishLong'] = 'Söndag'
+    df['DayOfWeekNameSwedishShort']= df.DayOfWeekNameSwedishLong.str[0:3].str.lower() #title upper lower
+    df['PreviousDateYear'] = df.Date - pd.DateOffset(years=1)
+    df['PreviousDateMonth'] = df.Date - pd.DateOffset(months=1)
+    df['PreviousDateMonthStart'] = (df.Date - pd.DateOffset(months=1)).dt.to_period("m").dt.start_time
+    df['PreviousDateMonthEnd'] = (df.Date - pd.DateOffset(months=1)).dt.to_period("m").dt.end_time
+    df['PreviousDateWeek'] = df.Date - pd.DateOffset(weeks=1)
+    df['PreviousDateDay'] = df.Date - pd.DateOffset(days=1)
+    df['NextDateDay'] = df.Date + pd.DateOffset(days=1)
+    df['date1'] = pd.Timestamp('2019-01-01')
+    df['months_between'] = (df['date1'].dt.to_period('M') -df['Date'].dt.to_period('M'))#Y M W D
+    return df
+  
+
+df=create_date_table2()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#######################################################
 import datetime
 import pandas as pd
 from datetime import datetime, timedelta
