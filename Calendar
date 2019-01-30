@@ -1,10 +1,20 @@
 
 
 
-import pandas as pd
-Min_date='2019-01-01'
 
-Max_date='2019-12-31'
+
+import pandas as pd
+from datetime import datetime
+
+
+qlist=pd.DataFrame({'Date':[datetime.today()]})
+qlist['Input_Date'] = pd.Timestamp('2019-01-01')
+qlist['period_start']=((qlist.Date - pd.DateOffset(months=1)).dt.to_period("m").dt.start_time).dt.strftime("%Y-%m-%d")
+qlist['period_End']=((qlist.Date + pd.DateOffset(months=1)).dt.to_period("m").dt.end_time).dt.strftime("%Y-%m-%d")
+
+Min_date="[]".join(list(qlist.period_start))
+Max_date="[]".join(list(qlist.period_End))
+
 
 
 def create_date_table2(start=Min_date, end=Max_date,freq='D'):
