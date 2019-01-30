@@ -62,15 +62,16 @@ data=tuple(qlist.ff)
 
 
 
+import pandas as pd
 from datetime import datetime
 
 
 qlist=pd.DataFrame({'Date':[datetime.today()]})
-qlist['period_start']=((qlist.Date - pd.DateOffset(months=1)).dt.to_period("m").dt.start_time).dt.strftime("%Y%m%d")
-qlist['period_End']=((qlist.Date + pd.DateOffset(months=1)).dt.to_period("m").dt.end_time).dt.strftime("%Y%m%d")
+qlist['period_start']=((qlist.Date - pd.DateOffset(months=1)).dt.to_period("m").dt.start_time).dt.strftime("%Y-%m-%d")
+qlist['period_End']=((qlist.Date + pd.DateOffset(months=1)).dt.to_period("m").dt.end_time).dt.strftime("%Y-%m-%d")
 
-period_start=list(qlist.period_start)
-period_End=list(qlist.period_End)
+Min_date="[]".join(list(qlist.period_start))
+Max_date="[]".join(list(qlist.period_End))
 
 
 
