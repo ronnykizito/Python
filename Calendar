@@ -77,6 +77,7 @@ def create_date_table2(start=Min_date, end=Max_date,freq='D'):
     df['NextDateDay'] = df.Date + pd.DateOffset(days=1)
     df['date1'] = pd.Timestamp('2019-01-01')
     df['months_between'] = (df['date1'].dt.to_period('M') -df['Date'].dt.to_period('M'))#Y M W D
+    df['Datum_swe']= df.MonthNameSwedishShort+'-'+df.Date.dt.strftime('%Y')
     return df
   
 
