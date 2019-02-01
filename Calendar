@@ -99,7 +99,9 @@ df["DateID"] = df.Date.dt.strftime('%Y-%m-%d')
 df['IsHoliday']='False'
 df.loc[df['DateID'].isin(is_holiday), 'IsHoliday'] = 'True'
 df.drop(['one','DateID'], axis=1,inplace=True)
-
+df['Next_N_days_Ex_Weekend'] = df.Date + BDay(5) #weekdays
+df['xx'] = (df['date1'].dt.to_period('B') -df['Date'].dt.to_period('B'))#B =Weekdays
+del qlist
 
 
 
