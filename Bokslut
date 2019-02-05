@@ -89,12 +89,21 @@ Last_path_name=os.path.basename(os.path.dirname(Main_Path+'\\Indata\\'))
 '''********************************************Read fortknox files*************************************************************************************************'''
 
 Col_names='Vernr Bokforingsdatum Registreringsdatum Konto ' \
-           'Benamning Ks Projnr Verifikationstext ' \
-           'Transaktionsinfo Debet Kredit Sheetname Filename Last_Path_Name Created_Date'
+'Benamning Ks Projnr Verifikationstext ' \
+'Transaktionsinfo Debet Kredit Sheetname Filename Last_Path_Name Created_Date'
 
-df=pd.DataFrame({"col":Col_names.split(' ')})
-df=df.query('col not in [""]')
-Col_names=list(df.col)
+Col_names = [item for item in Col_names.split(' ') if  item not in  ['']] #exclude empty
+
+keep_cols='Vernr Bokforingsdatum Registreringsdatum Konto  ' \
+'Benamning Verifikationstext Debet Kredit Summa Summax Filename Sheetname Created_Date'
+
+
+keep_cols = [item for item in keep_cols.split(' ') if  item not in  ['']] #exclude empty
+
+            
+
+#df=pd.DataFrame({"col":Col_names.split(' ')})
+#Col_names=list(df.col)
 
 #to date
 vars_to_date=['Bokforingsdatum','Registreringsdatum']
@@ -122,7 +131,7 @@ pd.io.sql.execute('DROP TABLE IF EXISTS '+ table, sqlite_db)
 for the_files in File_name:
     xlfname = Main_Path+'\\Indata\\'+'\\'+the_files
     xl = pd.ExcelFile(xlfname)
-    new_sheet_list = [item for item in xl.sheet_names if  item not in  ['obs']]
+    new_sheet_list = [item for item in xl.sheet_names if  item not in  ['obs','Kontoplan']] #exlude these sheets
     for sheet in new_sheet_list:
             df = xl.parse(sheet,encoding = 'ISO-8859-1')
             df['Sheetname']=sheet
@@ -140,10 +149,22 @@ for the_files in File_name:
             df['Knr'] = df.Konto.astype(str).str[0:2] 
             #concatanate
             df['com']=df.Vernr.str.cat([df.Konto.astype(str),df.Konto.astype(str)],sep=', ')
-            df = df[['Vernr','Bokforingsdatum', 'Registreringsdatum', 'Konto','Knr', 'Benamning','Verifikationstext','Debet', 'Kredit','Summa','Summax','Filename']]
+            df = df[keep_cols]
             df.to_sql(name=str(table),con=sqlite_db,index=False,if_exists='append') #replace append
 #            df = df.append(df_tmp, ignore_index=True,sort=False)
-            
+
+
+sql_fTable='newtable'
+sql_query='''
+create table %s as
+SELECT distinct * from %s 
+
+'''%(sql_fTable,table) 
+
+
+pd.io.sql.execute('DROP TABLE IF EXISTS '+ sql_fTable, sqlite_db)
+pd.io.sql.execute(sql_query, sqlite_db) #create the new empty table 
+pd.io.sql.execute('DROP TABLE IF EXISTS '+ table, sqlite_db)         
 
 '''********************************************#import calender*************************************************************************************************'''
 
@@ -158,7 +179,7 @@ SELECT
 FROM
     %s a
 
-'''%(date_view,table)
+'''%(date_view,sql_fTable)
 
 
 
@@ -205,7 +226,7 @@ class HolidayCalendar(AbstractHolidayCalendar):
     ]
 
 
-df.info()
+
 
 business = CDay(calendar=HolidayCalendar())
 
@@ -298,8 +319,7 @@ df['N_days_between']=df.apply(lambda x:
                                date(x['date1'].year, x['date1'].month, x['date1'].day)), axis=1)
 
 
-
+pd.io.sql.execute('DROP TABLE IF EXISTS dDate', sqlite_db)
 df.to_sql(name='dDate',con=sqlite_db,index=False,if_exists='append')        
 
 sqlite_db.close() 
-            
