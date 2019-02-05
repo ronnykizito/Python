@@ -1,0 +1,305 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Feb  4 16:49:47 2019
+
+@author: F2531197
+"""
+
+'''********************************************************fortknox****************************************************************************************'''
+'''********************************************************Import packages****************************************************************************************'''
+import pandas as pd
+#import datetime
+import os
+import sqlite3
+import time
+
+
+#from datetime import datetime
+from workalendar.europe import Sweden
+#from pandas.tseries.offsets import BDay
+from pandas.tseries.offsets import CDay
+from pandas.tseries.holiday import (AbstractHolidayCalendar , EasterMonday,GoodFriday, Holiday) #next_monday next_monday_or_tuesday,MO,DateOffset , nearest_workday
+from datetime import date
+
+
+'''***************************************************************************************************************************************************************'''
+'''***************************************************************************************************************************************************************'''
+Today=time.strftime("%Y-%m-%d")
+
+#the costumer
+
+Kund="TestKund"
+
+#define the main path
+
+Main_Path=r'C:\Users\F2531197\OneDrive - Enfo Oyj\RONSEN\Costumers\\'+Kund
+
+
+
+
+'''**************************create folders************************************************************************************************************************'''
+
+lista='indata datamining  data  syntax database'
+
+
+
+df=pd.DataFrame({"col":lista.split(' ')})
+df=df.query('col not in [""]')
+df['Col_name']=+df.col.str.title()
+
+
+folders=list(df.Col_name)
+
+for folder_name in folders:
+    newpath = Main_Path+'\\'+folder_name
+    if not os.path.exists(newpath):
+        os.makedirs(newpath)
+
+
+
+
+
+'''***************************************************************************************************************************************************************'''
+
+
+
+'''**************************import files ending with extension***************************************************************************************************'''
+
+
+
+files_names = os.listdir(Main_Path+'\\Indata\\')
+File_name = [i for i in files_names if i.endswith('.xlsx')] #txt csv xlsx xlsm osv.
+#get the main folder name
+Last_path_name=os.path.basename(os.path.dirname(Main_Path+'\\Indata\\'))
+
+
+
+'''***************************************************************************************************************************************************************'''
+
+
+
+
+'''***************************************************************************************************************************************************************'''
+
+'''*************************************Program begins************************************************************************************************************'''
+
+
+
+
+'''********************************************Read fortknox files*************************************************************************************************'''
+
+Col_names='Vernr Bokforingsdatum Registreringsdatum Konto ' \
+           'Benamning Ks Projnr Verifikationstext ' \
+           'Transaktionsinfo Debet Kredit Sheetname Filename Last_Path_Name Created_Date'
+
+df=pd.DataFrame({"col":Col_names.split(' ')})
+df=df.query('col not in [""]')
+Col_names=list(df.col)
+
+#to date
+vars_to_date=['Bokforingsdatum','Registreringsdatum']
+
+#to float or int 
+int_float=['Debet','Kredit','Konto']
+def coerce_df_columns_to_numeric(df, int_float):
+    df[int_float] = df[int_float].apply(pd.to_numeric, errors='coerce')
+    df.update(df[int_float].fillna(0))
+
+
+
+
+
+
+table='test'
+sqlite_db = sqlite3.connect(Main_Path+'\\Database\\'+Kund+'.db')
+c = sqlite_db.cursor()
+
+#first drop and then create an empty table in sqlite3
+pd.io.sql.execute('DROP TABLE IF EXISTS '+ table, sqlite_db)
+#pd.io.sql.execute(create_table, SQLITE3) #create the new empty table
+
+#df = pd.DataFrame()
+for the_files in File_name:
+    xlfname = Main_Path+'\\Indata\\'+'\\'+the_files
+    xl = pd.ExcelFile(xlfname)
+    new_sheet_list = [item for item in xl.sheet_names if  item not in  ['obs']]
+    for sheet in new_sheet_list:
+            df = xl.parse(sheet,encoding = 'ISO-8859-1')
+            df['Sheetname']=sheet
+            df['Filename']=the_files
+            df['Last_Path_Name']=Last_path_name
+            df['Created_Date'] = Today
+            df.columns = Col_names
+            df.columns = df.columns.str.title()
+            df=df.rename(columns={cols: cols.replace(' ','') for cols in df.columns})# Remove spaces from columns
+            df[vars_to_date] = df[vars_to_date].values.astype("datetime64[s]")
+            coerce_df_columns_to_numeric(df, int_float)
+            df['Summa']=-1*df.Debet+df.Kredit
+            df['Summax']=df.Debet-df.Kredit
+            #substring
+            df['Knr'] = df.Konto.astype(str).str[0:2] 
+            #concatanate
+            df['com']=df.Vernr.str.cat([df.Konto.astype(str),df.Konto.astype(str)],sep=', ')
+            df = df[['Vernr','Bokforingsdatum', 'Registreringsdatum', 'Konto','Knr', 'Benamning','Verifikationstext','Debet', 'Kredit','Summa','Summax','Filename']]
+            df.to_sql(name=str(table),con=sqlite_db,index=False,if_exists='append') #replace append
+#            df = df.append(df_tmp, ignore_index=True,sort=False)
+            
+
+'''********************************************#import calender*************************************************************************************************'''
+
+date_view='min_max_period'
+
+create_view='''
+create view %s as
+
+SELECT
+      Min(a.Bokforingsdatum) AS mindate,
+      max(a.Bokforingsdatum) AS maxdate
+FROM
+    %s a
+
+'''%(date_view,table)
+
+
+
+pd.io.sql.execute('DROP VIEW IF EXISTS '+date_view, sqlite_db)
+pd.io.sql.execute(create_view, sqlite_db) #create the new empty table
+
+#read view
+
+sql_query='''
+SELECT * from %s 
+
+'''%(date_view)
+
+#create a min date and max date for the calander
+
+vars_to_date=['mindate','maxdate']
+
+df = pd.read_sql_query(sql_query, sqlite_db)
+df[vars_to_date] = df[vars_to_date].values.astype("datetime64[s]")
+df['period_start']=((df.mindate - pd.DateOffset(months=24)).dt.to_period("m").dt.start_time).dt.strftime("%Y-%m-%d")
+df['period_End']=((df.maxdate + pd.DateOffset(months=12)).dt.to_period("m").dt.end_time).dt.strftime("%Y-%m-%d")
+
+Min_date="[]".join(list(df.period_start))
+Max_date="[]".join(list(df.period_End))
+
+
+
+class HolidayCalendar(AbstractHolidayCalendar):
+    rules = [
+        Holiday('Nyårsdagen', month=1, day=1),
+        Holiday('Trettondedag jul',month=1, day=6),
+        GoodFriday,
+        EasterMonday,
+        Holiday('Första maj',month=5, day=1),
+        Holiday('Kristi himmelfärdsdag',month=5, day=30),
+        Holiday('Sveriges nationaldag',month=6, day=6),
+        Holiday('Julafton', month=12, day=24),
+        Holiday('Juldagen', month=12, day=25),
+        Holiday('Annandag jul',month=12, day=26),
+        Holiday('Nyårsafton',month=12, day=31),
+       #fyll in andra röda dagar tex midsommar osv
+        Holiday('midsommarafton',year=2019,month=6, day=21),
+        Holiday('midsommardagen',year=2019,month=6, day=22)
+    ]
+
+
+df.info()
+
+business = CDay(calendar=HolidayCalendar())
+
+cal=Sweden()
+
+
+
+df = pd.DataFrame(index = pd.date_range(Min_date, Max_date, freq='D'))
+df['one']=1
+df['Date']=df.index
+df['DateKey'] = df.groupby(['one'])['one'].apply(lambda x: x.cumsum())
+df["Date_ID"] = df.Date.dt.strftime('%Y%m%d')
+df["YearMonthDay"] = df.Date.dt.strftime('%Y%m%d')
+df["YearMonth"] = df.Date.dt.strftime('%Y%m')
+df["DayDate"] = df.Date
+df['YearCode']= df.Date.dt.strftime('%Y')
+df["IsLeapYear"] = df.Date.dt.is_leap_year
+df['FirstDateOfYear']= df.Date.dt.to_period("Y").dt.start_time
+df['LastDateOfYear']= df.Date.dt.to_period("Y").dt.end_time
+df['QuarterCode']= df.Date.dt.strftime('%Y').astype(str)+df.Date.dt.quarter.astype(str).str.pad(width=2,fillchar='0')
+df['QuaterNumber']= df.Date.dt.quarter
+df['QuaterName']= 'Q'+df.Date.dt.quarter.astype(str)
+df['QuaterLongName']= df.Date.dt.strftime('%Y').astype(str)+'Q'+df.Date.dt.quarter.astype(str)
+df['FirstMonthOfQuarter'] = (df.Date.dt.to_period("Q").dt.start_time).dt.strftime('%m')
+df['LastMonthOfQuarter'] = (df.Date.dt.to_period("Q").dt.end_time).dt.strftime('%m')
+df['FirstDateOfQuarter'] = df.Date.dt.to_period("Q").dt.start_time
+df['LastDateOfQuarter'] = df.Date.dt.to_period("Q").dt.end_time
+df["MonthCode"] = df.Date.dt.strftime('%Y%m')
+df["MonthOfYearNumber"] = df.Date.dt.strftime('%m')
+df['MonthNameEnglishLong']= df.Date.dt.strftime('%B')
+df['MonthNameEnglishShort']= df.Date.dt.strftime('%b')
+df.loc[df['MonthNameEnglishLong'].isin(['January']), 'MonthNameSwedishLong'] = 'Januari'
+df.loc[df['MonthNameEnglishLong'].isin(['February']), 'MonthNameSwedishLong'] = 'Februari'
+df.loc[df['MonthNameEnglishLong'].isin(['March']), 'MonthNameSwedishLong'] = 'Mars'
+df.loc[df['MonthNameEnglishLong'].isin(['April']), 'MonthNameSwedishLong'] = 'April'
+df.loc[df['MonthNameEnglishLong'].isin(['May']), 'MonthNameSwedishLong'] = 'Maj'
+df.loc[df['MonthNameEnglishLong'].isin(['June']), 'MonthNameSwedishLong'] = 'Juni'
+df.loc[df['MonthNameEnglishLong'].isin(['July']), 'MonthNameSwedishLong'] = 'Juli'
+df.loc[df['MonthNameEnglishLong'].isin(['August']), 'MonthNameSwedishLong'] = 'Augusti'
+df.loc[df['MonthNameEnglishLong'].isin(['September']), 'MonthNameSwedishLong'] = 'September'
+df.loc[df['MonthNameEnglishLong'].isin(['October']), 'MonthNameSwedishLong'] = 'Oktober'
+df.loc[df['MonthNameEnglishLong'].isin(['November']), 'MonthNameSwedishLong'] = 'November'
+df.loc[df['MonthNameEnglishLong'].isin(['December']), 'MonthNameSwedishLong'] = 'December'
+df['MonthNameSwedishShort']= df.MonthNameSwedishLong.str[0:3].str.lower() #title upper lower
+df['FirstDateOfMonth']= df.Date.dt.to_period("m").dt.start_time
+df['LastDateOfMonth']= df.Date.dt.to_period("m").dt.end_time
+df['NumberOfDaysInMonth']= df.Date.dt.daysinmonth
+df['WeekCode']= df.Date.dt.strftime('%Y').astype(str)+df.Date.dt.weekofyear.astype(str).str.pad(width=2,fillchar='0') 
+df['WeekOfYearNumber']= df.Date.dt.weekofyear
+df['WeekName']= 'W'+df.Date.dt.weekofyear.astype(str).str.pad(width=2,fillchar='0')
+df['WeekLongName']= df.Date.dt.strftime('%Y').astype(str)+'W'+df.Date.dt.weekofyear.astype(str).str.pad(width=2,fillchar='0') 
+df['FirstDateOfWeek']= df.Date.dt.to_period("W").dt.start_time
+df['LastDateOfWeek']= df.Date.dt.to_period("W").dt.end_time
+df["DayOfYear"] = df.Date.dt.dayofyear
+df['DayOfQuarter'] = df.groupby(['QuarterCode'])['one'].apply(lambda x: x.cumsum())
+df["DayOfMonth"] = df.Date.dt.day
+df["DayOfWeek"] = df.Date.dt.dayofweek+1
+df['DayOfWeekNameEnglishLong']= df.Date.dt.strftime('%A') #df.Date.dt.weekday_name
+df['DayOfWeekNameEnglishShort']= df.Date.dt.strftime('%a')
+df.loc[df['DayOfWeekNameEnglishLong'].isin(['Monday']), 'DayOfWeekNameSwedishLong'] = 'Måndag'
+df.loc[df['DayOfWeekNameEnglishLong'].isin(['Tuesday']), 'DayOfWeekNameSwedishLong'] = 'Tisdag'
+df.loc[df['DayOfWeekNameEnglishLong'].isin(['Wednesday']), 'DayOfWeekNameSwedishLong'] = 'Onsdag'
+df.loc[df['DayOfWeekNameEnglishLong'].isin(['Thursday']), 'DayOfWeekNameSwedishLong'] = 'Torsdag'
+df.loc[df['DayOfWeekNameEnglishLong'].isin(['Friday']), 'DayOfWeekNameSwedishLong'] = 'Fredag'
+df.loc[df['DayOfWeekNameEnglishLong'].isin(['Saturday']), 'DayOfWeekNameSwedishLong'] = 'Lördag'
+df.loc[df['DayOfWeekNameEnglishLong'].isin(['Sunday']), 'DayOfWeekNameSwedishLong'] = 'Söndag'
+df['DayOfWeekNameSwedishShort']= df.DayOfWeekNameSwedishLong.str[0:3].str.lower() #title upper lower
+df['PreviousDateYear'] = df.Date - pd.DateOffset(years=1)
+df['PreviousDateMonth'] = df.Date - pd.DateOffset(months=1)
+df['PreviousDateMonthStart'] = (df.Date - pd.DateOffset(months=1)).dt.to_period("m").dt.start_time
+df['PreviousDateMonthEnd'] = (df.Date - pd.DateOffset(months=1)).dt.to_period("m").dt.end_time
+df['PreviousDateWeek'] = df.Date - pd.DateOffset(weeks=1)
+df['PreviousDateDay'] = df.Date - pd.DateOffset(days=1)
+df['NextDateDay'] = df.Date + pd.DateOffset(days=1)
+df['date1'] = pd.Timestamp('2016-12-27')
+df['months_between'] = (df['date1'].dt.to_period('M') -df['Date'].dt.to_period('M'))#Y M W D
+df['Datum_swe']= df.MonthNameSwedishShort+'-'+df.Date.dt.strftime('%Y')
+df['IsWeekend']='False'
+df.loc[df['DayOfWeek'].isin([6,7]), 'IsWeekend'] = 'True'
+df["DateID"] = df.Date.dt.strftime('%Y-%m-%d')
+df['IsWorkingDay'] = df.Date.apply(lambda x: cal.is_working_day(pd.to_datetime(x)))
+df.drop(['one','DateID'], axis=1,inplace=True)
+#dont change Next_N_days_Ex_Weekend Next_N_days_Ex_Weekend_Holidays
+#df['Next_N_days_Ex_Weekend'] = df.Date + BDay(1)
+#df['xx'] = (df['date1'].dt.to_period('B') -df['Date'].dt.to_period('B'))#B =Weekdays
+df['Next_N_WorkingDay'] = pd.to_datetime(df.Date).apply(lambda x: cal.add_working_days(date(x.year ,x.month ,x.day), 6))
+##Calculate the number or working days between two given days
+df['N_days_between']=df.apply(lambda x: 
+    cal.get_working_days_delta(date(x['Date'].year, x['Date'].month, x['Date'].day), 
+                               date(x['date1'].year, x['date1'].month, x['date1'].day)), axis=1)
+
+
+
+df.to_sql(name='dDate',con=sqlite_db,index=False,if_exists='append')        
+
+sqlite_db.close() 
+            
