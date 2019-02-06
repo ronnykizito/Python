@@ -25,6 +25,8 @@ from datetime import date
 '''***************************************************************************************************************************************************************'''
 '''***************************************************************************************************************************************************************'''
 Today=time.strftime("%Y-%m-%d")
+#chunksize for handle bigdata and therefore handle the memory issue
+chunksize=1000*50
 
 #the costumer
 
@@ -39,16 +41,11 @@ Main_Path=r'C:\Users\F2531197\OneDrive - Enfo Oyj\RONSEN\Costumers\\'+Kund
 
 '''**************************create folders************************************************************************************************************************'''
 
-lista='indata datamining  data  syntax database'
+lista='indata datamining  data  syntax database '
+
+folders = [item for item in lista.title().split(' ') if  item not in  ['']] #exclude empty
 
 
-
-df=pd.DataFrame({"col":lista.split(' ')})
-df=df.query('col not in [""]')
-df['Col_name']=+df.col.str.title()
-
-
-folders=list(df.Col_name)
 
 for folder_name in folders:
     newpath = Main_Path+'\\'+folder_name
@@ -92,13 +89,13 @@ Col_names='Vernr Bokforingsdatum Registreringsdatum Konto ' \
 'Benamning Ks Projnr Verifikationstext ' \
 'Transaktionsinfo Debet Kredit Sheetname Filename Last_Path_Name Created_Date'
 
-Col_names = [item for item in Col_names.split(' ') if  item not in  ['']] #exclude empty
+Col_names = [item for item in Col_names.title().split(' ') if  item not in  ['']] #exclude empty
 
 keep_cols='Vernr Bokforingsdatum Registreringsdatum Konto  ' \
-'Benamning Verifikationstext Debet Kredit Summa Summax Filename Sheetname Created_Date'
+'Benamning Verifikationstext Debet Kredit Summa Summax Filename Sheetname Created_Date knr'
 
 
-keep_cols = [item for item in keep_cols.split(' ') if  item not in  ['']] #exclude empty
+keep_cols = [item for item in keep_cols.title().split(' ') if  item not in  ['']] #exclude empty
 
             
 
@@ -154,7 +151,7 @@ for the_files in File_name:
 #            df = df.append(df_tmp, ignore_index=True,sort=False)
 
 
-sql_fTable='newtable'
+sql_fTable='fnewtable'
 sql_query='''
 create table %s as
 SELECT distinct * from %s 
@@ -318,8 +315,252 @@ df['N_days_between']=df.apply(lambda x:
     cal.get_working_days_delta(date(x['Date'].year, x['Date'].month, x['Date'].day), 
                                date(x['date1'].year, x['date1'].month, x['date1'].day)), axis=1)
 
+dDate='dDate'
+pd.io.sql.execute('DROP TABLE IF EXISTS '+dDate, sqlite_db)
+df.to_sql(name=str(dDate),con=sqlite_db,index=False,if_exists='append')        
 
-pd.io.sql.execute('DROP TABLE IF EXISTS dDate', sqlite_db)
-df.to_sql(name='dDate',con=sqlite_db,index=False,if_exists='append')        
 
-sqlite_db.close() 
+
+'''*****************************************read help files********************************************************************************************'''
+
+#read the help file
+
+kontobasPlan='dKontobasPlan'
+
+df = pd.read_excel(Main_Path+'\\Indata\\KontobasPlan.xlsx',encoding = 'ISO-8859-1')
+
+pd.io.sql.execute('DROP TABLE IF EXISTS ' +kontobasPlan, sqlite_db)
+df.to_sql(name=str(kontobasPlan),con=sqlite_db,index=False,if_exists='append')
+
+
+
+
+
+
+
+
+
+'''***************************************************merge files*********************************************************************************************'''
+fMaster_view='Merge_master_kontoPlan'
+
+sql_query='''
+create view %s as
+
+SELECT
+      a.*,
+      b.Sammanfattning,
+      b.Sammanfattning1,
+      b.Sammanfattning2,
+      b.Sammanfattning3,
+      b.Kontroll,
+      c.FirstDateOfMonth as Manad
+FROM
+    %s a
+    LEFT JOIN %s b ON b.Knr = a.Knr
+    LEFT JOIN %s c ON c.DayDate = a.Bokforingsdatum
+
+'''%(fMaster_view,sql_fTable,kontobasPlan,dDate)
+
+
+
+pd.io.sql.execute('DROP VIEW IF EXISTS '+ fMaster_view, sqlite_db)
+pd.io.sql.execute(sql_query, sqlite_db) #create the new empty table
+
+#for df in pd.read_sql_query(sql_query, sqlite_db,chunksize=chunksize): #get data from SQLITE
+#    df['r']=1
+
+ 
+
+#df3=pd.merge(df1,df2[['Knr','Sammanfattning','Sammanfattning1','Sammanfattning2', 'Sammanfattning3','Kontroll']],how="left",left_on=["Knr"],right_on=["Knr"])  
+
+'''********************************************************end*******************************************************************************************'''
+
+'''***************************************************Analys to PBI*********************************************************************************************'''
+
+pwrbi_view='vPwrbiBokslut'
+sql_query='''
+create view %s as
+with 
+q1 as (
+
+SELECT
+      a.Sammanfattning,
+      a.Manad,
+      Sum(a.Summa) AS Sum_Summa
+FROM
+    %s a
+    where a.Sammanfattning in 
+    ('Nettoomsättning','Övriga rörelseintäkter','Rörelsekostnader',
+'Övriga externa rörelsekostnader','Personalkostnader','Finansiella poster')
+GROUP BY
+        a.Sammanfattning,
+        a.Manad),
+q2 as
+        (
+        SELECT
+      'Summa rörelseintäkter' as Sammanfattning,
+      a.Manad,
+      Sum(a.Summa) AS Sum_Summa
+FROM
+    %s a
+    where a.Sammanfattning in 
+    ('Nettoomsättning', 'Övriga rörelseintäkter')
+GROUP BY
+        a.Sammanfattning,
+        a.Manad),
+q3 as
+        (
+        SELECT
+      'Bruttovinst' as Sammanfattning,
+      a.Manad,
+      Sum(a.Summa) AS Sum_Summa
+FROM
+    %s a
+    where a.Sammanfattning in 
+    ('Nettoomsättning', 'Övriga rörelseintäkter','Rörelsekostnader')
+GROUP BY
+        a.Sammanfattning,
+        a.Manad),
+q4 as
+        (
+        SELECT
+      'Summa Rörelsekostnader' as Sammanfattning,
+      a.Manad,
+      Sum(a.Summa) AS Sum_Summa
+FROM
+    %s a
+    where a.Sammanfattning in 
+    ('Rörelsekostnader','Övriga externa rörelsekostnader','Personalkostnader')
+GROUP BY
+        a.Sammanfattning,
+        a.Manad),
+q5 as
+        (
+        SELECT
+      'Rörelseresultat' as Sammanfattning,
+      a.Manad,
+      Sum(a.Summa) AS Sum_Summa
+FROM
+    %s a
+    where a.Sammanfattning in 
+    ('Rörelsekostnader','Övriga externa rörelsekostnader','Personalkostnader',
+    'Nettoomsättning','Övriga rörelseintäkter')
+GROUP BY
+        a.Sammanfattning,
+        a.Manad),
+q6 as
+        (
+        SELECT
+      'Resultat efter avskrivningar' as Sammanfattning,
+      a.Manad,
+      Sum(a.Summa) AS Sum_Summa
+FROM
+    %s a
+    where a.Sammanfattning1 in ("Avskrivningar") or
+        a.Sammanfattning in
+    ('Rörelsekostnader','Övriga externa rörelsekostnader','Personalkostnader',
+    'Nettoomsättning','Övriga rörelseintäkter')
+GROUP BY
+        a.Sammanfattning,
+        a.Manad),
+q7 as
+        (
+        SELECT
+      'RESULTAT EFTER FINASIELLA POSTER' as Sammanfattning,
+      a.Manad,
+      Sum(a.Summa) AS Sum_Summa
+FROM
+    %s a
+    where 
+        a.Sammanfattning in
+    ('Rörelsekostnader','Övriga externa rörelsekostnader','Personalkostnader',
+    'Nettoomsättning','Övriga rörelseintäkter','Finansiella poster')
+GROUP BY
+        a.Sammanfattning,
+        a.Manad),
+q8 as
+        (
+        SELECT
+      'RESULTAT efter finansiella poster och dispositioner' as Sammanfattning,
+      a.Manad,
+      Sum(a.Summa) AS Sum_Summa
+FROM
+    %s a
+    where 
+        a.Sammanfattning in
+    ('Rörelsekostnader','Övriga externa rörelsekostnader','Personalkostnader',
+    'Nettoomsättning','Övriga rörelseintäkter','Finansiella poster'
+    ,'Extraordinära poster','Bokslutsdispositioner')
+GROUP BY
+        a.Sammanfattning,
+        a.Manad),
+q9 as
+        (
+       SELECT
+      'BERÄKNAT RESULTAT' as Sammanfattning,
+      a.Manad,
+      Sum(a.Summa) AS Sum_Summa
+FROM
+    %s a
+    where 
+        a.Sammanfattning in
+    ('Rörelsekostnader','Övriga externa rörelsekostnader','Personalkostnader',
+    'Nettoomsättning','Övriga rörelseintäkter','Finansiella poster'
+    ,'Extraordinära poster','Bokslutsdispositioner','Skatt')
+GROUP BY
+        a.Sammanfattning,
+        a.Manad),
+q10 as     
+(select * from q1
+  union 
+  select * from q2
+union 
+  select * from q3
+union 
+  select * from q4
+union 
+  select * from q5
+union 
+  select * from q6
+union 
+  select * from q7
+union 
+  select * from q8
+union 
+  select * from q9
+) 
+select *,
+case when Sammanfattning='Nettoomsättning' then 1
+      when Sammanfattning='Övriga rörelseintäkter' then 2
+      when Sammanfattning='Summa rörelseintäkter' then 3
+      when Sammanfattning='Rörelsekostnader' then 4
+      when Sammanfattning='Bruttovinst' then 5
+      when Sammanfattning='Övriga externa rörelsekostnader' then 6
+      when Sammanfattning='Personalkostnader' then 7
+      when Sammanfattning='Summa Rörelsekostnader' then 8
+      when Sammanfattning='Rörelseresultat' then 9
+      when Sammanfattning='Resultat efter avskrivningar' then 10
+      when Sammanfattning='Finansiella poster' then 11
+      when Sammanfattning='RESULTAT EFTER FINASIELLA POSTER' then 12
+      when Sammanfattning='RESULTAT efter finansiella poster och dispositioner' then 13
+      when Sammanfattning='BERÄKNAT RESULTAT' then 14
+      end as Rank_var from q10 
+
+'''%(pwrbi_view,
+fMaster_view,
+fMaster_view,
+fMaster_view,
+fMaster_view,
+fMaster_view,
+fMaster_view,
+fMaster_view,
+fMaster_view,
+fMaster_view)
+
+
+pd.io.sql.execute('DROP VIEW IF EXISTS '+pwrbi_view, sqlite_db)
+pd.io.sql.execute(sql_query, sqlite_db) #create the new empty table
+
+sqlite_db.close()
+'''****************************************end*********************************************************************************************'''
+
