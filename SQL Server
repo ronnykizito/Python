@@ -141,3 +141,15 @@ Created_Date DATE
 )
 
 '''
+
+
+select * from openquery(MYTESTSQLITE3,
+
+' select  * from test  ')
+
+
+select * into testa1
+
+from openquery(MYTESTSQLITE3,
+
+' select  * from test  ')
