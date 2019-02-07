@@ -2,6 +2,10 @@
 """
 Created on Sat Nov 10 17:04:25 2018
 
+
+pip install dask[dataframe]
+
+
 @author: Ronny
 """
 import pandas as pd
