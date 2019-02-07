@@ -157,9 +157,11 @@ from openquery(MYTESTSQLITE3,
 
 
 
-sql = "SELECT * FROM My_Table"
-for chunk in pd.read_sql_query(sql , engine, chunksize=5):
-    print(chunk)
+sql = "SELECT * FROM testttt"
+for df in pd.read_sql_query(sql , con=SQLITE3, chunksize=5):
+    df['one']=1
+    df['DateKey1'] = df.groupby(['one'])['one'].apply(lambda x: x.cumsum())
+    df.to_sql(name='testttt2',con=SQLITE3,index=False,if_exists='append')
 
 
 
