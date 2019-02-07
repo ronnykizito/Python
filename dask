@@ -1,3 +1,9 @@
 
 pip install dask[dataframe]
 import dask.dataframe as dd 
+
+#create dask
+df1 = dd.read_csv(file,sep=separator,encoding=encoding,dtype='str')
+
+#dask to sql dask.compute()=df
+df1.compute().to_sql(name='ff',con=SQLITE3,index=False,if_exists='append')
