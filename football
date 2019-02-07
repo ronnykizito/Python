@@ -1,0 +1,250 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Oct 20 14:52:31 2018
+
+@author: Ronny Sentongo
+"""
+
+import pandas as pd
+import os
+import sqlite3
+import time
+#import glob
+#import datetime
+#import time
+#import os
+#import numpy as np
+#import footballdata as foo
+
+#......................................ange kunden
+
+Kund="Football"
+
+Today=time.strftime("%Y-%m-%d")
+#chunksize for handle bigdata and therefore handle the memory issue
+#chunksize=1000*50
+
+#define the main path
+
+Main_Path=r'C:\Users\F2531197\OneDrive - Enfo Oyj\RONSEN\Costumers\\'+Kund
+
+
+
+
+'''**************************create folders************************************************************************************************************************'''
+
+lista='indata datamining  data  syntax database '
+
+folders = [item for item in lista.title().split(' ') if  item not in  ['']] #exclude empty
+
+
+
+for folder_name in folders:
+    newpath = Main_Path+'\\'+folder_name
+    if not os.path.exists(newpath):
+        os.makedirs(newpath)
+
+
+#......................................definiera huvud dir
+
+
+
+df = pd.DataFrame(index = pd.date_range('2017-01-01', '2018-12-31', freq='Y'))
+df['Date']=df.index
+df['AR1']= df.Date.dt.strftime('%Y').astype(int)
+df['AR2']= df.AR1-1
+df['Period']=df.AR2.astype(str).str.cat([df.AR1.astype(str)],sep='-')
+df['AR1x']= df.Date.dt.strftime('%y').astype(int)
+df['AR2x']= df.AR1x-1
+df['Periodx']=df.AR2x.astype(str).str.cat([df.AR1x.astype(str)],sep='')
+
+
+period_l=list(df.Period)
+period_s=list(df.Periodx)
+
+
+
+
+
+
+Col_names='Div Date HomeTeam AwayTeam FTHG FTAG FTR B365H B365D B365A'
+Col_names = [item for item in Col_names.title().split(' ') if  item not in  ['']] #exclude empty
+
+keep_cols='Div Date HomeTeam AwayTeam FTHG FTAG FTR B365H B365D B365A '\
+  'Filename Sheetname Created_Date Utfall Poang_H Poang_B' 
+
+
+keep_cols = [item for item in keep_cols.upper().split(' ') if  item not in  ['']] #exclude empty
+
+            
+vars_to_date=['DATE']
+
+#to float or int 
+int_float=['B365H','B365D','B365A']
+def coerce_df_columns_to_numeric(df, int_float):
+    df[int_float] = df[int_float].apply(pd.to_numeric, errors='coerce')
+    df.update(df[int_float].fillna(0))
+
+
+
+
+
+
+table='football'
+sqlite_db = sqlite3.connect(Main_Path+'\\Database\\'+Kund+'.db')
+c = sqlite_db.cursor()
+
+#first drop and then create an empty table in sqlite3
+pd.io.sql.execute('DROP TABLE IF EXISTS '+ table, sqlite_db)
+#pd.io.sql.execute(create_table, SQLITE3) #create the new empty table
+
+def change_team_names(change_team_name):    
+    df.loc[(df[str(change_team_name)] =='Airdrie')  , 'HOMETEAM'] = 'Airdrie Utd'
+    df.loc[(df[str(change_team_name)]=='Leipzig')  , 'HOMETEAM'] = 'RB Leipzig'
+    df.loc[(df[str(change_team_name)] =='Red Star 93')  , 'HOMETEAM'] = 'Red Star'
+    df.loc[(df[str(change_team_name)] =='Roda')  , 'HOMETEAM'] = 'Roda JC'
+    df.loc[(df[str(change_team_name)] =='Sparta')  , 'HOMETEAM'] = 'Sparta Rotterdam'
+    df.loc[(df[str(change_team_name)] =='Villareal')  , 'HOMETEAM'] = 'Villarreal'
+    df.loc[(df[str(change_team_name)] =='Proodeytiki')  , 'HOMETEAM'] = 'Proodeftiki'
+    df.loc[(df[str(change_team_name)] =='Antalya')  , 'HOMETEAM'] = 'Antalyaspor'
+
+
+for yyyymm,yymm in zip(period_l, period_s):
+    xlfname = 'http://www.football-data.co.uk/mmz4281/'+str(yymm)+'/all-euro-data-'+str(yyyymm)+'.xlsx'
+    xl = pd.ExcelFile(xlfname)
+    for sheet in xl.sheet_names:
+        df = xl.parse(sheet,encoding = 'ISO-8859-1')
+        df = df.loc[(df.B365H>=0) ]
+        df['Filename']=str(yyyymm)
+        df['Sheetname']=sheet
+        df['Created_Date'] = Today
+        df['Utfall'] =0      
+        df.loc[(df.FTR =='H')  , 'Utfall'] = 1
+        df.loc[(df.FTR =='H')  , 'Poang_H'] = 3
+        df.loc[(df.FTR =='A')  , 'Poang_H'] = 0
+        df.loc[(df.FTR =='D')  , 'Poang_H'] = 1
+        df.loc[(df.FTR =='H')  , 'Poang_B'] = 0
+        df.loc[(df.FTR =='A')  , 'Poang_B'] = 3
+        df.loc[(df.FTR =='D')  , 'Poang_B'] = 1
+        df=df.rename(columns={cols: cols.replace(' ','') for cols in df.columns})# Remove spaces from columns
+        df.columns = df.columns.str.upper()
+        df = df[keep_cols]
+        df[vars_to_date] = df[vars_to_date].values.astype("datetime64[s]")
+        coerce_df_columns_to_numeric(df, int_float)
+        change_team_names('HOMETEAM')
+        change_team_names('AWAYTEAM')
+        df.to_sql(name=str(table),con=sqlite_db,index=False,if_exists='append') #replace append
+
+
+
+
+sql_view='fnewtable'
+create_view='''
+create view %s as
+SELECT
+     distinct a.HOMETEAM as Team
+FROM
+    %s a  
+
+'''%(sql_view,table) 
+
+
+pd.io.sql.execute('DROP VIEW IF EXISTS '+sql_view, sqlite_db)
+pd.io.sql.execute(create_view, sqlite_db) #create the new empty table
+
+df=pd.read_sql_query('select * from '+sql_view , con=sqlite_db)
+df = df.assign(ID=(df.Team).astype('category').cat.codes)
+
+pd.io.sql.execute('DROP table IF EXISTS new', sqlite_db)
+df.to_sql(name='new',con=sqlite_db,index=False,if_exists='append')
+   
+
+  
+
+
+
+Team=df[['HOMETEAM']].drop_duplicates()            
+Team = Team.assign(ID=(Team.HOMETEAM).astype('category').cat.codes)
+Team.rename(columns={'HomeTeam':'Team'},inplace=True)
+   
+
+df2=pd.merge(df,Team[["Team","ID"]],how="left",left_on=["HomeTeam"],right_on=["Team"])
+df2.rename(columns={'ID':'Home_ID'},inplace=True)
+
+df2=pd.merge(df2,Team[["Team","ID"]],how="left",left_on=["AwayTeam"],right_on=["Team"])
+df2.rename(columns={'ID':'Away_ID'},inplace=True)
+df2['IDx'] = 1
+df2['ID']=df2['IDx'].cumsum()
+
+
+
+
+
+
+sqlite_db.close()
+
+#%%
+
+v2=df2[["Div","Date","HomeTeam","FTHG","ID","FTR","Poang_H","FTAG","Home_ID","Away_ID","AR"]]
+
+v2 = v2.rename(columns={'FTHG': 'Goalx','HomeTeam': 'Team','Poang_H': 'Poang','FTAG': 'Inslapp'})
+v2["Var"]="Home"
+
+v3=df2[["Div","Date","AwayTeam","FTAG","ID","FTR","Poang_B","FTHG","Home_ID","Away_ID","AR"]]
+
+v3 = v3.rename(columns={'FTAG': 'Goalx','AwayTeam': 'Team','Poang_B': 'Poang','FTHG': 'Inslapp'})
+v3["Var"]="Away"
+
+v4=pd.concat([v2,v3],sort=False)
+v4["Goal"]=v4.Goalx-v4.Inslapp
+v4.sort_values(['Team', 'Date','AR'], ascending=[True, True,True],inplace=True)
+
+#laggar eller leadar
+for shifts in range(0,3):
+    v4["lastgame"+str(shifts)] = (v4.groupby(['Team', 'AR'])['Goal'].shift(shifts))
+
+
+#insert empty cell with previuos
+for  shifts in range(1,3):
+    print(shifts)
+    v4["lastgame"+str(shifts)] = np.where(v4["lastgame"+str(shifts)].isnull(),v4["lastgame"+str(shifts-1)],v4["lastgame"+str(shifts)])   
+
+
+v4['IDx'] = 1
+v4['no_cumulative'] = v4.groupby(['Team','AR'])['Goal'].apply(lambda x: x.cumsum())
+v4['idxx'] = v4.groupby(['Team','AR'])['IDx'].apply(lambda x: x.cumsum())
+
+
+
+
+v4['MA2'] =v4.groupby('Team')['Goal'].rolling(2).mean().reset_index(0,drop=True)
+v4['Cum2'] =v4.groupby('Team')['IDx'].rolling(2).sum().reset_index(0,drop=True)
+
+
+
+v4["Datum"] = df.Date.astype(str)
+
+
+
+#%%
+dataset=v4
+
+def flag_df(dataset):
+
+    if dataset.Datum >="2005-08-29"  and dataset.Datum <="2005-09-18":
+        return 1
+    
+  
+
+dataset['Flag'] = dataset.apply(flag_df, axis = 1)
+
+
+#%%
+dataset=v4
+
+def flag_df(dataset):
+
+    if dataset.Div =="G1"  and dataset.Team =="AEK" and dataset.Datum =="2005-08-29":
+        return 1
+    elif dataset.Div =="EC" and dataset.Team =="AFC Telford United" and dataset.Datum =="2011-08-16":
+        return 1
