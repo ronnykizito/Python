@@ -153,3 +153,13 @@ select * into testa1
 from openquery(MYTESTSQLITE3,
 
 ' select  * from test  ')
+
+
+
+
+sql = "SELECT * FROM My_Table"
+for chunk in pd.read_sql_query(sql , engine, chunksize=5):
+    print(chunk)
+
+
+
