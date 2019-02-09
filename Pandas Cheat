@@ -1462,3 +1462,6 @@ df[PWBI_replace_numeric] = df[PWBI_replace_numeric].values.astype(str)
 
 for replace_dot_comma in PWBI_replace_numeric:
     df[replace_dot_comma] = df[replace_dot_comma].str.replace('.', ',')
+
+
+#df.to_csv(Main_Path+'\\test2.csv',sep=';', index=False,decimal=',',encoding='ISO-8859-1')
