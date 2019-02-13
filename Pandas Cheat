@@ -181,6 +181,13 @@ object_to_date=['Bokforingsdatum','Registreringsdatum']
 
 df[object_to_date] = df[object_to_date].values.astype("datetime64[s]") 
 
+# Change the dtypes (int64 -> int32)
+col_names=['col_1','col_2', 'col_3', 'col_4', 'col_5']
+
+df[col_names] = df[col_names].astype(int)
+df[col_names] = df[col_names].astype(float)
+df[col_names] = df[col_names].astype(str)
+
 
 import datetime as dt
 df['From date to str'] = df.Bokforingsdatum.apply(lambda x: dt.datetime.strftime(x, '%Y-%m-%d'))
