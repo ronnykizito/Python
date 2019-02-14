@@ -242,6 +242,7 @@ df.loc[((df.test_score <=95) & (df.test_score>90)) | (df.test_score==84), 'grade
 df=df.query('Div in ["E0","E1"] and B365H in [3.4]') 
 df=df.query('(Div in ["E0","E1"] or HomeTeam in  ["Huddersfield"]) and v3 in ["2018"] ')
 df[df['Kontoplan'].between(99, 101)] 
+df.loc[df.Kontoplan.between(99, 101) , 'GrpKontoplan2'] = 'Immateriella anläggningstillgångar'
 
 df3=df.query('Abonnentnr in @Abonnent and (Engagemangs_Datum>=@date1 and Engagemangs_Datum<=@date2 )')
 
