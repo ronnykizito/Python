@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Feb  8 12:50:35 2019
+Created on Thu Feb  14 13:50:35 2019
 
 @author: F2531197 Ronny Sentongo
 
@@ -28,12 +28,14 @@ import pandas as pd
 import os
 import time
 
-from datetime import datetime
+#from datetime import datetime
+import datetime
 from workalendar.europe import Sweden
 from pandas.tseries.offsets import BDay
 from pandas.tseries.offsets import CDay
 from pandas.tseries.holiday import (AbstractHolidayCalendar , EasterMonday,GoodFriday, Holiday) #next_monday next_monday_or_tuesday,MO,DateOffset , nearest_workday
 from datetime import date
+import random 
 
 
 Kund="EkonomiAppen"
@@ -78,55 +80,73 @@ df = pd.DataFrame(index = pd.Series(range(0,10000)))
 df['one']=1
 df['Kontoplan']=df.index+1
 df=df.query('Kontoplan  <10000')
-df['KontoplanNyckel'] = df.groupby(['one'])['one'].apply(lambda x: x.cumsum())
-df['Kontonr1'] = df.Kontoplan.astype(str).str[0:1]
-df['Kontonr2'] = df.Kontoplan.astype(str).str[0:2]
-#grp2
-df.loc[df.Kontonr2.isin(['10']) & (df.Kontoplan>999), 'GrpKontoplan2'] = 'Immateriella anläggningstillgångar'
-df.loc[df['Kontonr2'].isin(['11','12']) & (df.Kontoplan>999), 'GrpKontoplan2'] = 'Materiella anläggningstillgångar'
-df.loc[df['Kontonr2'].isin(['13'])& (df.Kontoplan>999), 'GrpKontoplan2'] = 'Finansiella anläggningstillgångar (långfristiga fordringar)'
-df.loc[df['Kontonr2'].isin(['14'])& (df.Kontoplan>999), 'GrpKontoplan2'] = 'Varulager m m'
-df.loc[df['Kontonr2'].isin(['15','16','17','18'])& (df.Kontoplan>999), 'GrpKontoplan2'] = 'Kortfristiga fordringar'
-df.loc[df['Kontonr2'].isin(['19'])& (df.Kontoplan>999), 'GrpKontoplan2'] = 'Kassa och bank'
-df.loc[df['Kontonr2'].isin(['20'])& (df.Kontoplan>999), 'GrpKontoplan2'] = 'Eget kapital'
-df.loc[df['Kontonr2'].isin(['21'])& (df.Kontoplan>999), 'GrpKontoplan2'] = 'Obeskattade reserver'
-df.loc[df['Kontonr2'].isin(['22'])& (df.Kontoplan>999), 'GrpKontoplan2'] = 'Avsättningar'
-df.loc[df['Kontonr2'].isin(['23','24','25','26','27','28','29'])& (df.Kontoplan>999), 'GrpKontoplan2'] = 'Långfristiga skulder'
-df.loc[df['Kontonr2'].isin(['30','31','32','33','34','35','36','37'])& (df.Kontoplan>999), 'GrpKontoplan2'] = 'Nettoomsättning'
-df.loc[df['Kontonr2'].isin(['38','39'])& (df.Kontoplan>999), 'GrpKontoplan2'] = 'Övriga rörelseintäkter'
-df.loc[df['Kontonr1'].isin(['4'])& (df.Kontoplan>999), 'GrpKontoplan2'] = 'Rörelsekostnader'
-df.loc[df['Kontonr1'].isin(['5','6'])& (df.Kontoplan>999), 'GrpKontoplan2'] = 'Övriga externa rörelsekostnader'
-df.loc[df['Kontonr2'].isin(['70','71','72','73','74','75','76'])& (df.Kontoplan>999), 'GrpKontoplan2'] = 'Personalkostnader'
-df.loc[df['Kontonr2'].isin(['77'])& (df.Kontoplan>999), 'GrpKontoplan2'] = 'Nedskrivningar'
-df.loc[df['Kontonr2'].isin(['78'])& (df.Kontoplan>999), 'GrpKontoplan2'] = 'Avskrivningar'
-df.loc[df['Kontonr2'].isin(['79'])& (df.Kontoplan>999), 'GrpKontoplan2'] = 'Övriga rörelsekostnader'
-df.loc[df['Kontonr2'].isin(['80','81','82','83','84'])& (df.Kontoplan>999), 'GrpKontoplan2'] = 'Finansiella poster'
-df.loc[df['Kontonr2'].isin(['88'])& (df.Kontoplan>999), 'GrpKontoplan2'] = 'Bokslutsdispositioner'
-df.loc[df['Kontonr1'].isin(['9'])& (df.Kontoplan>999), 'GrpKontoplan2'] = 'Interna konton'
-df.loc[df['Kontoplan']<1000, 'GrpKontoplan2'] = 'Interna konton'
-#grp3 Summa anläggningstillgångar, Summa omsättningstillgångar,Summa Rörelseintäkter,Summa Rörelsekostnader, Avskrivningar
-df.loc[df['Kontonr2'].isin(['10','11','12','13'])& (df.Kontoplan>999), 'GrpKontoplan3'] = 'Summa anläggningstillgångar'
-df.loc[df['Kontonr2'].isin(['14','15','16','17','18','19'])& (df.Kontoplan>999), 'GrpKontoplan3'] = 'Summa omsättningstillgångar'
-df.loc[df['Kontonr1'].isin(['3'])& (df.Kontoplan>999), 'GrpKontoplan3'] = 'Summa Rörelseintäkter'
-df.loc[df['Kontonr1'].isin(['4','5','6'])& (df.Kontoplan>999), 'GrpKontoplan3'] = 'Summa Rörelsekostnader'
-df.loc[df['Kontonr2'].isin(['70','71','72','73','74','75','76'])& (df.Kontoplan>999), 'GrpKontoplan3'] = 'Summa Rörelsekostnader'
-df.loc[df['Kontonr2'].isin(['77','78'])& (df.Kontoplan>999), 'GrpKontoplan3'] = 'Avskrivningar'
-#grp4 Summa Tillgångar Bruttovinst
-df.loc[df['Kontonr1'].isin(['1'])& (df.Kontoplan>999), 'GrpKontoplan4'] = 'Summa Tillgångar'
-df.loc[df['Kontonr1'].isin(['3','4'])& (df.Kontoplan>999), 'GrpKontoplan4'] = 'Bruttovinst'
-#grp5 Summa Rörelseresultat
-df.loc[df['Kontonr1'].isin(['3','4','5','6'])& (df.Kontoplan>999), 'GrpKontoplan5'] = 'Rörelseresultat'
-df.loc[df['Kontonr2'].isin(['70','71','72','73','74','75','76'])& (df.Kontoplan>999), 'GrpKontoplan5'] = 'Rörelseresultat'
-df = df.assign(GrpKontoplan2Nyckel=(df['GrpKontoplan2']).astype('category').cat.codes)
+
+#kontoplan
+df.loc[df.Kontoplan.between(1, 999) | df.Kontoplan.between(9000, 9999), 'Kontogrupp'] = 'Interna konton'
+df.loc[df.Kontoplan.between(1000, 1999) , 'Kontogrupp'] = 'Tillgångar'
+df.loc[df.Kontoplan.between(2000, 2999) , 'Kontogrupp'] = 'Eget kapital och skulder'
+df.loc[df.Kontoplan.between(3000, 3999) , 'Kontogrupp'] = 'Rörelsens inkomster/intäkter'
+df.loc[df.Kontoplan.between(4000, 4999) , 'Kontogrupp'] = 'Utgifter/kostnader för varor, material och vissa köpta tjänster'
+df.loc[df.Kontoplan.between(5000, 6999) , 'Kontogrupp'] = 'Övriga externa rörelseutgifter/ kostnader'
+df.loc[df.Kontoplan.between(7000, 7999) , 'Kontogrupp'] = 'Utgifter/kostnader för personal, avskrivningar m.m.'
+df.loc[df.Kontoplan.between(8000, 8999) , 'Kontogrupp'] = 'Finansiella och andra inkomster/ intäkter och utgifter/kostnader'
+#kontoplan
+df.loc[df.Kontoplan.between(1, 999) | df.Kontoplan.between(9000, 9999), 'Kontogrupp1'] = 'Interna konton'
+df.loc[df.Kontoplan.between(1000, 1099) , 'Kontogrupp1'] = 'Immateriella anläggningstillgångar'
+df.loc[df.Kontoplan.between(1100, 1299) , 'Kontogrupp1'] = 'Materiella anläggningstillgångar'
+df.loc[df.Kontoplan.between(1300, 1399) , 'Kontogrupp1'] = 'Finansiella anläggningstillgångar (långfristiga fordringar)'
+df.loc[df.Kontoplan.between(1400, 1499) , 'Kontogrupp1'] = 'Varulager m m'
+df.loc[df.Kontoplan.between(1500, 1899) , 'Kontogrupp1'] = 'Kortfristiga fordringar'
+df.loc[df.Kontoplan.between(1900, 1999) , 'Kontogrupp1'] = 'Kassa och bank'
+df.loc[df.Kontoplan.between(2000, 2099) , 'Kontogrupp1'] = 'Eget kapital'
+df.loc[df.Kontoplan.between(2100, 2199) , 'Kontogrupp1'] = 'Obeskattade reserver'
+df.loc[df.Kontoplan.between(2200, 2299) , 'Kontogrupp1'] = 'Avsättningar'
+df.loc[df.Kontoplan.between(2300, 2999) , 'Kontogrupp1'] = 'Långfristiga skulder'
+df.loc[df.Kontoplan.between(3000, 3799) , 'Kontogrupp1'] = 'Nettoomsättning'
+df.loc[df.Kontoplan.between(3800, 3999) , 'Kontogrupp1'] = 'Övriga rörelseintäkter'
+df.loc[df.Kontoplan.between(4000, 4999) , 'Kontogrupp1'] = 'Rörelsekostnader'
+df.loc[df.Kontoplan.between(5000, 6999) , 'Kontogrupp1'] = 'Övriga externa rörelsekostnader'
+df.loc[df.Kontoplan.between(7000, 7699) , 'Kontogrupp1'] = 'Personalkostnader'
+df.loc[df.Kontoplan.between(7700, 7799) , 'Kontogrupp1'] = 'Nedskrivningar'
+df.loc[df.Kontoplan.between(7800, 7899) , 'Kontogrupp1'] = 'Avskrivningar'
+df.loc[df.Kontoplan.between(7900, 7999) , 'Kontogrupp1'] = 'Övriga rörelsekostnader'
+df.loc[df.Kontoplan.between(8000, 8499) , 'Kontogrupp1'] = 'Finansiella poster'
+df.loc[df.Kontoplan.between(8500, 8799) , 'Kontogrupp1'] = 'Fri kontogrupp'
+df.loc[df.Kontoplan.between(8800, 8899) , 'Kontogrupp1'] = 'Bokslutsdispositioner'
+df.loc[df.Kontoplan.between(8900, 8989) , 'Kontogrupp1'] = 'Skatt'
+df.loc[df.Kontoplan.between(8990, 8999) , 'Kontogrupp1'] = 'Resultat'
+#kontoplan2 anläggningstillgångar, Summa omsättningstillgångar,Summa Rörelseintäkter,Summa Rörelsekostnader, Avskrivningar
+df.loc[df.Kontoplan.between(1, 999) | df.Kontoplan.between(9000, 9999), 'Kontogrupp2'] = 'Interna konton'
+df.loc[df.Kontoplan.between(1000, 1399) , 'Kontogrupp2'] = 'Summa anläggningstillgångar'
+df.loc[df.Kontoplan.between(1400, 1999) , 'Kontogrupp2'] = 'Summa omsättningstillgångar'
+df.loc[df.Kontoplan.between(2000, 2999) , 'Kontogrupp2'] = 'Eget kapital och skulder'
+df.loc[df.Kontoplan.between(3000, 3999) , 'Kontogrupp2'] = 'Summa Rörelseintäkter'
+df.loc[df.Kontoplan.between(4000, 7699) , 'Kontogrupp2'] = 'Summa Rörelsekostnader'
+df.loc[df.Kontoplan.between(7700, 7899) , 'Kontogrupp2'] = 'Avskrivningar'
+df.loc[df.Kontoplan.between(7900, 7999) , 'Kontogrupp2'] = 'Övriga rörelsekostnader'
+df.loc[df.Kontoplan.between(8000, 8499) , 'Kontogrupp2'] = 'Finansiella poster'
+df.loc[df.Kontoplan.between(8500, 8799) , 'Kontogrupp2'] = 'Fri kontogrupp'
+df.loc[df.Kontoplan.between(8800, 8899) , 'Kontogrupp2'] = 'Bokslutsdispositioner'
+df.loc[df.Kontoplan.between(8900, 8989) , 'Kontogrupp2'] = 'Skatt'
+df.loc[df.Kontoplan.between(8990, 8999) , 'Kontogrupp2'] = 'Resultat'
+#kontoplan3 Summa Tillgångar Bruttovinst
+df.loc[df.Kontoplan.between(1000, 1999) , 'Kontogrupp3'] = 'Summa Tillgångar'
+df.loc[df.Kontoplan.between(3000, 4999) , 'Kontogrupp3'] = 'Bruttovinst'
+#kontoplan4 Rörelseresultat
+df.loc[df.Kontoplan.between(3000, 7699) , 'Kontogrupp4'] = 'Rörelseresultat'
+df['KontoplanNyckel'] = df.Kontoplan
+df = df.assign(Kontogrupp1Nyckel=(df['Kontogrupp1']).astype('category').cat.codes)
 
 #keep colums
-df = df[['Kontoplan','KontoplanNyckel','GrpKontoplan2','GrpKontoplan3',
-         'GrpKontoplan4','GrpKontoplan5','GrpKontoplan2Nyckel']]
+df = df[['Kontoplan','KontoplanNyckel','Kontogrupp','Kontogrupp1','Kontogrupp2',
+         'Kontogrupp3','Kontogrupp4','Kontogrupp1Nyckel']]
 #create a table in the database
 dKontoplan='dKontoplan'
 df.to_sql(name=str(dKontoplan),con=sqlite_db,index=False,if_exists='replace')
 
-'''**************************read verfication file**********************************'''
+
+
+'''**************************read verfication(transacatons) file**********************************'''
 
 '''**************************import files ending with extension*********************'''
 
@@ -153,7 +173,7 @@ for the_files in File_name:
     xl = pd.ExcelFile(xlfname)
     new_sheet_list = [item for item in xl.sheet_names if  item not in  ['BokfAR','']] #exlude these sheets
     for sheet in new_sheet_list:
-            df = xl.parse(sheet,encoding = 'ISO-8859-1')
+            df = xl.parse(sheet,encoding = 'ISO-8859-1')#,dtype='str'
             df['Sheetname']=sheet
             df['Filename']=the_files
             df['Last_Path_Name']=Last_path_name
@@ -162,8 +182,53 @@ for the_files in File_name:
             df=df.rename(columns={cols: cols.replace(' ','') for cols in df.columns})# Remove spaces from columns
             coerce_df_columns_to_numeric(df, int_float)
             df[vars_to_date] = df[vars_to_date].values.astype("datetime64[s]")
-            df["Date_ID"] = df.Datum.dt.strftime('%Y%m%d')
+            df["DatumNyckel"] = df.Datum.dt.strftime('%Y%m%d')
+            df['x'] =  [ random.randint(0,10)  for k in df.index]
+            df['Budget_0_10']=((df.x/100)+1 )* df.Belopp
+            df=df.query('Belopp  >0')
             df.to_sql(name=str(rawData_vnr),con=sqlite_db,index=False,if_exists='append') #replace append
+#df.info()
+#
+#df[vars_to_date] = df[vars_to_date].fillna('9999-12-31')
+#
+#df.loc[:, vars_to_date] = df.loc[:, vars_to_date].fillna('9999-12-31')
+#df.loc[:, vars_to_date] = df.loc[:, vars_to_date].fillna('9999-12-31')
+#
+#df['Kdatum'].fillna('0', inplace=True)
+#df.Kdatum.fillna('KLAR', inplace=True)
+#
+#df.loc[(df['Kdatum'] == 'nan') , 'Kdatum'] = '9999-12-31'
+#df.loc[(df.Kdatum >=df.FirstDateOfWeek) , 'IsPreviousWeek'] = 1
+#
+#
+#df['Projekt'] = df['Projekt'].fillna('9999-12-31')
+#
+#df.update(df[vars_to_date].fillna('9999-12-31'))
+#df[vars_to_date] = df[vars_to_date].values.astype("datetime64[s]")
+'''***************************************create a view for kontonr**************'''
+
+View_vKontoplan='vKontoplan'
+CreateView_vKontoplan='''
+create view %s as
+SELECT
+      dk.Kontoplan,
+      dk.KontoplanNyckel,
+      dk.Kontogrupp,
+      dk.Kontogrupp1,
+      dk.Kontogrupp1Nyckel,
+      dk.Kontogrupp2,
+      dk.Kontogrupp3,
+      dk.Kontogrupp4
+FROM
+    
+    %s dk where dk.KontoplanNyckel in (select konto from %s)
+
+
+'''%(View_vKontoplan,dKontoplan,rawData_vnr)
+
+pd.io.sql.execute('DROP view IF EXISTS '+ View_vKontoplan, sqlite_db)
+pd.io.sql.execute(CreateView_vKontoplan, sqlite_db) #create the new empty table  
+
 
 
 '''********************************************#import calender**************'''
@@ -196,8 +261,8 @@ vars_to_date=['mindate','maxdate']
 
 df = pd.read_sql_query('select * from '+DateViewMinMaxPeriod, sqlite_db)
 df[vars_to_date] = df[vars_to_date].values.astype("datetime64[s]")
-df['period_start']=((df.mindate - pd.DateOffset(months=1)).dt.to_period("m").dt.start_time).dt.strftime("%Y-%m-%d")
-df['period_End']=((df.maxdate + pd.DateOffset(months=12)).dt.to_period("m").dt.end_time).dt.strftime("%Y-%m-%d")
+df['period_start']=((df.mindate - pd.DateOffset(months=0)).dt.to_period("m").dt.start_time).dt.strftime("%Y-%m-%d")
+df['period_End']=((df.maxdate + pd.DateOffset(months=0)).dt.to_period("m").dt.end_time).dt.strftime("%Y-%m-%d")
 
 Min_date="[]".join(list(df.period_start))
 Max_date="[]".join(list(df.period_End))
@@ -235,7 +300,7 @@ df = pd.DataFrame(index = pd.date_range(Min_date, Max_date, freq='D'))
 df['one']=1
 df['Date']=df.index
 df['DateKey'] = df.groupby(['one'])['one'].apply(lambda x: x.cumsum())
-df["Date_ID"] = df.Date.dt.strftime('%Y%m%d')
+df["DatumNyckel"] = df.Date.dt.strftime('%Y%m%d')
 df["YearMonthDay"] = df.Date.dt.strftime('%Y%m%d')
 df["YearMonth"] = df.Date.dt.strftime('%Y%m')
 df["DayDate"] = df.Date
@@ -303,20 +368,20 @@ df['months_between'] = (df['date1'].dt.to_period('M') -df['Date'].dt.to_period('
 df['Datum_swe']= df.MonthNameSwedishShort+'-'+df.Date.dt.strftime('%Y')
 df['IsWeekend']='False'
 df.loc[df['DayOfWeek'].isin([6,7]), 'IsWeekend'] = 'True'
-df["DateID"] = df.Date.dt.strftime('%Y-%m-%d')
+df.drop(['one','DateKey'], axis=1,inplace=True)
+
 
 dDate='dDate'
 df.to_sql(name=str(dDate),con=sqlite_db,index=False,if_exists='replace')  
 
-'''*************************create a vfact iew **************************************'''
-FactView_rawData_vnr='v'+rawData_vnr
+'''*************************create a stage view **************************************'''
+StageView_vnr='s'+rawData_vnr
 
 CreateViewStage_rawData_vnr='''
 create view %s as
 
 SELECT DISTINCT
-       dd.YearMonth AS Manad,
-       ri.Date_ID,
+       ri.DatumNyckel,
        ri.Ver_Nr,
        ri.Rad,
        ri.Belopp,
@@ -326,34 +391,204 @@ SELECT DISTINCT
        ri.Kvant,
        ri.Mstruken,
        ri.Struken,
-       dk.GrpKontoplan2Nyckel,
-       dk.KontoplanNyckel
+       ri.Budget_0_10,
+       dk.KontoplanNyckel,
+       dk.Kontogrupp,
+       dk.Kontogrupp1,
+       dk.Kontogrupp1Nyckel,
+       dk.Kontogrupp2,
+       dk.Kontogrupp3,
+       dk.Kontogrupp4
 FROM
     %s ri
-    LEFT JOIN %s dk ON dk.KontoplanNyckel = ri.Konto
-    LEFT JOIN %s dd ON dd.Date_ID = ri.Date_ID
+     left JOIN %s dk ON dk.KontoplanNyckel = ri.Konto
+     left JOIN %s dd ON dd.DatumNyckel = ri.DatumNyckel
 
-'''%(FactView_rawData_vnr,rawData_vnr,dKontoplan,dDate) 
+'''%(StageView_vnr,rawData_vnr,View_vKontoplan,dDate) 
 
 
 
-pd.io.sql.execute('DROP view IF EXISTS '+ FactView_rawData_vnr, sqlite_db)
+pd.io.sql.execute('DROP view IF EXISTS '+ StageView_vnr, sqlite_db)
 pd.io.sql.execute(CreateViewStage_rawData_vnr, sqlite_db) #create the new empty table  
+
+
+          
+#
+'''*************************Analys to PBI (see ekonomiapppen)**********************'''
+'''https://www.hitta.se/f%C3%B6retagsinformation/enfo+sweden+ab/5565818613'''
+
+View_vResultaträkning='vResultaträkning'
+
+CreateView_vResultaträkning='''
+
+create view %s as
+with 
+q1 as (
+SELECT DISTINCT
+       ri.Kontogrupp1 AS Sammanfattning,
+       ri.*
+FROM
+    srIndata ri
+WHERE
+     ri.Kontogrupp1 IN ('Nettoomsättning', 'Övriga rörelseintäkter', 'Rörelsekostnader',
+     'Övriga externa rörelsekostnader', 'Personalkostnader', 'Finansiella poster')),
+q2 as
+(
+SELECT DISTINCT
+       'Summa rörelseintäkter' AS Sammanfattning,
+       ri.*
+FROM
+    srIndata ri
+WHERE
+     ri.Kontogrupp1 IN ('Nettoomsättning', 'Övriga rörelseintäkter')),
+q3 as
+(SELECT DISTINCT
+       'Bruttovinst' AS Sammanfattning,
+       ri.*
+FROM
+    srIndata ri
+WHERE
+     ri.Kontogrupp1 IN ('Nettoomsättning', 'Övriga rörelseintäkter', 'Rörelsekostnader')),
+q4 as
+(SELECT DISTINCT
+       'Summa Rörelsekostnader' AS Sammanfattning,
+       ri.*
+FROM
+    srIndata ri
+WHERE
+     ri.Kontogrupp1 IN ( 'Rörelsekostnader','Övriga externa rörelsekostnader', 'Personalkostnader')),
+q5 as
+(SELECT DISTINCT
+       'Rörelseresultat'  AS Sammanfattning,
+       ri.*
+FROM
+    srIndata ri
+WHERE
+     ri.Kontogrupp1 IN ('Rörelsekostnader','Övriga externa rörelsekostnader', 
+     'Personalkostnader', 'Nettoomsättning','Övriga rörelseintäkter')),
+q6 as
+(SELECT DISTINCT
+       'Resultat efter avskrivningar' AS Sammanfattning,
+       ri.*
+FROM
+    srIndata ri
+WHERE
+      ri.Kontogrupp2 in ("Avskrivningar") or
+       ri.Kontogrupp1 in
+   ('Rörelsekostnader','Övriga externa rörelsekostnader','Personalkostnader',
+   'Nettoomsättning','Övriga rörelseintäkter')),
+q7 as
+(SELECT DISTINCT
+       'RESULTAT EFTER FINASIELLA POSTER' AS Sammanfattning,
+       ri.*
+FROM
+    srIndata ri
+WHERE
+     ri.Kontogrupp1 IN ('Rörelsekostnader','Övriga externa rörelsekostnader','Personalkostnader',
+    'Nettoomsättning','Övriga rörelseintäkter','Finansiella poster')),
+q8 as
+(SELECT DISTINCT
+       'RESULTAT efter finansiella poster och dispositioner' AS Sammanfattning,
+       ri.*
+FROM
+    srIndata ri
+WHERE
+     ri.Kontogrupp1 IN ('Rörelsekostnader','Övriga externa rörelsekostnader','Personalkostnader',
+   'Nettoomsättning','Övriga rörelseintäkter','Finansiella poster'
+    ,'Extraordinära poster','Bokslutsdispositioner')),
+q9 as
+(SELECT DISTINCT
+       'BERÄKNAT RESULTAT'  AS Sammanfattning,
+       ri.*
+FROM
+    srIndata ri
+WHERE
+     ri.Kontogrupp1 IN ('Rörelsekostnader','Övriga externa rörelsekostnader','Personalkostnader',
+    'Nettoomsättning','Övriga rörelseintäkter','Finansiella poster'
+   ,'Extraordinära poster','Bokslutsdispositioner','Skatt') ),
+q10 as     
+(select * from q1
+  union 
+  select * from q2
+union 
+  select * from q3
+union 
+  select * from q4
+union 
+  select * from q5
+union 
+  select * from q6
+union 
+  select * from q7
+union 
+  select * from q8
+union 
+  select * from q9
+)
+select *,
+case when Sammanfattning='Nettoomsättning' then 1
+      when Sammanfattning='Övriga rörelseintäkter' then 2
+      when Sammanfattning='Summa rörelseintäkter' then 3
+      when Sammanfattning='Rörelsekostnader' then 4
+      when Sammanfattning='Bruttovinst' then 5
+      when Sammanfattning='Övriga externa rörelsekostnader' then 6
+      when Sammanfattning='Personalkostnader' then 7
+      when Sammanfattning='Summa Rörelsekostnader' then 8
+      when Sammanfattning='Rörelseresultat' then 9
+      when Sammanfattning='Resultat efter avskrivningar' then 10
+      when Sammanfattning='Finansiella poster' then 11
+      when Sammanfattning='RESULTAT EFTER FINASIELLA POSTER' then 12
+      when Sammanfattning='RESULTAT efter finansiella poster och dispositioner' then 13
+      when Sammanfattning='BERÄKNAT RESULTAT' then 14
+      end as BokslutsNyckel from q10 
+'''%(View_vResultaträkning)
+
+
+
+pd.io.sql.execute('DROP VIEW IF EXISTS '+View_vResultaträkning, sqlite_db)
+pd.io.sql.execute(CreateView_vResultaträkning, sqlite_db) #create the new empty table
+
+
+
+
+fResultaträkning='fResultaträkning'
+
+CreateTable_fResultaträkning='''
+create table %s as
+
+SELECT distinct
+      vr.Sammanfattning,
+      vr.DatumNyckel,
+      vr.BokslutsNyckel,
+      vr.KontoplanNyckel,
+      vr.Belopp,
+      vr.Budget_0_10
+FROM
+    %s vr
+
+'''%(fResultaträkning,View_vResultaträkning)
+
+
+
+pd.io.sql.execute('DROP table IF EXISTS '+fResultaträkning, sqlite_db)
+pd.io.sql.execute(CreateTable_fResultaträkning, sqlite_db) #create the new empty table
+
+
 
 '''*************************create dimension tables*******************************''' 
 
 
-View_dGrpKontoplan2='dGrpKontoplan2'
+View_dGrpKontoplan2='vGrpKontoplan2'
 
 CreateView_dGrpKontoplan2='''
 create view %s as
 SELECT distinct
-      dk.GrpKontoplan2Nyckel,
-      dk.GrpKontoplan2
+      dk.Kontogrupp1Nyckel,
+      dk.Kontogrupp1
 FROM
     %s ri
     LEFT JOIN %s dk ON dk.Kontoplan = ri.Konto  
-'''%(View_dGrpKontoplan2,rawData_vnr,dKontoplan)
+'''%(View_dGrpKontoplan2,rawData_vnr,View_vKontoplan)
 
 pd.io.sql.execute('DROP view IF EXISTS '+ View_dGrpKontoplan2, sqlite_db)
 pd.io.sql.execute(CreateView_dGrpKontoplan2, sqlite_db) #create the new empty table  
@@ -362,209 +597,35 @@ pd.io.sql.execute(CreateView_dGrpKontoplan2, sqlite_db) #create the new empty ta
 df=pd.DataFrame({'TimeCreated':[Today]})
 df.to_sql(name='dDateCreated',con=sqlite_db,index=False,if_exists='replace') 
 
+
+
+
+
+V_dResultaträkning='v_dResultaträkning'
+
+CreateView_V_dResultaträkning='''
+create view %s as
+SELECT DISTINCT
+       fr.Sammanfattning,
+       fr.BokslutsNyckel
+FROM
+    %s fr
+
+'''%(V_dResultaträkning,fResultaträkning)
+
+pd.io.sql.execute('DROP view IF EXISTS '+ V_dResultaträkning, sqlite_db)
+pd.io.sql.execute(CreateView_V_dResultaträkning, sqlite_db) #create the new empty table 
+
+
 #costumer
 
-df=pd.DataFrame({'Kund':[Kund]})
-df.to_sql(name='Kund',con=sqlite_db,index=False,if_exists='replace') 
+df=pd.DataFrame({'Updated':[datetime.datetime.now().strftime("%Y-%m-%d %H:%M")]})
+df['Kund']=Kund
+df.to_sql(name='dDateCreatedKund',con=sqlite_db,index=False,if_exists='replace') 
 
-
+'''********************************************************'''
 
 
 sqlite_db.close()
 
 print('Script successfully completed')
-           
-
-'''*************************Analys to PBI**************************************'''
-#
-#pwrbi_view='vPwrbiEkonomiAppen'
-#sql_query='''
-#create view %s as
-#with 
-#q1 as (
-#
-#SELECT
-#      a.Sammanfattning,
-#      a.Manad,
-#      Sum(a.Summa) AS Sum_Summa
-#FROM
-#    %s a
-#    where a.Sammanfattning in 
-#    ('Nettoomsättning','Övriga rörelseintäkter','Rörelsekostnader',
-#'Övriga externa rörelsekostnader','Personalkostnader','Finansiella poster')
-#GROUP BY
-#        a.Sammanfattning,
-#        a.Manad),
-#q2 as
-#        (
-#        SELECT
-#      'Summa rörelseintäkter' as Sammanfattning,
-#      a.Manad,
-#      Sum(a.Summa) AS Sum_Summa
-#FROM
-#    %s a
-#    where a.Sammanfattning in 
-#    ('Nettoomsättning', 'Övriga rörelseintäkter')
-#GROUP BY
-#        a.Sammanfattning,
-#        a.Manad),
-#q3 as
-#        (
-#        SELECT
-#      'Bruttovinst' as Sammanfattning,
-#      a.Manad,
-#      Sum(a.Summa) AS Sum_Summa
-#FROM
-#    %s a
-#    where a.Sammanfattning in 
-#    ('Nettoomsättning', 'Övriga rörelseintäkter','Rörelsekostnader')
-#GROUP BY
-#        a.Sammanfattning,
-#        a.Manad),
-#q4 as
-#        (
-#        SELECT
-#      'Summa Rörelsekostnader' as Sammanfattning,
-#      a.Manad,
-#      Sum(a.Summa) AS Sum_Summa
-#FROM
-#    %s a
-#    where a.Sammanfattning in 
-#    ('Rörelsekostnader','Övriga externa rörelsekostnader','Personalkostnader')
-#GROUP BY
-#        a.Sammanfattning,
-#        a.Manad),
-#q5 as
-#        (
-#        SELECT
-#      'Rörelseresultat' as Sammanfattning,
-#      a.Manad,
-#      Sum(a.Summa) AS Sum_Summa
-#FROM
-#    %s a
-#    where a.Sammanfattning in 
-#    ('Rörelsekostnader','Övriga externa rörelsekostnader','Personalkostnader',
-#    'Nettoomsättning','Övriga rörelseintäkter')
-#GROUP BY
-#        a.Sammanfattning,
-#        a.Manad),
-#q6 as
-#        (
-#        SELECT
-#      'Resultat efter avskrivningar' as Sammanfattning,
-#      a.Manad,
-#      Sum(a.Summa) AS Sum_Summa
-#FROM
-#    %s a
-#    where a.Sammanfattning1 in ("Avskrivningar") or
-#        a.Sammanfattning in
-#    ('Rörelsekostnader','Övriga externa rörelsekostnader','Personalkostnader',
-#    'Nettoomsättning','Övriga rörelseintäkter')
-#GROUP BY
-#        a.Sammanfattning,
-#        a.Manad),
-#q7 as
-#        (
-#        SELECT
-#      'RESULTAT EFTER FINASIELLA POSTER' as Sammanfattning,
-#      a.Manad,
-#      Sum(a.Summa) AS Sum_Summa
-#FROM
-#    %s a
-#    where 
-#        a.Sammanfattning in
-#    ('Rörelsekostnader','Övriga externa rörelsekostnader','Personalkostnader',
-#    'Nettoomsättning','Övriga rörelseintäkter','Finansiella poster')
-#GROUP BY
-#        a.Sammanfattning,
-#        a.Manad),
-#q8 as
-#        (
-#        SELECT
-#      'RESULTAT efter finansiella poster och dispositioner' as Sammanfattning,
-#      a.Manad,
-#      Sum(a.Summa) AS Sum_Summa
-#FROM
-#    %s a
-#    where 
-#        a.Sammanfattning in
-#    ('Rörelsekostnader','Övriga externa rörelsekostnader','Personalkostnader',
-#    'Nettoomsättning','Övriga rörelseintäkter','Finansiella poster'
-#    ,'Extraordinära poster','Bokslutsdispositioner')
-#GROUP BY
-#        a.Sammanfattning,
-#        a.Manad),
-#q9 as
-#        (
-#       SELECT
-#      'BERÄKNAT RESULTAT' as Sammanfattning,
-#      a.Manad,
-#      Sum(a.Summa) AS Sum_Summa
-#FROM
-#    %s a
-#    where 
-#        a.Sammanfattning in
-#    ('Rörelsekostnader','Övriga externa rörelsekostnader','Personalkostnader',
-#    'Nettoomsättning','Övriga rörelseintäkter','Finansiella poster'
-#    ,'Extraordinära poster','Bokslutsdispositioner','Skatt')
-#GROUP BY
-#        a.Sammanfattning,
-#        a.Manad),
-#q10 as     
-#(select * from q1
-#  union 
-#  select * from q2
-#union 
-#  select * from q3
-#union 
-#  select * from q4
-#union 
-#  select * from q5
-#union 
-#  select * from q6
-#union 
-#  select * from q7
-#union 
-#  select * from q8
-#union 
-#  select * from q9
-#) 
-#select *,
-#case when Sammanfattning='Nettoomsättning' then 1
-#      when Sammanfattning='Övriga rörelseintäkter' then 2
-#      when Sammanfattning='Summa rörelseintäkter' then 3
-#      when Sammanfattning='Rörelsekostnader' then 4
-#      when Sammanfattning='Bruttovinst' then 5
-#      when Sammanfattning='Övriga externa rörelsekostnader' then 6
-#      when Sammanfattning='Personalkostnader' then 7
-#      when Sammanfattning='Summa Rörelsekostnader' then 8
-#      when Sammanfattning='Rörelseresultat' then 9
-#      when Sammanfattning='Resultat efter avskrivningar' then 10
-#      when Sammanfattning='Finansiella poster' then 11
-#      when Sammanfattning='RESULTAT EFTER FINASIELLA POSTER' then 12
-#      when Sammanfattning='RESULTAT efter finansiella poster och dispositioner' then 13
-#      when Sammanfattning='BERÄKNAT RESULTAT' then 14
-#      end as Rank_var from q10 
-#
-#'''%(pwrbi_view,
-#fMaster_view,
-#fMaster_view,
-#fMaster_view,
-#fMaster_view,
-#fMaster_view,
-#fMaster_view,
-#fMaster_view,
-#fMaster_view,
-#fMaster_view)
-#
-#
-#pd.io.sql.execute('DROP VIEW IF EXISTS '+pwrbi_view, sqlite_db)
-#pd.io.sql.execute(sql_query, sqlite_db) #create the new empty table
-
-
-'''****************************************end*********************************************************************************************'''
-#drop tables views not needed
-
-#pd.io.sql.execute('DROP VIEW IF EXISTS '+date_view, sqlite_db)
-
-
