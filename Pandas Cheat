@@ -370,6 +370,11 @@ v4['IDx'] = 1
 v4['no_cumulative'] = v4.groupby(['Team','AR'])['Goal'].apply(lambda x: x.cumsum())
 v4['idxx'] = v4.groupby(['Team','AR'])['IDx'].apply(lambda x: x.cumsum())
 
+df['idxx'] = df.groupby(['Date','Groups'])['total'].cumsum()
+
+v4['idxx'] = v4.groupby(['Team','AR']).cumcount()+1
+
+df['DayOfQuarter'] = df.groupby(['QuarterCode']).cumcount()+1
 
 #moving average
 
