@@ -365,6 +365,11 @@ for  shifts in range(1,3):
     print(shifts)
     v4["lastgame"+str(shifts)] = np.where(v4["lastgame"+str(shifts)].isnull(),v4["lastgame"+str(shifts-1)],v4["lastgame"+str(shifts)])
 
+df = pd.DataFrame({
+    'Date': ['2017', '2017', '2018', '2018', '2018'],
+    'Groups': ['one', 'one', 'one', 'two', 'two'],
+'total': range(1, 6)})
+
 
 v4['IDx'] = 1
 v4['no_cumulative'] = v4.groupby(['Team','AR'])['Goal'].apply(lambda x: x.cumsum())
