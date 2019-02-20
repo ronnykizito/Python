@@ -62,13 +62,14 @@ database = 'EKONOMIAPPEN'
 username = 'ekonomiappen'
 password = 'Enfo_2019'
 
-
+migrate_to_databse='azure_db' #specify the database to migrate to
 
 driver= '{ODBC Driver 17 for SQL Server}'
-#driver= '{SQL Server Native Client 11.0}'  
+
 params = urllib.parse.quote_plus('DRIVER='+driver+';SERVER='+server+';PORT=1433;DATABASE='+database+';UID='+username+';PWD='+ password)
 conn_str = 'mssql+pyodbc:///?odbc_connect={}'.format(params)
-azure_db = create_engine(conn_str)
+migrate_to_databse = create_engine(conn_str)
+
 
 
 '''setup a database for SQLITE3. The execution plan for SQLIT3 is much faster then other database'''
@@ -660,30 +661,36 @@ df.to_sql(name='RowLabels',con=sqlite_db,index=False,if_exists='replace')
 start_time = time.time()
 chuck_sum=0
 
-tables_to_azure=['dKontoplan','dDate','dDateCreatedKund','ColumnLabels',
-                 'RowLabels','fResultaträkning','dResultaträkning_Nyckel']
 
-for table_to_azure in tables_to_azure:
-    sql_query= """  select * from %s"""%(table_to_azure)
-    pd.io.sql.execute('DROP table IF EXISTS '+str(table_to_azure), azure_db)
+
+lista='dKontoplan dDate ColumnLabels RowLabels  \
+dResultaträkningNyckel dDateCreatedKund fResultaträkning'
+
+tables = [item for item in lista.split(' ') if  item not in  ['']] #exclude empty
+
+for table in tables:
+    sql_query= """  select * from %s"""%(table)
+    pd.io.sql.execute('DROP table IF EXISTS '+str(table), migrate_to_databse)
     for df in pd.read_sql_query(sql_query, sqlite_db,chunksize=chunksize): #get data from SQLITE
+        print('reading ',str(table))
         chuck_sum += chunksize
         print(chuck_sum,' rows from SQLITE3 ','Start ',time.strftime("%H:%M:%S"),'execution time ',time.strftime("%H:%M:%S", time.gmtime(time.time() - start_time)))
-        df.to_sql(name=str(table_to_azure),con=azure_db,index=False,if_exists='append') #migrate to another database
-        print(chuck_sum,'rows to',str(table_to_azure),'execution time ',time.strftime("%H:%M:%S", time.gmtime(time.time() - start_time)))
+        df.to_sql(name=str(table),con=migrate_to_databse,index=False,if_exists='append') #migrate to another database
+        print(chuck_sum,'rows to execution time ',time.strftime("%H:%M:%S", time.gmtime(time.time() - start_time)))
+        
 
 '''*****************************extract to azure one file***************************'''
 
-##send one table
 #table_to_azure='dResultaträkningNyckel'
 #sql_query= """  select * from %s"""%(table_to_azure)
-#pd.io.sql.execute('DROP table IF EXISTS '+ str(table_to_azure), azure_db)
+#pd.io.sql.execute('DROP table IF EXISTS '+ str(table_to_azure), migrate_to_databse)
 #for df in pd.read_sql_query(sql_query, sqlite_db,chunksize=chunksize): #get data from SQLITE
-#    df.to_sql(name=str(table_to_azure),con=azure_db,index=False,if_exists='append')
+#    df.to_sql(name=str(table_to_azure),con=migrate_to_databse,index=False,if_exists='append')
 
 
 
 
 sqlite_db.close()
+
 
 print('Script successfully completed')
