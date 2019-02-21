@@ -165,3 +165,12 @@ for df in pd.read_sql_query(sql , con=SQLITE3, chunksize=5):
 
 
 
+
+DECLARE @processdate AS DATETIME
+SET    @processdate = '2019-01-02'
+SELECT Cast(@processdate as datetime) as Mydate,
+DATEPART(dy, Cast(@processdate as datetime)) AS DayOfYear,
+  DATEDIFF(d, DATEADD(qq, DATEDIFF(qq, 0, Cast(@processdate as datetime)), 0), Cast(@processdate as datetime)) + 1 AS DayOfQuarter
+   , DAY(Cast(@processdate as datetime)) AS DayOfMonth,
+    DATEPART(dw, Cast(@processdate as datetime))-1 AS DayOfWeek
+
