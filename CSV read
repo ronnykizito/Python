@@ -137,3 +137,6 @@ for df in pd.read_csv(path+file+'.csv', sep=separator,encoding = encoding, low_m
    
 del [[df]]
 gc.collect()
+
+
+df.to_csv(outputFile,chunksize=chunk,index=False, mode='a') #migrate to csv
