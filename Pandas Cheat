@@ -1484,3 +1484,9 @@ for replace_dot_comma in PWBI_replace_numeric:
 
 
 #df.to_csv(Main_Path+'\\test2.csv',sep=';', index=False,decimal=',',encoding='ISO-8859-1')
+df = pd.DataFrame(index = pd.date_range('2018-01-01', '2019-12-31', freq='D'))
+df['Date']=df.index
+df['Value'] = np.random.randint(0,5, size=len(df))
+
+df['SamePeriodLastYear'] = df.groupby([df['Date'].dt.month,df['Date'].dt.day])['Value'].shift()
+
