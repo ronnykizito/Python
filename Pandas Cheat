@@ -1494,3 +1494,7 @@ df['Value'] = np.random.randint(0,5, size=len(df))
 
 df['SamePeriodLastYear'] = df.groupby([df['Date'].dt.month,df['Date'].dt.day])['Value'].shift()
 
+read multi excel
+all_Files = glob.glob('/home/data/*.xlsx')
+
+df = pd.concat((pd.read_excel(files, sep=',', index=False, skiprows=1) for files in all_Files))
