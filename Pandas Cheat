@@ -5,6 +5,8 @@ https://www.geeksforgeeks.org/python-pandas-dataframe-isin/
 
 pip install dask[dataframe]
 
+variables = locals()
+variables["df{0}".format(num)] =df
 
 @author: Ronny
 """
