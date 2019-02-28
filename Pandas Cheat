@@ -79,7 +79,9 @@ qlist['period_End']=((qlist.Date + pd.DateOffset(months=1)).dt.to_period("m").dt
 Min_date="[]".join(list(qlist.period_start))
 Max_date="[]".join(list(qlist.period_End))
 
+#keep colums
 
+df1=df.loc[:, keepPeriod1].copy()
 
 #Y M Q W: first last days
 df['xx'] = df.Date.dt.to_period("Y").dt.end_time
