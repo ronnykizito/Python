@@ -1,43 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Dec 17 08:56:26 2018
-
-@author: Ronny Sentongo
-
-Created by	: Ronny Sentongo, Enfogroup AB
-Contact*  	: Robert.Granfors@enfo.se, Ronny.Sentongo@enfogroup.com
-Purpose*  	: Robert Granfors (Kruxet är att deras CFO tar denna rapport och vill exportera den till Excel för att få in den i ett större rapportpaket han gör.
-                              Problemet med denna rapport, är att när man exporterar den till Excel så måste jag eller deras CFO manuellt lägga rätt mycket tid 
-                              för att den ska passa in i mallen som också är bifogad.)
-Costumer 	: BRA flyg
-Output	  	: 
-loggin      :
---Ladda hem VPN-klienten cisco connect
---Anslut till: extvpn.flygbra.se
---User: rogr
---Pass: Vinter2019
-
-----PWRBI loggin
-
-Server:         ALSSQLP012.mcn.malmoaviation.se
-Användarnamn:   DWH-reader
-Lösenord:       BM@vat1000 
-
-
-
-
-Notes
-
-
-
-This is a Python-script, therefore some downloads/installation will be needed
-1. You need to have PowerBI downloaded from Microsoft Store
-2. Download and install Python 3 https://www.python.org/downloads/
-3. Install Pip, if not included, make sure that you computer recognise Pip
-    controlpanel -system-avanced envorialment-envorialment variables- path edit (then add new path) these path below
-
-  
-4. Now install the modules your using (se import): The is needed for PWRBI
+'
 
 """
 #C:\Users\Admin\AppData\Local\Programs\Python\Python37-32
@@ -124,20 +85,7 @@ for num, folder_name in enumerate(folders, start=1):
 
 #.................this is the connection to the costumer.......................
        
-#connection in
-server = 'ALSSQLP012.mcn.malmoaviation.se'
-database = 'bradw_dm'
-username = 'DWH-reader'
-password = 'BM@vat1000'
 
-#SQL Server 
-SQLServer = pyodbc.connect('Driver={ODBC Driver 17 for SQL Server};' 
-                              'Server=ALSSQLP012.mcn.malmoaviation.se;' 
-                              'Database=bradw_dm;' 
-                              'uid=DWH-reader;' 
-                              'pwd=BM@vat1000')
-
-SQLServer_cursor = SQLServer.cursor()
 
 
 #create a database
