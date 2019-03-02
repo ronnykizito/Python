@@ -65,7 +65,11 @@ data=list(qlist.ff)
 data=tuple(qlist.ff)
 
 
+lista='Value konton'
 
+columns_to_numeric=[item for item in lista.title().split(' ') if  item not in  ['']]
+
+df[columns_to_numeric] = df[columns_to_numeric].apply(pd.to_numeric, errors='coerce')
 
 
 import pandas as pd
