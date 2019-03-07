@@ -1,4 +1,43 @@
-'
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Dec 17 08:56:26 2018
+
+@author: Ronny Sentongo
+
+Created by	: Ronny Sentongo, Enfogroup AB
+Contact*  	: Robert.Granfors@enfo.se, Ronny.Sentongo@enfogroup.com
+Purpose*  	: Robert Granfors (Kruxet är att deras CFO tar denna rapport och vill exportera den till Excel för att få in den i ett större rapportpaket han gör.
+                              Problemet med denna rapport, är att när man exporterar den till Excel så måste jag eller deras CFO manuellt lägga rätt mycket tid 
+                              för att den ska passa in i mallen som också är bifogad.)
+Costumer 	: BRA flyg
+Output	  	: 
+loggin      :
+--Ladda hem VPN-klienten cisco connect
+--Anslut till: extvpn.flygbra.se
+--User: rogr
+--Pass: Vinter2019
+
+----PWRBI loggin
+
+Server:         ALSSQLP012.mcn.malmoaviation.se
+Användarnamn:   DWH-reader
+Lösenord:       BM@vat1000 
+
+
+
+
+Notes
+
+
+
+This is a Python-script, therefore some downloads/installation will be needed
+1. You need to have PowerBI downloaded from Microsoft Store
+2. Download and install Python 3 https://www.python.org/downloads/
+3. Install Pip, if not included, make sure that you computer recognise Pip
+    controlpanel -system-avanced envorialment-envorialment variables- path edit (then add new path) these path below
+
+  
+4. Now install the modules your using (se import): The is needed for PWRBI
 
 """
 #C:\Users\Admin\AppData\Local\Programs\Python\Python37-32
@@ -20,16 +59,17 @@ from datetime import datetime
 
 
 Today=time.strftime("%Y-%m-%d")
+CreatedTime=time.strftime("%Y-%m-%d %H:%M")
 start_time = time.time()
 
 df=pd.DataFrame({'Datex':['0000-01-01']})
 df['Date']=datetime.strptime(time.strftime("%Y-%m-%d"), '%Y-%m-%d')
 df['WeekNo']= df.Date.dt.strftime('%W')
-df['period_start'] = ((df.Date - pd.DateOffset(months=1)).dt.to_period("m").dt.start_time).dt.strftime('%Y%m01')
+df['period_start'] = ((df.Date - pd.DateOffset(months=14)).dt.to_period("m").dt.start_time).dt.strftime('%Y%m01')
 df['FirstDateOfMonth']= (df.Date.dt.to_period("m").dt.start_time).dt.strftime('%Y%m01')
 df['EndPeriod'] = (df.Date + pd.DateOffset(months=2)).dt.to_period("m").dt.start_time
 df['LastDateOfMonth_N']= (df.EndPeriod.dt.to_period("m").dt.end_time).dt.strftime('%Y%m%d')
-df['period_startDate'] = ((df.Date - pd.DateOffset(months=2)).dt.to_period("m").dt.start_time).dt.strftime("%Y-%m-01")
+df['period_startDate'] = ((df.Date - pd.DateOffset(months=14)).dt.to_period("m").dt.start_time).dt.strftime("%Y-%m-01")
 df['period_EndDate'] = ((df.Date + pd.DateOffset(months=12)).dt.to_period("m").dt.start_time).dt.strftime("%Y-%m-01")
 df['Period1'] = ((df.Date - pd.DateOffset(months=0)).dt.to_period("m").dt.start_time).dt.strftime('%Y%m')
 df['Period2'] = ((df.Date + pd.DateOffset(months=1)).dt.to_period("m").dt.start_time).dt.strftime('%Y%m')
@@ -38,8 +78,7 @@ df['x'] = ((df.Date - pd.DateOffset(months=0)).dt.to_period("m").dt.start_time)
 df['Period1_excel'] = ((df.x - pd.DateOffset(months=0)).dt.to_period("m").dt.start_time).dt.strftime('%B %Y')
 df['Period2_excel'] = ((df.x + pd.DateOffset(months=1)).dt.to_period("m").dt.start_time).dt.strftime('%B %Y')
 df['Period3_excel'] = ((df.x + pd.DateOffset(months=2)).dt.to_period("m").dt.start_time).dt.strftime('%B %Y')
-
-
+df['FirstDateOfMonth']= (df.Date.dt.to_period("m").dt.start_time).dt.strftime('%Y%m')
 
 
 
@@ -51,6 +90,7 @@ period_end_hTable="[]".join(list(df.LastDateOfMonth_N))
 period_startDate="[]".join(list(df.period_startDate)) 
 period_EndDate="[]".join(list(df.period_EndDate))
 period_to_excel=list(df.Period1)+list(df.Period2)+list(df.Period3)
+PeriodToMasterFile=period_to_excel[0]
 week="[]".join(list(df.WeekNo))
 Period1_excel="[]".join(list(df.Period1_excel))
 Period2_excel="[]".join(list(df.Period2_excel))
@@ -71,7 +111,7 @@ print('Program begins' )
 costumer='BRA'
 path=r'C:\Users\F2531197\Enfo Oyj\Robert Granfors - BRA flyg-Ronny'
 
-lista='powerbi database outfiles'
+lista='powerbi database outfiles the_excel_report'
 
 folders = [item for item in lista.title().split(' ') if  item not in  ['']] #exclude empty
 
@@ -83,9 +123,27 @@ for num, folder_name in enumerate(folders, start=1):
     if not os.path.exists(newpath):
         os.makedirs(newpath)
 
+
+path_report=path+'\\Outfiles\\The_Excel_Report.xlsx'
+
+
+
 #.................this is the connection to the costumer.......................
        
+#connection in
+server = 'ALSSQLP012.mcn.malmoaviation.se'
+database = 'bradw_dm'
+username = 'DWH-reader'
+password = 'BM@vat1000'
 
+#SQL Server 
+SQLServer = pyodbc.connect('Driver={ODBC Driver 17 for SQL Server};' 
+                              'Server=ALSSQLP012.mcn.malmoaviation.se;' 
+                              'Database=bradw_dm;' 
+                              'uid=DWH-reader;' 
+                              'pwd=BM@vat1000')
+
+SQLServer_cursor = SQLServer.cursor()
 
 
 #create a database
@@ -205,16 +263,16 @@ FROM
     vfTicketCoupons vtc
     INNER JOIN vdCitypair vcp ON vcp.Citypair_ID = vtc.Citypair_ID
     INNER JOIN vdExchangeRate ver ON ver.CurrencyBKEY = vtc.CurrencyBKEY
+    
 """
 
 pd.io.sql.execute('DROP TABLE IF EXISTS '+ table, SQLITE3)
 for df in pd.read_sql_query(sql_query, SQLITE3,chunksize=chunksize):
-    df['Date'] =(df.DepartureDate_ID.astype(str).str[0:4]+'-'+
-    df.DepartureDate_ID.astype(str).str[4:6]+'-'+
-    df.DepartureDate_ID.astype(str).str[6:8]).values.astype("datetime64[s]")
+    df['Date'] =(df.DepartureDate_ID.astype(str).str[0:4]+'-'+df.DepartureDate_ID.astype(str).str[4:6]+'-'+
+      df.DepartureDate_ID.astype(str).str[6:8]).values.astype("datetime64[s]")
     df['DomesticOrInternational']='International'
     df.loc[(df.CitypairOriginCountryCode == 'SE') & 
-           (df.CitypairDestinationCountryCode =='SE'), 'DomesticOrInternational'] = 'Domestic'
+       (df.CitypairDestinationCountryCode =='SE'), 'DomesticOrInternational'] = 'Domestic'
     df['Today']=Today
     df['Today']=df.Today.astype("datetime64[s]")
     df['FirstDateOfWeek'] = ((df.Today.dt.to_period('W').apply(lambda r: r.start_time).dt.date)
@@ -243,19 +301,27 @@ for df in pd.read_sql_query(sql_query, SQLITE3,chunksize=chunksize):
     - pd.DateOffset(days=1)- pd.DateOffset(weeks=0))+pd.DateOffset(days=1)
     df['LastDateOfWeekLY'] = (df.FirstDateOfWeekLY+ pd.DateOffset(days=7))-pd.DateOffset(days=1)
     df['IsPreviousWeekLY']=0
-    df.loc[(df.BookedDateLY >=df.FirstDateOfWeekLY) & (df.BookedDateLY<=df.LastDateOfWeekLY), 'IsPreviousWeekLY'] = 1
-        #räkna max min DepartureDate baserad på IsPreviousWeekLY.. 
-    #df[x]=if IsPreviousWeekLY==1 give me (min ,max DepartureDate_ID )
-    #if DepartureDate_IDLY >= then amount
+    df.loc[(df.BookedDate >=df.FirstDateOfWeekLY) & (df.BookedDate<=df.LastDateOfWeekLY), 'IsPreviousWeekLY'] = 1
     df.loc[(df.IsPreviousWeekLY==1) , 'BookedDate_IDLY'] = df.BookedDate_ID
-    df['AmountBLWLY']=0
-    df.loc[(df.BookedDate_IDLY>0) , 'AmountBLWLY'] = 0.1
-    df['BdkpaxBLWLY']=0
-    df.loc[(df.BookedDate_IDLY>0) , 'BdkpaxBLWLY'] = 0.1
     df.rename(columns={'Date':'DepartureDate'},inplace=True)
+    df['BkdRevLastYear']=0
+    df.loc[(df.BookedDate <df.TodayLYx), 'BkdRevLastYear'] = df.AmountSEK
+    df['BkdPaxLastYear']=0
+    df.loc[(df.BookedDate <df.TodayLYx), 'BkdPaxLastYear'] = 1
+    df['AmountBLWLY']=0
+    df['BdkpaxBLWLY']=0
+    df.loc[(df.BookedDate >=df.FirstDateOfWeekLY) & (df.BookedDate<=df.LastDateOfWeekLY), 
+           'AmountBLWLY'] = df.BkdRevLastYear
+    df.loc[(df.BookedDate >=df.FirstDateOfWeekLY) & (df.BookedDate<=df.LastDateOfWeekLY), 
+           'BdkpaxBLWLY'] = df.BkdPaxLastYear      
     df.to_sql(name=table,con=SQLITE3,index=False,if_exists='append')
     
-##
+
+
+
+
+
+
 ##
 #df = pd.read_sql_query(sql_query, SQLITE3)
 #df1=pd.DataFrame()
@@ -310,7 +376,7 @@ FROM
     q2
     INNER JOIN q1 ON q1.CitypairBKEY = q2.CitypairBKEY
     
-    '''%(period_start_hTable,period_end_hTable)
+    '''%(period_start,period_end_hTable)
 
 pd.io.sql.execute('DROP TABLE IF EXISTS '+ table, SQLITE3)
 for period,periodsCode in zip(periods,periodsCodes):
@@ -335,6 +401,9 @@ WITH
       Sum(ftc.BdkpaxBLW) AS BkdPaxWeek,
       Sum(ftc.AmountBLWLY) AS BkdRevWeekLY,
       Sum(ftc.BdkpaxBLWLY) AS BkdPaxWeekLY,
+      Sum(ftc.BkdRevLastYear) AS BkdRevLastYear,
+      Sum(ftc.BkdPaxLastYear) AS BkdPaxLastYear,
+      
       ht.CitypairBKEY,
       ht.CitypairName,
       ht.CitypairSortOrder,
@@ -380,7 +449,9 @@ GROUP BY
                  q1.BkdRevWeek,
                  q1.BkdPaxWeek,
                  q1.BkdRevWeekLY,
-                 q1.BkdPaxWeekLY
+                 q1.BkdPaxWeekLY,
+                 q1.BkdRevLastYear,
+                 q1.BkdPaxLastYear
            FROM
                q1
                left JOIN q2 ON (q2.CitypairBKEY = q1.CitypairBKEY) AND
@@ -399,26 +470,39 @@ SELECT
       q3.BkdPax,
       q3.BkdRevWeek,
       q3.BkdPaxWeek,
-      q3.BkdRevWeekLY,
-      q3.BkdPaxWeekLY
+      q3.BkdRevWeekLY as BkdRevWeekLY1,
+      q3.BkdPaxWeekLY as BkdPaxWeekLY1,
+      q3.BkdRevLastYear,
+      q3.BkdPaxLastYear
+     
 FROM
     q3
 """
 pd.io.sql.execute('DROP TABLE IF EXISTS '+ table, SQLITE3)
-for df in pd.read_sql_query(sql_query, SQLITE3,chunksize=chunksize):
-    df['Loadfact']=df.BkdPax/df.Capacity
-    df['BkdRev_Pax']=df.BkdRev/df.BkdPax
-    df['BkdRev_PaxWeek']=df.BkdRevWeek/df.BkdPaxWeek
-    df['Date'] =(df.DepartureMonthCode.astype(str).str[0:4]+'-'+
-    df.DepartureMonthCode.astype(str).str[4:6]+'-01').values.astype("datetime64[s]")
-    df['BkdRevLY'] = df.groupby([df['Date'].dt.month,df['Date'].dt.day])['BkdRev'].shift()
-    df['CapacityLY'] = df.groupby([df['Date'].dt.month,df['Date'].dt.day])['Capacity'].shift()
-    df['BkdPaxLY'] = df.groupby([df['Date'].dt.month,df['Date'].dt.day])['BkdPax'].shift()
-    df['LoadfactLY'] = df.groupby([df['Date'].dt.month,df['Date'].dt.day])['Loadfact'].shift()
-    df['BkdRev_PaxLY'] = df.groupby([df['Date'].dt.month,df['Date'].dt.day])['BkdRev_Pax'].shift()
-    df['BkdRev_PaxWeekLY']=0.1
-    df.to_sql(name=table,con=SQLITE3,index=False,if_exists='append')
+df = pd.read_sql_query(sql_query, SQLITE3)
+df['Loadfact']=df.BkdPax/df.Capacity
+df['BkdRev_Pax']=df.BkdRev/df.BkdPax
+df['BkdRev_PaxWeek']=df.BkdRevWeek/df.BkdPaxWeek
+df['Date'] =(df.DepartureMonthCode.astype(str).str[0:4]+'-'+
+df.DepartureMonthCode.astype(str).str[4:6]+'-01').values.astype("datetime64[s]")
+df.sort_values(['CitypairName','Date'], ascending=[True,True],inplace=True)
+df['BkdRevLY'] = df.groupby([df['Date'].dt.month,df['Date'].dt.day])['BkdRevLastYear'].shift()
+df['CapacityLY'] = df.groupby([df['Date'].dt.month,df['Date'].dt.day])['Capacity'].shift()
+df['BkdPaxLY'] = df.groupby([df['Date'].dt.month,df['Date'].dt.day])['BkdPaxLastYear'].shift()
 
+df['BkdRevWeekLY'] = df.groupby([df['Date'].dt.month,df['Date'].dt.day])['BkdRevWeekLY1'].shift()
+df['BkdPaxWeekLY'] = df.groupby([df['Date'].dt.month,df['Date'].dt.day])['BkdPaxWeekLY1'].shift()
+
+df['LoadfactLY']=df.BkdPaxLY/df.CapacityLY
+df['BkdRev_PaxLY']=df.BkdRevLY/df.BkdPaxLY
+df['BkdRev_PaxWeekLY']=df.BkdRevWeekLY/df.BkdPaxWeekLY
+df=df.query('(DepartureMonthCode >="'+str(PeriodToMasterFile)+'" )')
+df.to_sql(name=table,con=SQLITE3,index=False,if_exists='append')
+
+
+#df=df.query('(CitypairName in ["AGH - BMA","AGH - MXX"] )')
+#
+#df.to_excel(r'C:\Users\F2531197\Enfo Oyj\Robert Granfors - BRA flyg-Ronny\Outfiles\test.xlsx')
 
 ''' ..................... to excel ............................'''
 variables = locals()
@@ -427,7 +511,7 @@ table='To_Excel'
 for num, period in enumerate(period_to_excel, start=1):
     sql_query='''
 WITH
-    q1 AS (SELECT
+    q1 AS (SELECT 
                  hp.CitypairBKEY AS CitypairBKEY,
                  hp.CitypairName,
                  hp.DomesticOrInternational,
@@ -444,6 +528,7 @@ WITH
                  Sum(m.BkdRevWeek) / Sum(m.BkdPaxWeek) AS BkdRev_PaxWeek,
                  sum(m.BkdRevWeekLY) as BkdRevWeekLY,
                  sum(m.BkdPaxWeekLY) as BkdPaxWeekLY,
+                 sum(m.BkdRev_PaxWeekLY) as BkdRev_PaxWeekLY,
                  sum(m.BkdRevLY) as BkdRevLY,
                   sum(m.CapacityLY) as CapacityLY,
                   sum(m.BkdPaxLY) as BkdPaxLY,
@@ -480,6 +565,7 @@ WITH
                  Sum(m.BkdRevWeek) / Sum(m.BkdPaxWeek) AS BkdRev_PaxWeek,
                  sum(m.BkdRevWeekLY) as BkdRevWeekLY,
                  sum(m.BkdPaxWeekLY) as BkdPaxWeekLY,
+                 sum(m.BkdRev_PaxWeekLY) as BkdRev_PaxWeekLY,
                  sum(m.BkdRevLY) as BkdRevLY,
                   sum(m.CapacityLY) as CapacityLY,
                   sum(m.BkdPaxLY) as BkdPaxLY,
@@ -512,6 +598,7 @@ WITH
                  Sum(m.BkdRevWeek) / Sum(m.BkdPaxWeek) AS BkdRev_PaxWeek,
                  sum(m.BkdRevWeekLY) as BkdRevWeekLY,
                  sum(m.BkdPaxWeekLY) as BkdPaxWeekLY,
+                 sum(m.BkdRev_PaxWeekLY) as BkdRev_PaxWeekLY,
                  sum(m.BkdRevLY) as BkdRevLY,
                   sum(m.CapacityLY) as CapacityLY,
                   sum(m.BkdPaxLY) as BkdPaxLY,
@@ -546,6 +633,7 @@ WITH
                  Sum(m.BkdRevWeek) / Sum(m.BkdPaxWeek) AS BkdRev_PaxWeek,
                  sum(m.BkdRevWeekLY) as BkdRevWeekLY,
                  sum(m.BkdPaxWeekLY) as BkdPaxWeekLY,
+                 sum(m.BkdRev_PaxWeekLY) as BkdRev_PaxWeekLY,
                  sum(m.BkdRevLY) as BkdRevLY,
                   sum(m.CapacityLY) as CapacityLY,
                   sum(m.BkdPaxLY) as BkdPaxLY,
@@ -578,6 +666,7 @@ WITH
                  Sum(m.BkdRevWeek) / Sum(m.BkdPaxWeek) AS BkdRev_PaxWeek,
                  sum(m.BkdRevWeekLY) as BkdRevWeekLY,
                  sum(m.BkdPaxWeekLY) as BkdPaxWeekLY,
+                 sum(m.BkdRev_PaxWeekLY) as BkdRev_PaxWeekLY,
                  sum(m.BkdRevLY) as BkdRevLY,
                   sum(m.CapacityLY) as CapacityLY,
                   sum(m.BkdPaxLY) as BkdPaxLY,
@@ -686,7 +775,7 @@ SELECT
       tr.BkdRev_PaxWeek as BkdRev_PaxWeek2
 FROM
     TheReport tr
-ORDER BY
+ORDER BY 
         tr.CitypairSortOrder_x
    
 '''   
@@ -736,9 +825,16 @@ worksheet.merge_range('T4:AA4', str(Period3_excel),merge_format )
 
 writer.save()
 
+
+df['CreatedTime']=CreatedTime
+df['ID'] = range(1, 1+len(df) ) #increasing by 1
+
+
+df.to_excel(path_report,sheet_name ='fFBW')
+
 '''.............. sheet2.................................................'''
 
-sql_query='''
+sql_query=''' 
 SELECT
       tr.CitypairName_x AS CitypairName,
       tr.BkdRev_x AS BkdRevTY,
@@ -748,7 +844,7 @@ SELECT
       tr.BkdRev_Pax_x AS BkdRev_PaxTY,
       tr.BkdRevLY_x AS BkdRevLY,
       tr.CapacityLY_x AS CapacityLY,
-      tr.BkdRev_PaxLY_x AS BkdPaxLY,
+      tr.BkdPaxLY_x AS BkdPaxLY,
       tr.LoadfactLY_x AS LoadfactLY,
       tr.BkdRev_PaxLY_x AS BkdRev_PaxLY,
       
@@ -758,7 +854,7 @@ SELECT
       tr.BkdPaxWeek_x AS BkdPaxWeekTY,
       tr.BkdPaxWeekLY_x AS BkdPaxWeekLY,
       tr.BkdRev_PaxWeek_x AS BkdRev_PaxWeekTY,
-      '' AS BkdRev_PaxWeekLY,
+      tr.BkdRev_PaxWeekLY_x AS BkdRev_PaxWeekLY,
       '' AS x,
       tr.BkdRev_y AS BkdRevTY1,
       tr.Capacity_y AS CapacityTY1,
@@ -767,7 +863,7 @@ SELECT
       tr.BkdRev_Pax_y AS BkdRev_PaxTY1,
       tr.BkdRevLY_y AS BkdRevLY1,
       tr.CapacityLY_y AS CapacityLY1,
-      tr.BkdRev_PaxLY_y AS BkdPaxLY1,
+      tr.BkdPaxLY_y AS BkdPaxLY1,
       tr.LoadfactLY_y AS LoadfactLY1,
       tr.BkdRev_PaxLY_y AS BkdRev_PaxLY1,
       
@@ -777,7 +873,7 @@ SELECT
       tr.BkdPaxWeek_y AS BkdPaxWeekTY1,
       tr.BkdPaxWeekLY_y AS BkdPaxWeekLY1,
       tr.BkdRev_PaxWeek_y AS BkdRev_PaxWeekTY1,
-      '' AS BkdRev_PaxWeekLY1,
+      tr.BkdRev_PaxWeekLY_y AS BkdRev_PaxWeekLY1,
       '' AS y,
       tr.BkdRev AS BkdRevTY2,
       tr.Capacity AS CapacityTY2,
@@ -786,7 +882,7 @@ SELECT
       tr.BkdRev_Pax AS BkdRev_PaxTY2,
       tr.BkdRevLY AS BkdRevLY2,
       tr.CapacityLY AS CapacityLY2,
-      tr.BkdRev_PaxLY AS BkdPaxLY2,
+      tr.BkdPaxLY AS BkdPaxLY2,
       tr.LoadfactLY AS LoadfactLY2,
       tr.BkdRev_PaxLY AS BkdRev_PaxLY2,
       
@@ -796,7 +892,7 @@ SELECT
       tr.BkdPaxWeek AS BkdPaxWeekTY2,
       tr.BkdPaxWeekLY AS BkdPaxWeekLY2,
       tr.BkdRev_PaxWeek AS BkdRev_PaxWeekTY2,
-      '' AS BkdRev_PaxWeekLY2
+      tr.BkdRev_PaxWeekLY AS BkdRev_PaxWeekLY2
      
 FROM
     thereport tr
@@ -808,13 +904,16 @@ ORDER BY
 
 
 df =pd.read_sql_query(sql_query, SQLITE3)
+df['LoadfactLY']=df.BkdPaxLY/df.CapacityLY
+
+
 
 
 
 CitypairName=['CitypairName']
 
 lista=' BkdRevTY CapacityTY BkdPaxTY LoadfactTY \
-BkdRev_PaxTY BkdRevLY CapacityLY BkdPaxLY LoadfactLY BkdRev_PaxLY\
+BkdRev_PaxTY BkdRevLY CapacityLY BkdPaxLY LoadfactLY BkdRev_PaxLY \
 BkdRevWeekTY BkdRevWeekLY BkdPaxWeekTY BkdPaxWeekLY BkdRev_PaxWeekTY BkdRev_PaxWeekLY'
 
 
@@ -842,7 +941,97 @@ with pd.ExcelWriter(myExcel, engine='openpyxl') as writer:
     df2.to_excel(writer, 'FBRv'+str(week),index=False,startrow=47)
     df3.to_excel(writer, 'FBRv'+str(week),index=False,startrow=94)
 
+
+
+
 del df1, df2, df3
+
+sql_query='''
+with q1 as (SELECT
+      tr.CitypairName_x AS CitypairName,
+      tr.BkdRev_x AS BkdRevTY,
+      tr.Capacity_x AS CapacityTY,
+      tr.BkdPax_x AS BkdPaxTY,
+      tr.Loadfact_x AS LoadfactTY,
+      tr.BkdRev_Pax_x AS BkdRev_PaxTY,
+      tr.BkdRevLY_x AS BkdRevLY,
+      tr.CapacityLY_x AS CapacityLY,
+      tr.BkdPaxLY_x AS BkdPaxLY,
+      tr.LoadfactLY_x AS LoadfactLY,
+      tr.BkdRev_PaxLY_x AS BkdRev_PaxLY,
+      tr.BkdRevWeek_x AS BkdRevWeekTY,
+      tr.BkdRevWeekLY_x AS BkdRevWeekLY,
+      tr.BkdPaxWeek_x AS BkdPaxWeekTY,
+      tr.BkdPaxWeekLY_x AS BkdPaxWeekLY,
+      tr.BkdRev_PaxWeek_x AS BkdRev_PaxWeekTY,
+      tr.BkdRev_PaxWeekLY_x AS BkdRev_PaxWeekLY,
+      tr.Period_x AS Period,
+      tr.CitypairSortOrder_x as CitypairSortOrder
+FROM
+    TheReport tr), q2 as
+    (   select tr.CitypairName_y AS CitypairName,
+      tr.BkdRev_y AS BkdRevTY,
+      tr.Capacity_y AS CapacityTY,
+      tr.BkdPax_y AS BkdPaxTY,
+      tr.Loadfact_y AS LoadfactTY,
+      tr.BkdRev_Pax_y AS BkdRev_PaxTY,
+      tr.BkdRevLY_y AS BkdRevLY,
+      tr.CapacityLY_y AS CapacityLY,
+      tr.BkdPaxLY_y AS BkdPaxLY,
+      tr.LoadfactLY_y AS LoadfactLY,
+      tr.BkdRev_PaxLY_y AS BkdRev_PaxLY,
+      tr.BkdRevWeek_y AS BkdRevWeekTY,
+      tr.BkdRevWeekLY_y AS BkdRevWeekLY,
+      tr.BkdPaxWeek_y AS BkdPaxWeekTY,
+      tr.BkdPaxWeekLY_y AS BkdPaxWeekLY,
+      tr.BkdRev_PaxWeek_y AS BkdRev_PaxWeekTY,
+      tr.BkdRev_PaxWeekLY_y AS BkdRev_PaxWeekLY,
+      tr.Period_y AS Period,
+      tr.CitypairSortOrder_y as CitypairSortOrder
+FROM
+    TheReport tr) , q3 as
+    (   select tr.CitypairName AS CitypairName,
+      tr.BkdRev AS BkdRevTY,
+      tr.Capacity AS CapacityTY,
+      tr.BkdPax AS BkdPaxTY,
+      tr.Loadfact AS LoadfactTY,
+      tr.BkdRev_Pax AS BkdRev_PaxTY,
+      tr.BkdRevLY AS BkdRevLY,
+      tr.CapacityLY AS CapacityLY,
+      tr.BkdPaxLY AS BkdPaxLY,
+      tr.LoadfactLY AS LoadfactLY,
+      tr.BkdRev_PaxLY AS BkdRev_PaxLY,
+      tr.BkdRevWeek AS BkdRevWeekTY,
+      tr.BkdRevWeekLY AS BkdRevWeekLY,
+      tr.BkdPaxWeek AS BkdPaxWeekTY,
+      tr.BkdPaxWeekLY AS BkdPaxWeekLY,
+      tr.BkdRev_PaxWeek AS BkdRev_PaxWeekTY,
+      tr.BkdRev_PaxWeekLY AS BkdRev_PaxWeekLY,
+      tr.Period AS Period,
+      tr.CitypairSortOrder as CitypairSortOrder
+FROM
+    TheReport tr)
+    select * from q1
+    union 
+    select * from q2
+    union
+    select * from q3
+'''
+
+
+df =pd.read_sql_query(sql_query, SQLITE3)
+df['LoadfactLY']=df.BkdPaxLY/df.CapacityLY
+df=df.query('(Period >"0" )')
+
+df['Date'] =(df.Period.astype(str).str[0:4]+'-'+df.Period.astype(str).str[4:6]+'-01').values.astype("datetime64[s]")
+df['ID']=df.Period.astype(str)+df.CitypairSortOrder.astype(str)
+
+
+with pd.ExcelWriter(path_report, engine='openpyxl') as writer:
+    writer.book = load_workbook(path_report)
+    df.to_excel(writer, 'fFBR',index=False)
+
+
 
 sql_query='''
 SELECT
@@ -875,6 +1064,12 @@ ORDER BY
 
 
 df =pd.read_sql_query(sql_query, SQLITE3)
+df['LoadfactTY']=df.BkdPaxTY/df.CapacityTY
+df['LoadfactLY']=df.BkdPaxLY/df.CapacityLY
+df['BkdRev_PaxTY']=df.BkdRevTY/df.BkdPaxTY
+df['BkdRev_PaxLY']=df.BkdRevLY/df.BkdPaxLY
+df['BkdRev_PaxWeekTY']=df.BkdRevWeekTY/df.BkdPaxWeekTY
+df['BkdRev_PaxWeekLY']=df.BkdRevWeekLY/df.BkdPaxWeekLY
 df.loc[df.BkdRevTY.isnull(), 'test'] = 1
 df=df.query('(test !=1 )')
 df.drop(['test'], axis=1,inplace=True) 
@@ -882,6 +1077,14 @@ df.drop(['test'], axis=1,inplace=True)
 with pd.ExcelWriter(myExcel, engine='openpyxl') as writer:
     writer.book = load_workbook(myExcel)
     df.to_excel(writer, 'FBMv'+str(week),index=False)
+
+
+
+df['ID'] = range(1, 1+len(df) ) #increasing by 1
+with pd.ExcelWriter(path_report, engine='openpyxl') as writer:
+    writer.book = load_workbook(path_report)
+    df.to_excel(writer, 'fFBM',index=False)
+
 
 
 SQLITE3.close()
