@@ -389,7 +389,7 @@ v4['idxx'] = v4.groupby(['Team','AR']).cumcount()+1
 
 df['DayOfQuarter'] = df.groupby(['QuarterCode']).cumcount()+1
 
-df['DayOfQuarter'] = df.groupby(['Date','Grp'])['idxx'].transform(lambda x : x.max()) #max of a group in a cloumn
+df['idxxMax'] = df.groupby(['Date','Grp'])['idxx'].transform(lambda x : x.max()) #max of a group in a cloumn
 
 #moving average
 
