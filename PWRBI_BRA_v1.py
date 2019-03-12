@@ -9,24 +9,6 @@ Contact*  	: Robert.Granfors@enfo.se, Ronny.Sentongo@enfogroup.com
 Purpose*  	: Robert Granfors (Kruxet är att deras CFO tar denna rapport och vill exportera den till Excel för att få in den i ett större rapportpaket han gör.
                               Problemet med denna rapport, är att när man exporterar den till Excel så måste jag eller deras CFO manuellt lägga rätt mycket tid 
                               för att den ska passa in i mallen som också är bifogad.)
-Costumer 	: BRA flyg
-Output	  	: 
-loggin      :
---Ladda hem VPN-klienten cisco connect
---Anslut till: extvpn.flygbra.se
---User: rogr
---Pass: Vinter2019
-
-----PWRBI loggin
-
-Server:         ALSSQLP012.mcn.malmoaviation.se
-Användarnamn:   DWH-reader
-Lösenord:       BM@vat1000 
-
-
-
-
-Notes
 
 
 
@@ -131,17 +113,7 @@ path_report=path+'\\Outfiles\\The_Excel_Report.xlsx'
 #.................this is the connection to the costumer.......................
        
 #connection in
-server = 'ALSSQLP012.mcn.malmoaviation.se'
-database = 'bradw_dm'
-username = 'DWH-reader'
-password = 'BM@vat1000'
 
-#SQL Server 
-SQLServer = pyodbc.connect('Driver={ODBC Driver 17 for SQL Server};' 
-                              'Server=ALSSQLP012.mcn.malmoaviation.se;' 
-                              'Database=bradw_dm;' 
-                              'uid=DWH-reader;' 
-                              'pwd=BM@vat1000')
 
 SQLServer_cursor = SQLServer.cursor()
 
