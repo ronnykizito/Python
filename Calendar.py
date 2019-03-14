@@ -146,6 +146,7 @@ df['Next_N_WorkingDay'] = pd.to_datetime(df.Date).apply(lambda x: cal.add_workin
 df['N_days_between']=df.apply(lambda x: 
     cal.get_working_days_delta(date(x['Date'].year, x['Date'].month, x['Date'].day), 
                                date(x['date1'].year, x['date1'].month, x['date1'].day)), axis=1)
+df['TestFloat']=0.12345678985968
     
 df.info()
     
@@ -155,16 +156,19 @@ dates=['Date','DateKey','DayDate','FirstDateOfYear','LastDateOfYear',
        'PreviousDateMonth','PreviousDateMonthStart','PreviousDateMonthEnd',
        'PreviousDateWeek','PreviousDateDay','NextDateDay','Offsetdays','Updated']
 
+'''==============all numeric vars + floats==============================='''
 numeric=['YearMonthDay','YearMonth','YearCode','QuarterCode','QuaterNumber',
          'FirstMonthOfQuarter','LastMonthOfQuarter','MonthCode','MonthOfYearNumber',
          'NumberOfDaysInMonth','WeekCode','WeekOfYearNumber','DayOfYear',
-         'DayOfQuarter','DayOfMonth','DayOfWeek','months_between','N_days_between']
+         'DayOfQuarter','DayOfMonth','DayOfWeek','months_between','N_days_between',
+         'TestFloat']
+
 
 df=pd.DataFrame({'Cols':list(df.columns)})
 
 df['Datatype']=df.Cols+' NVARCHAR(max),'
 df.loc[df.Cols.isin(dates), 'Datatype'] = df.Cols+' DATE,'
-df.loc[df.Cols.isin(numeric), 'Datatype'] = df.Cols+' NUMERIC,'
+df.loc[df.Cols.isin(numeric), 'Datatype'] = df.Cols+' float(53),'
 df['ID'] = 1
 df['IDx'] = range(1, 1+len(df) )
 df['IDMax'] = df.groupby(['ID'])['IDx'].transform(lambda x : x.max())
