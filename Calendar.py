@@ -147,10 +147,18 @@ df['N_days_between']=df.apply(lambda x:
     cal.get_working_days_delta(date(x['Date'].year, x['Date'].month, x['Date'].day), 
                                date(x['date1'].year, x['date1'].month, x['date1'].day)), axis=1)
     
-
+df.info()
     
-dates=['Date','DateKey','DayDate']
-numeric=['YearMonthDay']
+dates=['Date','DateKey','DayDate','FirstDateOfYear','LastDateOfYear',
+       'FirstDateOfQuarter','LastDateOfQuarter','FirstDateOfMonth',
+       'LastDateOfMonth','FirstDateOfWeek','LastDateOfWeek','PreviousDateYear',
+       'PreviousDateMonth','PreviousDateMonthStart','PreviousDateMonthEnd',
+       'PreviousDateWeek','PreviousDateDay','NextDateDay','Offsetdays','Updated']
+
+numeric=['YearMonthDay','YearMonth','YearCode','QuarterCode','QuaterNumber',
+         'FirstMonthOfQuarter','LastMonthOfQuarter','MonthCode','MonthOfYearNumber',
+         'NumberOfDaysInMonth','WeekCode','WeekOfYearNumber','DayOfYear',
+         'DayOfQuarter','DayOfMonth','DayOfWeek','months_between','N_days_between']
 
 df=pd.DataFrame({'Cols':list(df.columns)})
 
