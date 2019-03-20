@@ -343,6 +343,10 @@ df1=df.groupby(['Div','Sheetname'], as_index=False).agg({"FTHG": ["sum","max","m
 #denna fixar till namnen som skapas av groupby
 df1.columns = ["_".join(x) for x in df1.columns.ravel()]
 
+df1=df1.groupby(['DateKey','Currency'], as_index=False).agg({"Value": ['mean']})
+df1.columns = ['DateKey','Currency','Value']
+
+
 v5x=v4.query('Div in ["E0","E1"] and AR in ["2017"]').groupby(['AR','Team','Div'], as_index=False).agg({"Poang": ["sum"]})
 v5=df.query('(Div in ["E0","E1"] or HomeTeam in  ["Huddersfield"]) and v3 in ["2018"] ').groupby(['AR','Team','Div'], as_index=False).agg({"Poang": ["sum",'count'],"Team":["nunique"]})
 
