@@ -26,6 +26,9 @@ last_day_month=(datetime.today() +
    dateutil.relativedelta.relativedelta(months=1)+
    dateutil.relativedelta.relativedelta(day=31)).strftime("%Y-%m-%d")
 
+
+df1['USDMean'] = df1.groupby(['DateKey'])['USD'].transform(lambda x : x.mean())
+
 #loop thru periods
 
 
