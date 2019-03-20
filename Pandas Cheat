@@ -53,6 +53,9 @@ df=create_date_table2(start=period_start, end=period_end)
 
 period_l=list(df.Period) #period_l = df1.Period.tolist()
 
+#freq
+df.HomeTeam.value_counts()
+
 #qlist
 
 
