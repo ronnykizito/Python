@@ -285,6 +285,8 @@ date2="2018-04-30"
 sql=''' SELECT distinct Engagemangs_Datum,Abonnentnr FROM data1 WHERE Engagemangs_Datum  between '%s' and '%s'  and  Abonnentnr  in %s ''' %(date1,date2,Abonnent)
 df2 = pd.read_sql_query(sql  ,conn)
 
+#remove all non numeric values
+df['B'] = df['B'].str.replace(r'[^\d.]+', '')
 
 #if one abbonent
 
