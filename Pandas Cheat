@@ -1518,3 +1518,11 @@ read multi excel
 all_Files = glob.glob('/home/data/*.xlsx')
 
 df = pd.concat((pd.read_excel(files, sep=',', index=False, skiprows=1) for files in all_Files))
+
+# intertool
+df=pd.DataFrame({'Date':['f']})
+df_tmp=pd.DataFrame()
+for r in itertools.product(Dates, list2):
+    df['a']=r[0] 
+    df['b']=r[1]
+    df_tmp = df_tmp.append(df, ignore_index=True,sort=False)
