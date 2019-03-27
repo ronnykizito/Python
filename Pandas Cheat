@@ -59,6 +59,8 @@ period_l=list(df.Period) #period_l = df1.Period.tolist()
 #freq
 df.HomeTeam.value_counts()
 
+    df['BalansResultat'] = np.where(df.Konto.isin(balansrakning), 'Balansräkning','Resultaträkning')
+
 #qlist
 
 
