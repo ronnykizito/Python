@@ -5,6 +5,13 @@ https://www.geeksforgeeks.org/python-pandas-dataframe-isin/
 
 pip install dask[dataframe]
 
+from datetime import datetime
+
+datelist =[(datetime.today() + dateutil.relativedelta.relativedelta(months=x)).strftime("%Y-%m-01") for x in range(-12, 1)]
+
+
+df=pd.DataFrame({'Date':datelist})
+
 variables = locals()
 variables["df{0}".format(num)] =df
 
