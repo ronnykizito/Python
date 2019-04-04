@@ -1,0 +1,27 @@
+reddays=[20140101,20140104,20190419,20190423]
+halfdays=[20140114,20190418]
+
+lista='FirstDateOfMonth LastDateOfMonth NetWorkingDays NonWorkingDays \
+WorkingDays Utalizationrate Workingdays_utilized'
+
+keepcols = [item for item in lista.split(' ') if  item not in  ['']] #exclude empty
+
+df = pd.DataFrame(index = pd.date_range('2014-01-01', '2019-12-31', freq='D'))
+df['Date']=df.index
+df["YearMonthDay"] = (df.Date.dt.strftime('%Y%m%d')).astype(int)
+df['FirstDateOfMonth']= df.Date.dt.to_period("m").dt.start_time
+df['LastDateOfMonth']= df.Date.dt.to_period("m").dt.end_time
+df['FirstDateOfNextMonth'] = pd.DatetimeIndex(df.LastDateOfMonth) + pd.DateOffset(days=1)
+df.loc[df['YearMonthDay'].isin(reddays), 'RedDays'] = 1
+df.loc[df['YearMonthDay'].isin(halfdays), 'HalfDays'] = 0.5
+df.update(df[['RedDays','HalfDays']].fillna(0))
+df['RedDaysSum'] = df.groupby(['FirstDateOfMonth'])['RedDays'].transform(lambda x : x.sum())
+df['HalfDaysSum'] = df.groupby(['FirstDateOfMonth'])['HalfDays'].transform(lambda x : x.sum())
+df['NonWorkingDays']=df.RedDaysSum++df.HalfDaysSum
+df["NetWorkingDays"] = np.busday_count( df.FirstDateOfMonth.values.astype('datetime64[D]'), 
+  df.FirstDateOfNextMonth.values.astype('datetime64[D]'))
+df['WorkingDays']=df.NetWorkingDays-df.NonWorkingDays
+df['Utalizationrate']=0.92
+df['Workingdays_utilized']=df.WorkingDays*df.Utalizationrate
+df.drop_duplicates(['FirstDateOfMonth'],keep= 'first', inplace=True)
+df = df[keepcols]
