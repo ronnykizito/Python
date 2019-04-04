@@ -11,7 +11,7 @@ df['Date']=df.index
 df["YearMonthDay"] = (df.Date.dt.strftime('%Y%m%d')).astype(int)
 df['FirstDateOfMonth']= df.Date.dt.to_period("m").dt.start_time
 df['LastDateOfMonth']= df.Date.dt.to_period("m").dt.end_time
-df['FirstDateOfNextMonth'] = pd.DatetimeIndex(df.LastDateOfMonth) + pd.DateOffset(days=1)
+df['NextDay'] = pd.DatetimeIndex(df.LastDateOfMonth) + pd.DateOffset(days=1)
 df.loc[df['YearMonthDay'].isin(reddays), 'RedDays'] = 1
 df.loc[df['YearMonthDay'].isin(halfdays), 'HalfDays'] = 0.5
 df.update(df[['RedDays','HalfDays']].fillna(0))
@@ -19,7 +19,7 @@ df['RedDaysSum'] = df.groupby(['FirstDateOfMonth'])['RedDays'].transform(lambda 
 df['HalfDaysSum'] = df.groupby(['FirstDateOfMonth'])['HalfDays'].transform(lambda x : x.sum())
 df['NonWorkingDays']=df.RedDaysSum++df.HalfDaysSum
 df["NetWorkingDays"] = np.busday_count( df.FirstDateOfMonth.values.astype('datetime64[D]'), 
-  df.FirstDateOfNextMonth.values.astype('datetime64[D]'))
+  df.NextDay.values.astype('datetime64[D]'))
 df['WorkingDays']=df.NetWorkingDays-df.NonWorkingDays
 df['Utalizationrate']=0.92
 df['Workingdays_utilized']=df.WorkingDays*df.Utalizationrate
