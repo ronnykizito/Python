@@ -1536,3 +1536,20 @@ for r in itertools.product(Dates, list2):
 
 #month to int
 df['Manad']=(pd.to_datetime(df.Man, format='%b').dt.month).astype(str).str.pad(width=2,fillchar='0')
+
+
+
+from io import StringIO
+df = pd.read_fwf(StringIO(u"""
+    order_date  date_done
+    2017-04-07  2017-04-14
+    2017-04-09  2017-04-16
+    2017-04-09  2017-04-18
+    2017-04-10  2017-04-20"""), header=1)
+df.order_date = pd.to_datetime(df.order_date, infer_datetime_format=True)
+df.date_done = pd.to_datetime(df.date_done, infer_datetime_format=True)
+df['xx'] = pd.DatetimeIndex(df.date_done) + pd.DateOffset(days=1)
+
+df['date_diff'] = np.busday_count(
+    df.order_date.values.astype('datetime64[D]'),
+    df.xx.values.astype('datetime64[D]'))
