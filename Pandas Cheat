@@ -1382,6 +1382,9 @@ df['BrandName'] = df['BrandName'].str.strip()
 df['firstnamn']=df.col_1.str.split('@').apply(lambda x: x[0])
 df['lastnamn']=df.col_1.str.split('@').apply(lambda x: x[-1])
 
+#strip all columns
+df=df.applymap(lambda x: x.strip() if type(x) is str else x)
+
 #%%
 
 
