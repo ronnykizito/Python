@@ -83,18 +83,14 @@ df["MonthCode"] = df.Date.dt.strftime('%Y%m')
 df["MonthOfYearNumber"] = df.Date.dt.strftime('%m')
 df['MonthNameEnglishLong']= df.Date.dt.strftime('%B')
 df['MonthNameEnglishShort']= df.Date.dt.strftime('%b')
-df.loc[df['MonthNameEnglishLong'].isin(['January']), 'MonthNameSwedishLong'] = 'Januari'
-df.loc[df['MonthNameEnglishLong'].isin(['February']), 'MonthNameSwedishLong'] = 'Februari'
-df.loc[df['MonthNameEnglishLong'].isin(['March']), 'MonthNameSwedishLong'] = 'Mars'
-df.loc[df['MonthNameEnglishLong'].isin(['April']), 'MonthNameSwedishLong'] = 'April'
-df.loc[df['MonthNameEnglishLong'].isin(['May']), 'MonthNameSwedishLong'] = 'Maj'
-df.loc[df['MonthNameEnglishLong'].isin(['June']), 'MonthNameSwedishLong'] = 'Juni'
-df.loc[df['MonthNameEnglishLong'].isin(['July']), 'MonthNameSwedishLong'] = 'Juli'
-df.loc[df['MonthNameEnglishLong'].isin(['August']), 'MonthNameSwedishLong'] = 'Augusti'
-df.loc[df['MonthNameEnglishLong'].isin(['September']), 'MonthNameSwedishLong'] = 'September'
-df.loc[df['MonthNameEnglishLong'].isin(['October']), 'MonthNameSwedishLong'] = 'Oktober'
-df.loc[df['MonthNameEnglishLong'].isin(['November']), 'MonthNameSwedishLong'] = 'November'
-df.loc[df['MonthNameEnglishLong'].isin(['December']), 'MonthNameSwedishLong'] = 'December'
+
+df['MonthNameSwedishLong']=df.MonthNameEnglishLong.map({
+        'January':'Januari','February':'Februari','March':'Mars',
+        'April':'April','May':'Maj','June':'Juni',
+        'July':'Juli','August':'Augusti','September':'September',
+        'October':'Oktober','November':'November','December':'December'})
+
+df['Man']=(pd.to_datetime(df.MonthNameEnglishShort, format='%b').dt.month).astype(str).str.pad(width=2,fillchar='0')
 df['MonthNameSwedishShort']= df.MonthNameSwedishLong.str[0:3].str.lower() #title upper lower
 df['FirstDateOfMonth']= df.Date.dt.to_period("m").dt.start_time
 df['LastDateOfMonth']= df.Date.dt.to_period("m").dt.end_time
@@ -111,13 +107,12 @@ df["DayOfMonth"] = df.Date.dt.day
 df["DayOfWeek"] = df.Date.dt.dayofweek+1
 df['DayOfWeekNameEnglishLong']= df.Date.dt.strftime('%A') #df.Date.dt.weekday_name
 df['DayOfWeekNameEnglishShort']= df.Date.dt.strftime('%a')
-df.loc[df['DayOfWeekNameEnglishLong'].isin(['Monday']), 'DayOfWeekNameSwedishLong'] = 'Måndag'
-df.loc[df['DayOfWeekNameEnglishLong'].isin(['Tuesday']), 'DayOfWeekNameSwedishLong'] = 'Tisdag'
-df.loc[df['DayOfWeekNameEnglishLong'].isin(['Wednesday']), 'DayOfWeekNameSwedishLong'] = 'Onsdag'
-df.loc[df['DayOfWeekNameEnglishLong'].isin(['Thursday']), 'DayOfWeekNameSwedishLong'] = 'Torsdag'
-df.loc[df['DayOfWeekNameEnglishLong'].isin(['Friday']), 'DayOfWeekNameSwedishLong'] = 'Fredag'
-df.loc[df['DayOfWeekNameEnglishLong'].isin(['Saturday']), 'DayOfWeekNameSwedishLong'] = 'Lördag'
-df.loc[df['DayOfWeekNameEnglishLong'].isin(['Sunday']), 'DayOfWeekNameSwedishLong'] = 'Söndag'
+
+df['DayOfWeekNameSwedishLong']=df.DayOfWeekNameEnglishLong.map({
+        'Monday':'Måndag','Tuesday':'Tisdag','Wednesday':'Onsdag',
+  'Thursday':'Torsdag','Friday':'Fredag','Saturday':'Lördag','Sunday':'Söndag'})
+
+
 df['DayOfWeekNameSwedishShort']= df.DayOfWeekNameSwedishLong.str[0:3].str.lower() #title upper lower
 df['PreviousDateYear'] = df.Date - pd.DateOffset(years=1)
 df['PreviousDateMonth'] = df.Date - pd.DateOffset(months=1)
@@ -136,6 +131,7 @@ df['IsWorkingDay'] = df.Date.apply(lambda x: cal.is_working_day(pd.to_datetime(x
 df['xx']=time.strftime("%Y-%m-%d")
 df['Updated']=df.xx.values.astype("datetime64[s]")
 df['Offsetdays'] = df.Updated - pd.DateOffset(days=1)
+
 
 df.drop(['DateID','Date_Key','xx'], axis=1,inplace=True)
 #dont change Next_N_days_Ex_Weekend Next_N_days_Ex_Weekend_Holidays
@@ -189,7 +185,13 @@ pd.io.sql.execute(create_table, migrate_to_databse)
 
 df.to_sql(name=str(table),con=migrate_to_databse,index=False,if_exists='append')    
     
-    
+
+#import calendar
+#
+#for month_idx in range(1, 13):
+#    print (calendar.month_name[month_idx])
+#    print (calendar.month_abbr[month_idx])
+#    print ("")   
 #To_date=['Date','DateKey']
 #int_float=['YearMonth']
 #df[int_float] = df[int_float].apply(pd.to_numeric, errors='coerce')
