@@ -9,6 +9,8 @@ from datetime import datetime
 
 datelist =[(datetime.today() + dateutil.relativedelta.relativedelta(months=x)).strftime("%Y-%m-01") for x in range(-12, 1)]
 
+df['One']=1
+df['MaxDate'] = df.groupby(['One'])['Datum'].transform(lambda x : x.max())
 
 df=pd.DataFrame({'Date':datelist})
 
