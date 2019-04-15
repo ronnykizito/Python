@@ -19,6 +19,7 @@ from pandas.tseries.offsets import CDay
 from pandas.tseries.holiday import (AbstractHolidayCalendar , EasterMonday,GoodFriday, Holiday) #next_monday next_monday_or_tuesday,MO,DateOffset , nearest_workday
 from datetime import date
 import time
+import locale
 
 class HolidayCalendar(AbstractHolidayCalendar):
     rules = [
@@ -49,21 +50,25 @@ cal=Sweden()
 
 
 
-
 #cal.holidays(2019)
 
-qlist=pd.DataFrame({'Date':[datetime.today()]})
-qlist['Date'] = pd.Timestamp('2016-05-01')
-qlist['period_start']=((qlist.Date - pd.DateOffset(months=1)).dt.to_period("m").dt.start_time).dt.strftime("%Y-%m-%d")
-qlist['period_End']=((qlist.Date + pd.DateOffset(months=13)).dt.to_period("m").dt.end_time).dt.strftime("%Y-%m-%d")
+df=pd.DataFrame({'Date':[datetime.today()]})
+df['Date'] = pd.Timestamp('2016-05-01')
+df['period_start']=((df.Date - pd.DateOffset(months=1)).dt.to_period("m").dt.start_time).dt.strftime("%Y%m%d")
+df['period_End']=((df.Date + pd.DateOffset(months=13)).dt.to_period("m").dt.end_time).dt.strftime("%Y%m%d")
 
-Min_date="[]".join(list(qlist.period_start))
-Max_date="[]".join(list(qlist.period_End))
+Min_date="[]".join(list(df.period_start))
+Max_date="[]".join(list(df.period_End))
 
-df = pd.DataFrame(index = pd.date_range(Min_date, Max_date, freq='D'))
-df['Date']=df.index
+dates=pd.date_range(Min_date, Max_date)
+
+#df = pd.DataFrame(index = pd.date_range(Min_date, Max_date, freq='D'))
+#df['Date']=df.index
+
+
+df=pd.DataFrame({'Date':dates})
+df["DateKey"] = df.Date.dt.strftime('%Y%m%d')
 df['Date_Key'] = range(1, 1+len(df) ) #increasing by 1
-df["DateKey"] = df.Date.dt.strftime('%Y-%m-%d')
 df["YearMonthDay"] = df.Date.dt.strftime('%Y%m%d')
 df["YearMonth"] = df.Date.dt.strftime('%Y%m')
 df["DayDate"] = df.Date
@@ -84,14 +89,6 @@ df["MonthOfYearNumber"] = df.Date.dt.strftime('%m')
 df['MonthNameEnglishLong']= df.Date.dt.strftime('%B')
 df['MonthNameEnglishShort']= df.Date.dt.strftime('%b')
 
-df['MonthNameSwedishLong']=df.MonthNameEnglishLong.map({
-        'January':'Januari','February':'Februari','March':'Mars',
-        'April':'April','May':'Maj','June':'Juni',
-        'July':'Juli','August':'Augusti','September':'September',
-        'October':'Oktober','November':'November','December':'December'})
-
-df['Man']=(pd.to_datetime(df.MonthNameEnglishShort, format='%b').dt.month).astype(str).str.pad(width=2,fillchar='0')
-df['MonthNameSwedishShort']= df.MonthNameSwedishLong.str[0:3].str.lower() #title upper lower
 df['FirstDateOfMonth']= df.Date.dt.to_period("m").dt.start_time
 df['LastDateOfMonth']= df.Date.dt.to_period("m").dt.end_time
 df['NumberOfDaysInMonth']= df.Date.dt.daysinmonth
@@ -108,12 +105,16 @@ df["DayOfWeek"] = df.Date.dt.dayofweek+1
 df['DayOfWeekNameEnglishLong']= df.Date.dt.strftime('%A') #df.Date.dt.weekday_name
 df['DayOfWeekNameEnglishShort']= df.Date.dt.strftime('%a')
 
-df['DayOfWeekNameSwedishLong']=df.DayOfWeekNameEnglishLong.map({
-        'Monday':'Måndag','Tuesday':'Tisdag','Wednesday':'Onsdag',
-  'Thursday':'Torsdag','Friday':'Fredag','Saturday':'Lördag','Sunday':'Söndag'})
+locale.setlocale(locale.LC_TIME, 'Swedish_Sweden.1252')
+df['MonthNameSwedishLong']= df.Date.dt.strftime('%B')
+df['MonthNameSwedishShort']= df.Date.dt.strftime('%b')
+df['DayOfWeekNameSwedishLong']= df.Date.dt.strftime('%A') #df.Date.dt.weekday_name
+df['DayOfWeekNameSwedishShort']= df.Date.dt.strftime('%a')
 
+locale.setlocale(locale.LC_TIME, 'english_united-states.437')
 
-df['DayOfWeekNameSwedishShort']= df.DayOfWeekNameSwedishLong.str[0:3].str.lower() #title upper lower
+df['Man']=(pd.to_datetime(df.MonthNameEnglishShort, format='%b').dt.month).astype(str).str.pad(width=2,fillchar='0')
+
 df['PreviousDateYear'] = df.Date - pd.DateOffset(years=1)
 df['PreviousDateMonth'] = df.Date - pd.DateOffset(months=1)
 df['PreviousDateMonthStart'] = (df.Date - pd.DateOffset(months=1)).dt.to_period("m").dt.start_time
@@ -143,50 +144,57 @@ df['N_days_between']=df.apply(lambda x:
     cal.get_working_days_delta(date(x['Date'].year, x['Date'].month, x['Date'].day), 
                                date(x['date1'].year, x['date1'].month, x['date1'].day)), axis=1)
 df['TestFloat']=0.12345678985968
+
+SheetFile=r'C:\Users\F2531197\OneDrive - Enfo Oyj\RONSEN\PYTHON\PythonScripts\t.xlsx'
+df.to_excel(SheetFile)
     
-df.info()
+#df.info()
+#
+#    
+#dates=['Date','DateKey','DayDate','FirstDateOfYear','LastDateOfYear',
+#       'FirstDateOfQuarter','LastDateOfQuarter','FirstDateOfMonth',
+#       'LastDateOfMonth','FirstDateOfWeek','LastDateOfWeek','PreviousDateYear',
+#       'PreviousDateMonth','PreviousDateMonthStart','PreviousDateMonthEnd',
+#       'PreviousDateWeek','PreviousDateDay','NextDateDay','Offsetdays','Updated']
+#
+#'''==============all numeric vars + floats==============================='''
+#numeric=['YearMonthDay','YearMonth','YearCode','QuarterCode','QuaterNumber',
+#         'FirstMonthOfQuarter','LastMonthOfQuarter','MonthCode','MonthOfYearNumber',
+#         'NumberOfDaysInMonth','WeekCode','WeekOfYearNumber','DayOfYear',
+#         'DayOfQuarter','DayOfMonth','DayOfWeek','months_between','N_days_between',
+#         'TestFloat']
+#
+#
+#df=pd.DataFrame({'Cols':list(df.columns)})
+#
+#df['Datatype']=df.Cols+' NVARCHAR(max),'
+#df.loc[df.Cols.isin(dates), 'Datatype'] = df.Cols+' DATE,'
+#df.loc[df.Cols.isin(numeric), 'Datatype'] = df.Cols+' float(53),'
+#df['ID'] = 1
+#df['IDx'] = range(1, 1+len(df) )
+#df['IDMax'] = df.groupby(['ID'])['IDx'].transform(lambda x : x.max())
+##df.loc[df.IDx==df.IDMax, 'Datatype'] = df.Cols+' NVARCHAR(max)'
+#
+#
+#
+#ColsToDatabase="".join([str(s) for s in list(list(df.Datatype))])
+#
+#table='dDate'
+#create_table='''
+#CREATE TABLE %s(
+#%s
+#)
+#'''%(table,str(ColsToDatabase))
+#pd.io.sql.execute('DROP table IF EXISTS '+str(table), migrate_to_databse)
+#pd.io.sql.execute(create_table, migrate_to_databse)
+#
+#df.to_sql(name=str(table),con=migrate_to_databse,index=False,if_exists='append')    
     
-dates=['Date','DateKey','DayDate','FirstDateOfYear','LastDateOfYear',
-       'FirstDateOfQuarter','LastDateOfQuarter','FirstDateOfMonth',
-       'LastDateOfMonth','FirstDateOfWeek','LastDateOfWeek','PreviousDateYear',
-       'PreviousDateMonth','PreviousDateMonthStart','PreviousDateMonthEnd',
-       'PreviousDateWeek','PreviousDateDay','NextDateDay','Offsetdays','Updated']
-
-'''==============all numeric vars + floats==============================='''
-numeric=['YearMonthDay','YearMonth','YearCode','QuarterCode','QuaterNumber',
-         'FirstMonthOfQuarter','LastMonthOfQuarter','MonthCode','MonthOfYearNumber',
-         'NumberOfDaysInMonth','WeekCode','WeekOfYearNumber','DayOfYear',
-         'DayOfQuarter','DayOfMonth','DayOfWeek','months_between','N_days_between',
-         'TestFloat']
-
-
-df=pd.DataFrame({'Cols':list(df.columns)})
-
-df['Datatype']=df.Cols+' NVARCHAR(max),'
-df.loc[df.Cols.isin(dates), 'Datatype'] = df.Cols+' DATE,'
-df.loc[df.Cols.isin(numeric), 'Datatype'] = df.Cols+' float(53),'
-df['ID'] = 1
-df['IDx'] = range(1, 1+len(df) )
-df['IDMax'] = df.groupby(['ID'])['IDx'].transform(lambda x : x.max())
-#df.loc[df.IDx==df.IDMax, 'Datatype'] = df.Cols+' NVARCHAR(max)'
-
-
-
-ColsToDatabase="".join([str(s) for s in list(list(df.Datatype))])
-
-table='dDate'
-create_table='''
-CREATE TABLE %s(
-%s
-)
-'''%(table,str(ColsToDatabase))
-pd.io.sql.execute('DROP table IF EXISTS '+str(table), migrate_to_databse)
-pd.io.sql.execute(create_table, migrate_to_databse)
-
-df.to_sql(name=str(table),con=migrate_to_databse,index=False,if_exists='append')    
-    
-
-#import calendar
+#
+#df.sort_values(['DayOfWeekNameSwedishLong'], ascending=[True],inplace=True)
+#df['IDx'] = 1
+#df['no_cumulative'] = df.groupby(['DayOfWeekNameSwedishLong'])['IDx'].apply(lambda x: x.cumsum())
+##import calendar
 #
 #for month_idx in range(1, 13):
 #    print (calendar.month_name[month_idx])
