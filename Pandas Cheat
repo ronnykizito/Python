@@ -1570,13 +1570,6 @@ df = df.join(df['v1'].str.split(';', expand=True).add_prefix('col'))
 
 
 
-df=pd.DataFrame({'Date':['f']})
-df_tmp=pd.DataFrame()
-for r in itertools.product(Dates, list2):
-    df['a']=r[0] 
-    df['b']=r[1]
-    df_tmp = df_tmp.append(df, ignore_index=True,sort=False)
-
 #month to int
 df['Manad']=(pd.to_datetime(df.Man, format='%b').dt.month).astype(str).str.pad(width=2,fillchar='0')
 
