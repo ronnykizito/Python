@@ -1522,7 +1522,9 @@ df[PWBI_replace_numeric] = df[PWBI_replace_numeric].values.astype(str)
 
 for replace_dot_comma in PWBI_replace_numeric:
     df[replace_dot_comma] = df[replace_dot_comma].str.replace('.', ',')
+#replace multi
 
+df['x'] = df['v2'].str.replace('[\[\]]', ' ')
 
 #df.to_csv(Main_Path+'\\test2.csv',sep=';', index=False,decimal=',',encoding='ISO-8859-1')
 df = pd.DataFrame(index = pd.date_range('2018-01-01', '2019-12-31', freq='D'))
