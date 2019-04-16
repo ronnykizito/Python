@@ -1526,6 +1526,13 @@ for replace_dot_comma in PWBI_replace_numeric:
 
 df['x'] = df['v2'].str.replace('[\[\]]', ' ')
 
+df = df.join(df['v1'].str.split(' ', expand=True).add_prefix('col'))
+df[['SkillGroup', 'col2']] = df['UserName'].str.split(n=1, expand=True)
+df[['LastName','FirstName']] = df['col2'].str.rsplit(',',1, expand=True)   
+df=df.applymap(lambda x: x.strip() if type(x) is str else x) #strip all nonNumeric columns
+
+
+
 #df.to_csv(Main_Path+'\\test2.csv',sep=';', index=False,decimal=',',encoding='ISO-8859-1')
 df = pd.DataFrame(index = pd.date_range('2018-01-01', '2019-12-31', freq='D'))
 df['Date']=df.index
