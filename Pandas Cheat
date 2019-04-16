@@ -1540,6 +1540,39 @@ df=df.applymap(lambda x: x.strip() if type(x) is str else x) #strip all nonNumer
           'Villareal':'Villarreal','Proodeytiki':'Proodeftiki','Antalya':'Antalyaspor'})
 
 
+=============================split multi cols=========================================================
+df1=pd.DataFrame({'chrom':['chr1','chr1','chr2'],'exonStart':['100,200,300','500,700','50,60,70,80'],
+                 'exonEnds':['110,210,310','600,800','55,65,75,85'],'Name':['gen1','gen2','gen3']})
+
+df=df1
+df['ID'] = range(1, 1+len(df) ) #increasing by 1
+
+df=df[['chrom','Name','exonStart','ID']]
+
+df = df.join(df['exonStart'].str.split(',', expand=True).add_prefix('col'))
+
+lista='chrom Name ID exonStart'
+pivot_columns = [item for item in lista.split(' ') if  item not in  ['']] #exclude empty
+df2 = pd.melt(df, id_vars=pivot_columns, var_name="Dat", value_name="Value")
+
+df=df1
+df['ID'] = range(1, 1+len(df) ) #increasing by 1
+
+df=df[['chrom','Name','exonEnds','ID']]
+
+df = df.join(df['exonEnds'].str.split(',', expand=True).add_prefix('col'))
+
+lista='chrom Name ID exonEnds'
+pivot_columns = [item for item in lista.split(' ') if  item not in  ['']] #exclude empty
+df3 = pd.melt(df, id_vars=pivot_columns, var_name="Dat", value_name="Value1")
+
+
+df=pd.merge(df2,df3,how="inner",left_on=["chrom","Name",'Dat'],right_on=["chrom","Name",'Dat'],indicator=True)
+
+df.loc[df.Value.isnull(), 'test'] = 1
+
+df=df.query('(test !=1 )')
+=======================================================================================================
 
 #df.to_csv(Main_Path+'\\test2.csv',sep=';', index=False,decimal=',',encoding='ISO-8859-1')
 df = pd.DataFrame(index = pd.date_range('2018-01-01', '2019-12-31', freq='D'))
