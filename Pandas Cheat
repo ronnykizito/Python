@@ -1554,6 +1554,22 @@ all_Files = glob.glob('/home/data/*.xlsx')
 df = pd.concat((pd.read_excel(files, sep=',', index=False, skiprows=1) for files in all_Files))
 
 # intertool
+
+
+import itertools
+dates=pd.date_range('20190101', '20191231',freq='M')
+
+test=['a','b','c']
+
+
+TwoLists=[str(r[1])+';'+str(r[0]) for r in itertools.product(dates, test)]
+
+df=pd.DataFrame({'v1':TwoLists})
+df = df.join(df['v1'].str.split(';', expand=True).add_prefix('col'))
+
+
+
+
 df=pd.DataFrame({'Date':['f']})
 df_tmp=pd.DataFrame()
 for r in itertools.product(Dates, list2):
