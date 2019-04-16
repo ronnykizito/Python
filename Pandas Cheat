@@ -1522,7 +1522,10 @@ df[PWBI_replace_numeric] = df[PWBI_replace_numeric].values.astype(str)
 
 for replace_dot_comma in PWBI_replace_numeric:
     df[replace_dot_comma] = df[replace_dot_comma].str.replace('.', ',')
-#replace multi
+
+
+
+#replace multi split multi
 
 df['x'] = df['v2'].str.replace('[\[\]]', ' ')
 
