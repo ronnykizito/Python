@@ -352,6 +352,12 @@ df['com']=df.HomeTeam.str.cat([df.AwayTeam,df.Date],sep=', ')
 df.sort_values(['A', 'C'], ascending=[True, False],inplace=True)
 
 #groupby
+
+df1=df.groupby(['YearCode','YearMonth'], 
+               as_index=False).agg({'Date_Key': ['sum','max','min','count','mean','nunique'],
+                             "ID": ['sum','max','min','count','mean','nunique']})
+df1.columns = ["".join(x) for x in df1.columns.ravel()]
+
 df2=df.groupby(['YearMonth'], as_index=False)['Date_Key'].sum()
 df1=df.groupby(['Div','Sheetname'], as_index=False).agg({"FTHG": ["sum","max","min",'count','mean'],"FTAG": ["sum","max","min",'count','mean'],"Team":["nunique"]})
 #denna fixar till namnen som skapas av groupby
