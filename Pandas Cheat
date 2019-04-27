@@ -3,6 +3,15 @@
 Created on Sat Nov 10 17:04:25 2018
 https://www.geeksforgeeks.org/python-pandas-dataframe-isin/
 
+File_name = [i for i in os.listdir(In_folder) if i.endswith('.csv') ]
+
+
+remove_files=['EXFINANCEENTRY 4000-7000.csv','EXACCOUNT.csv']
+
+files=[x for x in File_name if x not in remove_files]
+
+
+
 pip install dask[dataframe]
 
 from datetime import datetime
