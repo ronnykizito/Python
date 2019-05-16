@@ -1615,8 +1615,18 @@ TwoLists=[str(r[1])+';'+str(r[0]) for r in itertools.product(dates, test)]
 
 df=pd.DataFrame({'v1':TwoLists})
 df = df.join(df['v1'].str.split(';', expand=True).add_prefix('col'))
+dates=pd.date_range('20190101', '20191231',freq='M')
 
 
+
+df = pd.DataFrame()
+for date in dates:
+    df_tmp=pd.DataFrame({'SiteID':[1,2,3,4,5],
+                 'SiteName':['LillaSkogen','Törnrosen','Bollen','Slottet','Kungsholmens'],
+                 'SiteLocation':['Solna' ,'Bromma' ,'Solna' ,'Stockholm','Stockholm']})
+    df_tmp['Date']=date
+    df = df.append(df_tmp, ignore_index=True,sort=False)
+    print(date)
 
 
 #month to int
