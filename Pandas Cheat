@@ -435,6 +435,16 @@ df['idxxMax'] = df.groupby(['Date','Grp'])['idxx'].transform(lambda x : x.max())
 v4['MA2'] =v4.groupby('Team')['Goal'].rolling(2).mean().reset_index(0,drop=True)
 v4['Cum2'] =v4.groupby('Team')['IDx'].rolling(2).sum().reset_index(0,drop=True)
 
+
+grp=['Owner','DateKey']
+
+df.sort_values(grp, ascending=[True, True],inplace=True)
+
+df['MA2'] =df.groupby(['Owner'])['Items'].rolling(2).sum().reset_index(0,drop=True)
+df['MA3'] =df.groupby(['Owner'])['Items'].rolling(3).sum().reset_index(0,drop=True)
+df.loc[df.MA2.isnull(), 'MA2'] = df.Items
+df.loc[df.MA3.isnull(), 'MA3'] = df.MA2
+
 #%%
 
 
