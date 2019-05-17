@@ -442,8 +442,14 @@ df.sort_values(grp, ascending=[True, True],inplace=True)
 
 df['MA2'] =df.groupby(['Owner'])['Items'].rolling(2).sum().reset_index(0,drop=True)
 df['MA3'] =df.groupby(['Owner'])['Items'].rolling(3).sum().reset_index(0,drop=True)
+df['MA4'] =df.groupby(['Owner'])['Items'].rolling(4).sum().reset_index(0,drop=True)
+df['MA5'] =df.groupby(['Owner'])['Items'].rolling(5).sum().reset_index(0,drop=True)
+df['MA6'] =df.groupby(['Owner'])['Items'].rolling(6).sum().reset_index(0,drop=True)
 df.loc[df.MA2.isnull(), 'MA2'] = df.Items
 df.loc[df.MA3.isnull(), 'MA3'] = df.MA2
+df.loc[df.MA4.isnull(), 'MA4'] = df.MA3
+df.loc[df.MA5.isnull(), 'MA5'] = df.MA4
+df.loc[df.MA6.isnull(), 'MA6'] = df.MA5
 
 #%%
 
