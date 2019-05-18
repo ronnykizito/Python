@@ -1664,3 +1664,11 @@ df['xx'] = pd.DatetimeIndex(df.date_done) + pd.DateOffset(days=1)
 df['date_diff'] = np.busday_count(
     df.order_date.values.astype('datetime64[D]'),
     df.xx.values.astype('datetime64[D]'))
+    
+    
+replace_values={'Asteras Tripolis':'Airdrie Utd','Leipzig':'RB Leipzig',
+  'Red Star 93':'Red Star','Roda':'Roda JC','Sparta':'Sparta Rotterdam',
+  'Villareal':'Villarreal','Proodeytiki':'Proodeftiki','Antalya':'Antalyaspor',
+  'Asteras Tripolis':'1','Olympiakos':'2'}
+  
+df=df.replace({'AwayTeam' : replace_values,'HomeTeam':replace_values})
