@@ -7,6 +7,8 @@ Min_year=int(Min_date[0:4])
 Max_date = (date.today()  + relativedelta(months=+38,day=31)).strftime("%Y%m%d") #last day of the month
 Max_year=int(Max_date[0:4])+1
 
+the_range=list(range(1,30+1))
+
 Created on Sat Nov 10 17:04:25 2018
 https://www.geeksforgeeks.org/python-pandas-dataframe-isin/
 
