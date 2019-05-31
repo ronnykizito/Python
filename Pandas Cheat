@@ -1698,5 +1698,12 @@ print(time.strftime("%H:%M:%S", time.gmtime(end_timer - start_timer)))
 #if else
 import numpy as np
 
-df['test']=np.where(df.Date_Key.between(1, 10),1,
-  np.where(df.Date_Key.between(11, 20),2,3))
+df['test']=np.where(df.Kontoplan.between(1000, 1999),'Tillgångar',
+  np.where(df.Kontoplan.between(2000, 2999),'x',
+  np.where(df.Kontoplan.between(3000, 3999),'y',
+  np.where(df.Kontoplan.between(4000, 4999),'z',
+  np.where(df.Kontoplan.between(5000, 5999),'f',
+  np.where(df.Kontoplan.between(6000, 6999),'yy',
+  np.where(df.Kontoplan.between(7000, 7999),'k',
+  np.where(df.Kontoplan.between(8000, 8999),'l',
+           'Övligt'))))))))
