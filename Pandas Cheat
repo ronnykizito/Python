@@ -1693,3 +1693,10 @@ end_timer = timer()
 
 
 print(time.strftime("%H:%M:%S", time.gmtime(end_timer - start_timer)))
+
+
+#if else
+import numpy as np
+
+df['test']=np.where(df.Date_Key.between(1, 10),1,
+  np.where(df.Date_Key.between(11, 20),2,3))
