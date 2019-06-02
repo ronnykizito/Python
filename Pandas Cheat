@@ -1707,3 +1707,8 @@ df['test']=np.where(df.Kontoplan.between(1000, 1999),'Tillgångar',
   np.where(df.Kontoplan.between(7000, 7999),'k',
   np.where(df.Kontoplan.between(8000, 8999),'l',
            'Övligt'))))))))
+
+
+syntax=r'\Calendar.py'
+
+exec(open(syntax).read())
