@@ -1151,6 +1151,7 @@ df['Datum']=df.AR+'-'+df.Month_Swe+'-'+'01'
 
 df.drop_duplicates(['Artikel','Pris','Antal','Summa','Nummer','Datum','Filename'],keep= 'last', inplace=True)
 df = df.assign(ID_Kund=(df['Filename']).astype('category').cat.codes)
+df['code'] = pd.factorize(df['Div'], sort=True)[0] + 1
 
 df_Categories = ['Måndag', 'Tisdag','Onsdag','Torsdag','Fredag','Lördag','Söndag']
 CategoriesOrdered=pd.Categorical(df["DayOfWeekNameSwedishLong"], categories=df_Categories, ordered=True)
