@@ -1564,7 +1564,8 @@ df[PWBI_replace_numeric] = df[PWBI_replace_numeric].values.astype(str)
 
 for replace_dot_comma in PWBI_replace_numeric:
     df[replace_dot_comma] = df[replace_dot_comma].str.replace('.', ',')
-
+#this is better
+df[int_float]=df[int_float].apply(lambda x: x.str.replace(',','.'))
 
 
 #replace multi split multi
