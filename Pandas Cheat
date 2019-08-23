@@ -19,7 +19,7 @@ remove_files=['EXFINANCEENTRY 4000-7000.csv','EXACCOUNT.csv']
 
 files=[x for x in File_name if x not in remove_files]
 
-
+.reset_index()
 
 pip install dask[dataframe]
 
