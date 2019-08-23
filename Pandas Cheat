@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 
+df=pd.read_csv('http://bit.ly/kaggletrain')
+
 #years months weeks days hours minutes
 Min_date = (date.today()  + relativedelta(weeks=-1)).strftime("%Y%m%d")
 Min_year=int(Min_date[0:4])
