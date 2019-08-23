@@ -371,6 +371,17 @@ df.sort_values(['A', 'C'], ascending=[True, False],inplace=True)
 
 #groupby
 
+df=pd.read_csv('http://bit.ly/kaggletrain')
+
+df.info()
+
+
+df1=df.groupby(['Pclass','Sex'],as_index=False).agg({'Age': ['sum','max','min','count','mean','nunique'],
+                             "Survived": ['sum','max','min','count','mean','nunique']})
+df1.columns = ["".join(x) for x in df1.columns.ravel()]
+
+
+
 df1=df.groupby(['YearCode','YearMonth'], 
                as_index=False).agg({'Date_Key': ['sum','max','min','count','mean','nunique'],
                              "ID": ['sum','max','min','count','mean','nunique']})
