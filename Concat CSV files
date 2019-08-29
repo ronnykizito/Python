@@ -1,0 +1,34 @@
+
+
+df=pd.DataFrame({'V1':[1]})
+df['V2']=2
+df['V3']=3
+df['V4']=4
+archived=r'C:\Users\RONSEN\Esron BI Analyzr AB\Gruppwebbplats - Dokument\BIANALYZR\Indata'
+
+df.to_csv(archived+'\\test1.csv',index=False,sep=';',encoding="utf-8-sig")
+
+df=pd.DataFrame({'V2':[2]})
+df['V1']=1
+df['V3']=3
+df['V5']=5
+archived=r'C:\Users\RONSEN\Esron BI Analyzr AB\Gruppwebbplats - Dokument\BIANALYZR\Indata'
+
+df.to_csv(archived+'\\test2.csv',index=False,sep=';',encoding="utf-8-sig")
+
+df=pd.DataFrame({'V3':[3]})
+df['V2']=2
+df['V1']=1
+df['V6']=6
+archived=r'C:\Users\RONSEN\Esron BI Analyzr AB\Gruppwebbplats - Dokument\BIANALYZR\Indata'
+
+df.to_csv(archived+'\\test3.csv',index=False,sep=';',encoding="utf-8-sig")
+
+archived = glob.glob(os.path.join(archived, '*.csv'))
+df = (pd.read_csv(files,sep=';',encoding="utf-8-sig",dtype=(str)) for files in archived)
+df   = pd.concat(df, ignore_index=True,sort=False)  
+
+
+#Year=time.strftime("%Y")
+
+#ArchivedPath = glob.glob(os.path.join(archived, '*'+Year+'*.csv'))
