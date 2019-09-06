@@ -1,0 +1,52 @@
+/*****************************dates*///////////
+http://www.sascommunity.org/wiki/Macro_Variables_of_Date_and_Time 
+https://v8doc.sas.com/sashtml/lrcon/zenid-63.htm 
+http://apprize.info/programming/sas_3/3.html */
+
+https://v8doc.sas.com/sashtml/lrcon/z1058173.htm
+
+http://documentation.sas.com/?docsetId=nlsref&docsetTarget=n07rjcks1coymfn17d6vezhxtjf9.htm&docsetVersion=3.1&locale=en
+
+
+	
+		/*n no separator
+		b blank
+		d dash
+		s slash
+		p period
+		c colon*/
+		
+		date9. tex 	15DEC2017
+		DATE.		15DEC17
+		DATE.5	15DEC
+		DATE.11	15-dec-2017
+		yymmddn8. 	20171215
+		yymmn6.		201712
+		yymmdd10.	2017-12-15
+		year4.		2017
+		Month2.		12
+		yymmdd4. 	1711
+		yymmdd6.	171101
+		week.1 	lördag
+		week.2 	söndag
+		week.3 	måndag
+		week.4 	tisdag
+		week.5 	onsdag
+		week.6 	torsdag
+		week.7 	fredag
+		yyqn3.     kvartal
+		WEEKv3.  Veckonummer
+		datetime21.2
+		EURDFDN. Veckodag
+%let Updated=%sysfunc(date(),yymmdd10.) %substr(%sysfunc(time(),tod8.),1,5);
+	
+	%let date_d9=%sysfunc(inputn(&min_date, yymmdd10.), date9.);
+	
+	%let start_date=201801;
+%let   end_date=201802;
+
+/*%Let start=%Sysfunc(Intnx(Month, "(%sysfunc(inputn(&start_date.,yymmn6.),date9.)"d, 0, e), date9.);
+
+%Let end=%Sysfunc(Intnx(Month, "(%sysfunc(inputn(&end_date.,yymmn6.),date9.)"d, 0, e), date9.);
+
+%put &start &end;*/
