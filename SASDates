@@ -1,0 +1,182 @@
+%let start_date=%sysfunc(intnx(month, "%sysfunc(today(),date9.)"d, -1), 
+	yymmn6.)/*justera -1*/;
+%let   end_date=%sysfunc(intnx(month, "%sysfunc(today(),date9.)"d, 0), 
+	yymmn6.)/*justera 0*/;
+	
+	%let Updated = %sysfunc(today(), EURDFWKX.);
+
+/*%let start_date=201801;
+%let   end_date=201802;*/
+
+%let Prog_start = %sysfunc(TIME(),time.);
+%put &prog_start;
+
+%let Updated=%sysfunc(date(), yymmdd10.) %substr(%sysfunc(time(), tod8.), 1, 5);
+
+%put &start_date. &end_date. ;
+%let intervall=month;
+%let start=%sysfunc(inputn(%sysfunc(inputn(&start_date., yymmn6.), date9.), 
+	anydtdte9.));
+%let end=%sysfunc(inputn(%sysfunc(inputn(&end_date., yymmn6.), date9.), 
+	anydtdte9.));
+%let dif=%sysfunc(intck(&intervall., &start., &end.));
+option nomlogic nomprint nosource nonotes nosymbolgen;
+
+%macro dates;
+	%do j=0 %to &dif;
+		%let date=%sysfunc(putn(%sysfunc(intnx(&intervall., &start., &j., b)), 
+			date9.));
+		%let new_format=%sysfunc(inputn(&date, date9.), yymmddn8.);
+		%let Today=%sysfunc(today(), yymmddn8.);
+		%let yyy= %sysfunc(datetime(), datetime21.2);
+		%let LastMnth=%sysfunc(intnx(month, "&date"d, -1), date9.);
+		%let datex=%sysfunc(intnx(month, %sysfunc(today()), -1), yymmddn8.);
+		%let Yesterday=%sysfunc(intnx(day, %sysfunc(today()), -1), date9.);
+		%Let Rpt_End_Dt=%Sysfunc(Intnx(Month, "&date"d, -1, e), date9.);
+		%let x_month_ago=%sysfunc(intnx(month, %sysfunc(today()), -1, same), 
+			yymmddn8.);
+		%let LastMnthx=%sysfunc(intnx(month, "&date"d, -1, same), yymmddn8.);
+		%let year=%sysfunc(inputn(&date, date9.), year4.);
+		%let month=%sysfunc(inputn(&date, date9.), Month2.);
+		%let Prog_start = %sysfunc(TIME(), time.);
+		%Let First_day_month=%Sysfunc(Intnx(Month, "&date"d, 0, b), date9.);
+		%Let Second_day_month=%Sysfunc(Intnx(day, 
+			"%Sysfunc(Intnx(Month, "&date"d, 0, b), date9.)"d, 1, b), date9.);
+		%Let First_day_nextMonth=%Sysfunc(Intnx(Month, "&date"d, 1, b), date9.);
+		%Let Second_day_nextmonth=%Sysfunc(Intnx(day, 
+			"%Sysfunc(Intnx(Month, "&date"d, 1, b), date9.)"d, 1, b), date9.);
+		%let Nr_monday_month=%sysfunc(intnx(week.3, %sysfunc(mdy(&month, 1, &year)), 
+			0, e), date9.);
+		%let First_tuesday_month=%sysfunc(intnx(week.4, %sysfunc(mdy(&month, 1, 
+			&year)), 0, e), date9.);
+		%let Second_tuesday_month=%sysfunc(intnx(week.4, %sysfunc(mdy(&month, 1, 
+			&year)), 1, e), date9.);
+		%let First_saturday_month=%sysfunc(intnx(week.1, %sysfunc(mdy(&month, 1, 
+			&year)), 0, e), date9.);
+
+		/*monday after the first saturday*/
+%Let First_monday_afterFist_saturday=%Sysfunc(Intnx(day, 
+			"%sysfunc(intnx(week.1,%sysfunc(mdy(&month,1,&year)),0,e),date9.)"d, 2, e), 
+			date9.);
+		%let Lastday=%sysfunc(intnx(day, "&date"d, -1), date9.);
+		%let Duration_days = %sysfunc(intck(day, "&LastMnth"d, "&date"d));
+		%let Last_lordag = %sysfunc(putn(%eval(%sysfunc(intnx(week, "&date"D, 0))-1), 
+			DATE9.));
+		%let ReportDate = %sysfunc(intnx(week.6, "&date"d, 0), DATE9.);
+		%let Birthday=%sysfunc(inputn(%SYSEVALF(%sysfunc(intck(day, "1jun1979"d, 
+			"&sysdate."d))/365.25), best32.), 16.2);
+		%let Week=%substr(%sysfunc(inputn(&date, date9.), WEEKv3.), 2);
+		%let Previous_week=%substr(%sysfunc(inputn(%sysfunc(intnx(day, "&date"d, -7, 
+			same), date9.), date9.), WEEKv3.), 2);
+		%let Kvartal=%sysfunc(putn(%substr(%sysfunc(inputn(&date, date9.), yyqn3.), 
+			3), z2));
+		%let Next_qtr=%sysfunc(putn(%eval(%substr(%sysfunc(inputn(&date, date9.), 
+			yyqn3.), 3)+1), z2));
+
+		/*%let Duration_hours = %sysfunc(intck(minute,"&Prog_start."t,"&Prog_end."t));
+		Leding zeros
+		%let month=%sysfunc(putn(&period, z2));
+		*/
+		/* fiscal year tex börjar 3 månader innan*/ 
+ %let fiscal_year=%sysfunc(intnx(month, "&date"d, -3), date9.);
+		%let Qtr=%sysfunc(inputn(&date, date9.), 
+			year4.)_qtr_%sysfunc(putn(%substr(%sysfunc(inputn(&date, date9.), yyqn3.), 
+			3), z2));
+		%put &new_format  &Birthday;
+		%let today_time=%sysfunc(inputn(&sysdate, date9.), 
+			yymmdd10.) %sysfunc(time(), time8.0);
+		%put &date &new_format &LastMnth &&today_time.;
+	%end;
+%mend;
+
+%dates;
+
+/*on with log notes*/
+option mlogic mprint source notes symbolgen;
+
+data date;
+	format date ddmmyy10.;
+
+	do date='28dec2015'd to '3jan2021'd by 1;
+		output;
+	end;
+run;
+
+data getweek;
+	set date;
+
+	/*between dates*/
+	Cutoff=intck("month", period, Max_period);
+	x=intck('week', intnx('year', date, 0), date)+1;
+	week=week(date, 'v');
+	day=intnx('day', date , -7);
+	format day date9.;
+	drop x;
+	x=intck('week', intnx('year', day, 0), day)+1;
+	Previous_week=week(intnx('day', date , -7), 'v');
+	drop x day;
+	Sameday_month=intnx('month1', date, -1, 'SAMEDAY');
+/*bsldat<intnx('month',&refdatum,-24)*/
+	/*byt -1 och manupulera, eller month7 +7 månader*/
+	format Sameday_month date9.;
+	Birthday=yrdif("1jun1979"d, "&sysdate"d, 'actual');
+	Birthday=int(dif("1jun1979"d, "&sysdate"d, 'actual'));
+	days=datdif("10jan2018"d, "&sysdate"d, 'actual');
+	x=intck('week', intnx('year', Sameday_month, 0), Sameday_month)+1;
+	Previous_week_sameday=week(Sameday_month, 'v');
+	drop x;
+	year=intnx('year', date, 1);
+
+	/* +1 year */
+	format year year4.;
+	x=date;
+	Kvartal=qtr(x);
+	day_intervall=intnx('day', date, -1);
+
+	/* day intervall*/
+	format day_intervall date9.;
+run;
+
+data getweek;
+	set date;
+
+	/* year.1 dec year.2 jan*/
+	Financial_Year=IntNx("Year.4", date, 0, "END");
+	Financial_Year1=IntNx("Year.4", date, 1, "END");
+	day_intervall=intnx('day', Financial_Year, -5);
+
+	/*antag att från 25-25e*/
+	DATENEW=PUT(Financial_Year, yymmddd10.);
+	DATENEW1=substr(DATENEW, 1, 7);
+	xx=compress(DATENEW1||"-25");
+	Newdate_25=input(xx, yymmdd10.);
+	drop DATENEW DATENEW1 xx;
+	format day_intervall Financial_Year1 Financial_Year yymmdd10.;
+	
+	/*
+	 * id=input(put(input(catt(month3, '1960'), monyy.), month.), 2.); från Jan=1 feb=2 osv.
+	 */
+run;
+
+data _null_;
+	today=Today();
+	call symputx('today', put(today, date9.));
+
+	/* tex 15DEC2017*/
+	call symputx('today1', put(today, yymmddn8.));
+
+	/*tex 20171215*/
+	call symputx('today2', put(today, yymmdd10.));
+
+	/*tex 2017-12-15*/
+	call symputx('rank', put(today, yymmn6.));
+
+	/* tex 201712*/
+	call symputx('extr_datum', put(intnx('month', today, 0, 'beginning'), date9.));
+	call symputx('eng_dat', put(intnx('month', today, -2, 'end'), date9.));
+	call symputx('ar', (year(today)));
+
+	/* år*/
+	call symputx('period', put(intnx('month', today, 0, 'beginning'), yymmn6.));
+	call symputx('extr_datum_1', put(intnx('month', today, -1, 'beginning'), 
+		date9.));
