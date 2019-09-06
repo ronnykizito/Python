@@ -1,0 +1,171 @@
+%let data =1 2 4 6 13 29 32 ronny;
+%let Var_list=Var_list;
+
+data &Var_list.;
+	str="&data.";
+
+	do i=1 to countw(str, " ");
+		&Var_list.=strip(scan(str, i, " "));
+		ID=i;
+		output;
+	end;
+	drop str i;
+run;
+
+Proc sql noprint;
+	select max(id) into : Antal_var separated by " " from &Var_list.;
+quit;
+
+%put &Antal_var;
+option nomlogic nomprint nosource nonotes nosymbolgen;
+
+%macro lista;
+	%do id=1 %to &Antal_var.;
+
+		Proc sql noprint;
+			select distinct &Var_list. into 
+:Next_var separated by " " from &Var_list. where id=&id.;
+		quit;
+		
+		data V&Next_var;
+		set sashelp.class;
+		run;
+
+		%put &Next_var;
+	%end;
+%mend;
+
+%lista;
+option mlogic mprint source notes symbolgen;
+
+
+data &Var_list.;
+	str="&data.";
+
+	do i=1 to countw(str, " ");
+	do j=i+1 to countw(str, " ");
+		&Var_list.=strip(scan(str, i, " "));
+			&Var_list.1=strip(scan(str, j, " "));
+			test=catx("+",&Var_list.,&Var_list.1);
+		ID=i;
+	
+	output;
+	end;
+	end;
+	drop str i;
+run;
+
+
+/**************************************************/
+
+
+%let name_list =1 2 4 6 13 29 32;
+
+
+
+
+	%macro do_loop_non_sequential;
+	%let The_var_list=&name_list.;
+		%let i = %sysfunc(CountW(&The_var_list.));
+
+		%do Variables=1 %to &i.;
+			%let Next_Variable=%scan(&The_var_list., &Variables.);
+			
+			
+			
+			
+		
+		%put &Next_Variable;
+		%end;
+	%mend;
+
+	%do_loop_non_sequential;
+
+
+
+
+
+options obs=min;
+%macro do_loop_non_sequential;
+
+%let i = %sysfunc(CountW(&name_list.));
+%do loop_name_list = 1 %to &i.;
+
+  %let Next_name_list=%scan(&name_list.,&loop_name_list.);
+
+  Data V&Next_name_list.;
+set sashelp.class;
+test="&Next_name_list";
+run;
+
+%end;
+
+%mend;
+
+%do_loop_non_sequential;
+
+/********************/
+%let name_list =201605 201612 201702 ;
+
+
+option nomlogic nomprint nosource   nonotes nosymbolgen; 
+%macro do_loop_non_sequential_dates;
+
+%let cnt = %sysfunc(CountW(&name_list.));
+
+%do loop_name_list = 1 %to &cnt.;
+
+  %let Next_name=%scan(&name_list,&loop_name_list.);
+
+%let year=%sysfunc(inputn(&Next_name.,yymmn6.),year4.); /**/
+
+%Let extr_datum=%Sysfunc(Intnx(Month, "(%sysfunc(inputn(&Next_name.,yymmn6.),date9.)"d, 0, b), date9.);
+
+%Let datum=%Sysfunc(Intnx(Month, "(%sysfunc(inputn(&Next_name.,yymmn6.),date9.)"d, 0, e), yymmdd10.);
+%put &year &datum &extr_datum;
+
+
+Data V_&Next_name.;
+set Dwfys.Konton_&year. (where=(extr_datum="&extr_datum."d) keep=extr_datum obs=10);
+test="&Next_name";
+Datum="&datum.";
+run;
+
+%end;
+
+%mend;
+
+%do_loop_non_sequential_dates;
+option mlogic mprint source notes symbolgen; 
+
+%let segment=700 711 712 713 720 751 752; 
+%macro remove;
+%macro _; %mend _;
+%let name_list =&segment.;
+%let yyy=xxx;
+
+
+%let cnt = %sysfunc(CountW(&name_list.));
+%do loop_name_list = 1 %to &cnt.;
+%let Next_name=%scan(&name_list,&loop_name_list.);
+
+
+proc datasets lib=gdpr&Next_name. memtype=data nolist;
+ delete Est_final Model_final pe_final type3_final;
+quit;
+
+
+%end;
+%mend;
+%remove;
+
+%macro loop( start= , end= , by= ) ;
+%local i;
+%do i = 1 %to %eval(%sysfunc(Ceil(%sysevalf((&end - &start ) / &by ) ) ) +1) ;
+   %let value=%sysevalf(( &start - &by ) + ( &by * &i )) ;
+   %if &value <=&end %then %do;
+      %put &value;
+   %end;
+%end ;
+%mend loop ;
+%loop(start = 1 , end = 5 , by = .25 );
