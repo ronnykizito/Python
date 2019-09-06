@@ -1,0 +1,121 @@
+
+Proc sql noprint;
+		select compbl(quote(Team)) 
+		into :hometeam separated by "," 
+		 from ttt;
+			quit;
+
+%let data =london paris frag2_3 v b gggg khk hgg    jjj;
+
+
+
+%let Sql_qlist=("%sysfunc(tranwrd(%sysfunc(compbl(&data)),%str( ),%bquote(",")))");
+
+%put &Sql_qlist;
+
+
+/********************lägg x framför************************************/
+
+%let prefix=x;
+%let grouped_vars=%qsysfunc(tranwrd(%sysfunc(compbl(&prefix.&data)),%str( ),%bquote( &prefix.)));
+%put &grouped_vars;
+
+
+*lägg efter;
+
+
+
+%let prefix=x;
+%let grouped_vars=%qsysfunc(tranwrd(%sysfunc(compbl(&data.)),%str( ),%bquote( &prefix.)));
+%put &grouped_vars;
+
+%let qlist_comma=%qsysfunc(tranwrd(%sysfunc(compbl(&grouped_vars)),%str( ),%bquote(,)));
+%put &qlist_comma;
+
+%let Sql_qlist=("%sysfunc(tranwrd(%sysfunc(compbl(&grouped_vars)),%str( ),%bquote(",")))");
+%put &Sql_qlist;
+/***************************************************************/
+
+
+%let qlist_comma=%qsysfunc(tranwrd(%sysfunc(compbl(&data)),%str( ),%bquote(,)));
+%put &qlist_comma;
+
+/********a.*****/
+%let prefix=b;
+%let qlist_comma=%qsysfunc(tranwrd(%sysfunc(compbl(&prefix..&data)),%str( ),%bquote(,&prefix..)));
+%put &qlist_comma;
+
+%let qlist_without_parentheses="%sysfunc(tranwrd(%sysfunc(compbl(&data)),%str( ),%bquote(",")))";
+%put &qlist_without_parentheses;
+%let qlist_with_parentheses=("%sysfunc(tranwrd(%sysfunc(compbl(&data)),%str( ),%bquote(",")))");
+%put &qlist_with_parentheses ;
+
+/***************from separated to none********************/
+
+%let varlist=OriginCd DestinCd;
+%let newlist=%sysfunc(compbl(%sysfunc(tranwrd(%quote(&varlist),%str(,),%str( )))));
+%put &=newlist;
+
+%macro list2table(list=, table=, varname=,A_varname=);
+%macro _; %mend _;
+
+* Find max length;
+%let max_length=0;
+%do i=1 %to %sysfunc(countw(&list));
+	%let grej=%scan(&list, &i);
+	%if %length(&grej) > &max_length %then %let max_length=%length(&grej);
+	%let max_length1=%eval(&max_length.+5);
+%end;
+
+
+%put length &max_length &max_length1;
+
+
+data &table.;
+length &varname $&max_length &A_varname $&max_length1;
+%do i=1 %to %sysfunc(countw(&list));
+	%let grej=%scan(&list, &i);
+	&varname = "&grej";
+	&A_varname = "a.&grej";
+	output;
+%end;
+%mend;
+run;
+%list2table(list=&data., table=table, varname=varname,A_varname=adj_name);
+proc sql noprint;
+select distinct adj_name into:sql_vars separated  by "," from table;
+run;
+%put &sql_vars; 
+
+
+
+%let list =london paris frag2_3 v b gggg khk hgg    jjj;
+
+%macro max_length;
+
+* Find max length;
+%let max_length=0;
+%let i = %sysfunc(CountW(&list.));
+%do loop_list = 1 %to &i.;
+%let Next_list=%scan(&list,&loop_list.);
+
+
+%if %sysfunc(lengthn(&Next_list.)) > &max_length. %then %let max_length=%sysfunc(lengthn(&Next_list.));
+
+
+
+%put   &Next_list &max_length;
+
+%end;
+
+data Table_list;
+length Var_list $&max_length.;
+%let i = %sysfunc(CountW(&list.));
+%do loop_list = 1 %to &i.;
+%let Next_list=%scan(&list,&loop_list.);
+	Var_list = "&Next_list";
+	output;
+%end;
+%mend;
+run;
+%max_length;
