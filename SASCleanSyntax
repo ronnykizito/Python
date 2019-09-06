@@ -1,0 +1,781 @@
+
+/*******good sas tips  
+https://communities.sas.com/t5/SAS-Communities-Library/SAS-9-4-Macro-Language-Reference-Has-a-New-Appendix/ta-p/291716;
+
+**********/
+%let Ignore_ampersand=%nrstr(139. GL&V fakturamall 2018.xlsm);
+%SYMDEL Mod_date/NOWARN;
+%let lib=sashelp;
+%let dset=class;
+
+data resultat;
+	length Model $16;
+	Model="Blanco ME";
+	AR=&ar_blanco_me.;
+	score_mean=&mean_blanco_me.;
+	utfall_mean=&mean_utfall.;
+	Freq=&count.;
+	output;
+	Model="UCRP ME";
+	AR=&ar_ucrp_me.;
+	score_mean=&mean_ucrp_me.;
+	utfall_mean=&mean_utfall.;
+	Freq=&count.;
+	output;
+run;
+
+Data V1 /view=v1;
+set Dwfys.Konton_bostad_2017 Dwfys.Konton_bostad_2018;
+run;
+
+
+
+
+
+/******ex*/
+proc contents data=&lib..&dset. noprint out=data_info;
+run;
+
+proc sql noprint;
+	select distinct nobs into :nobs separated by " " from dictionary.tables where 
+		libname=upcase("&lib.") and memname=upcase("&dset.");
+quit;
+
+%put &nobs;
+
+data v1;
+	/*set sashelp.class;*/
+run;
+
+
+%let dset=sashelp.class;
+  %let dsid = %sysfunc(open(&dset.));
+      %let nobs =%sysfunc(attrn(&dsid.,nlobs));
+      %let nvars=%sysfunc(attrn(&dsid.,nvars));
+    
+      %let rc = %sysfunc(close(&dsid.));
+          
+	 %put &CDATE;
+
+%LET dsid=%SYSFUNC(OPEN(v1));
+%LET nobsx=%SYSFUNC(ATTRN(&dsid., NOBS));
+%LET rc=%SYSFUNC(CLOSE(&dsid.));
+%put &nobsx.;
+
+proc sql noprint;
+	select distinct DATEPART(modate) format=date9.  into :Mod_date separated by 
+		" " from dictionary.tables where libname=upcase("WORK") and 
+		memname=upcase("V1") and &nobsx.>1;
+quit;
+
+%put &Mod_date;
+
+proc sql noprint;
+	select distinct DATEPART(modate) format=date9.  into :Mod_date separated by 
+		" " from dictionary.tables where libname=upcase("&lib.") and 
+		memname=upcase("&dset.") and nobs>0;
+quit;
+
+%put &Mod_date;
+
+Data Updated;
+	Updated="&Mod_date."d;
+	format Updated yymmdd10.;
+run;
+
+options obs=2;
+
+data v1;
+	set sashelp.class;
+run;
+
+data test;
+	do ID=1 to 100;
+
+		do y=1 to 2;
+			randa=rand(id);
+			output;
+		end;
+	end;
+run;
+
+DATA work;
+	DO i=1 to 1000 by 0.05;
+		w1=0.10*rannor(3);
+		w2=0.15*rannor(3);
+		y=(ranuni(1) < .04 + 0.1 *w1 + .04*w2);
+		u=rand("Uniform");
+		output;
+	END;
+run;
+
+
+
+data v1;
+	set work;
+	r=input(strip(left(put(i, 8.2))), best.);
+
+	if r<=5.4 then
+		if1=1;
+	else if r le 10.3 then
+		if1=2;
+	else if r<=20.7 then
+		if1=3;
+	else
+		if1=4;
+run;
+
+proc contents data=work._all_;
+run;
+
+proc contents data=sashelp.class noprint out=test;
+run;
+
+data readin;
+	input ID Name $ Score;
+	cards;
+1     David   45
+1     David   74
+2     Sam     45
+2     Ram     54
+3     Bane    87
+3     Mary    92
+3     Bane    87
+4     Dane    23
+5     Jenny   87
+5     Ken     87
+6     Simran  63
+8     Priya   72
+;
+run;
+
+/*********my duplicate*/
+proc sql noprint;
+	create table tt (drop=row_num) as select *, monotonic() as row_num from readin 
+		group by name having row_num=min(row_num) order by ID;
+quit;
+
+proc sql noprint;
+	create table tt as select *, monotonic() as row_num from readin group by name 
+		order by ID;
+quit;
+
+Proc sql;
+	create table yyy as select *, max(period) as test format=yymmdd10. , 
+		intck("month", period, max(period)) as Cutoff from gdpr.Inp_hss_201301 where 
+		period ne .
+group by personnr having calculated Cutoff <=12;
+quit;
+
+Proc sql;
+	create table test as select *, count(*) as Antal from sashelp.class;
+	create table test1 as select *, count(*) as Antal_Kön from test group by sex;
+quit;
+
+/**************************************/
+proc freq data=sashelp.cars;
+	table make*type*origin/out=test list;
+run;
+
+/******samma som ovan*/
+proc sql;
+	create table test as select make, type, origin, count(*) from sashelp.cars 
+		group by make, type, origin;
+quit;
+
+/********************************/
+/**change table name*/
+%macro change_names;
+	%let cnt = %sysfunc(CountW(&tables.));
+
+	%do loop_tables=1 %to &cnt.;
+		%let Next_tables=%scan(&tables, &loop_tables.);
+
+		proc datasets lib=work nolist nowarn;
+			change &Next_tables.=Changed&loop_tables.;
+			run;
+		%end;
+	%mend;
+
+	%change_names;
+
+	/****************punkt till comma för extract till csv***************/
+data scores;
+	length name $ 12;
+	input name $ score1 score2;
+	datalines;
+Riley 1132 1187
+Henderson 1015 1102
+;
+run;
+
+/************left join data step merge*/
+data v1;
+	merge v2(in=a) v2(in=b);
+	by id;
+
+	if a;
+run;
+
+%let vars_n=height weight;
+
+data test;
+	set sashelp.class;
+	format &vars_n. numx8.5;
+	array vars &vars_n.;
+
+	do over vars;
+
+		if vars=. then
+			vars=0;
+	end;
+Run;
+
+proc sql;
+	create table v2 as select sex, sum(height) format=numx8.5 as CT from test 
+		group by sex;
+quit;
+
+proc sql;
+	create table v1 as select sex, sum(height) as CT from sashelp.class group by 
+		sex;
+quit;
+
+/*****************************************/
+/*********************byta name på dataset*/
+
+%let Master_dset=dataMining_dsets;
+
+proc datasets library=work nolist;
+	change t9=&Master_dset.;
+	run;
+
+proc copy in=work out=&lib.;
+	select &Master_dset.;
+run;
+
+/***************************************************************/
+options obs=min;
+libname mydata "/folders/myfolders/" proc datasets library=WORK KILL NOLIST;
+run;
+
+proc copy in=work out=&lib.;
+	select Est_&dset.;
+run;
+
+proc print data=Kund_&i. NOOBS;
+run;
+
+proc datasets library=temppers memtype=data;
+	contents data=ref_dev_170501_me_v7_urval;
+	run;
+
+proc datasets lib=&libname. memtype=data nolist;
+	delete &dellist.;
+quit;
+
+proc datasets library=temppers;
+	modify MyCalendar;
+	index create date;
+	run;
+
+proc sort data=Temppers.Inp_hss_201501(where=(period ne .)) out=Inp_hss_201501;
+	by personnr descending period;
+run;
+
+data Inp_hss_201501_adj;
+	set Inp_hss_201501;
+	by personnr;
+	retain Max_period;
+
+	if first.personnr then
+		do;
+			Max_period=period;
+			format Max_period yymmdd10.;
+		end;
+	Cutoff=intck("month", period, Max_period);
+
+	if Cutoff<=12;
+	drop Cutoff Max_period;
+run;
+
+proc datasets lib=WORK memtype=data nolist;
+	delete Inp_hss_adj;
+quit;
+
+proc append base=Finale data=&dsn. force;
+run;
+
+PROC SORT data=sashelp.class NODUPKEY out=dsn;
+	BY _all_;
+RUN;
+
+data v2;
+	format hometeam Awayteam $char50. div $char5. date $char10.;
+	informat hometeam Awayteam $char50. div $char5. date $char10.;
+	set v1;
+	drop name;
+run;
+
+data test;
+	input sex $;
+	cards;
+female 
+Female
+feMale
+FEmAle
+FemalE
+;
+run;
+
+Data V1;
+	set test;
+
+	if propcase(sex)=propcase("Female") then
+		sex_new=1;
+
+	if upcase(sex)=upcase("FEMALE") then
+		sex_new1=1;
+	Test=propcase(sex);
+run;
+
+/****************good functions*/
+data v1;
+	set sashelp.heart;
+
+	if Agechddiag=. then
+		test=0;
+
+	if missing(Agechddiag) then
+		test1=0 /*new way*/;
+run;
+
+%let vars=Agechddiag ageatdeath;
+
+data v1;
+	set sashelp.heart;
+
+	%macro run_me;
+		%let The_var_list=&vars.;
+		%let i = %sysfunc(CountW(&The_var_list.));
+
+		%do Variables=1 %to &i.;
+			%let Next_Variable=%scan(&The_var_list., &Variables.);
+			&Next_Variable.1=&Next_Variable.;
+
+			if missing(&Next_Variable.) then
+				&Next_Variable.1=0;
+			&Next_Variable.
+%end;
+	%mend;
+
+	%run_me;
+run;
+
+/*********compress   http://support.sas.com/resources/papers/proceedings12/241-2012.pdf
+https://www.lexjansen.com/wuss/2017/92_Final_Paper_PDF.pdf
+http://www.biostat.umn.edu/~john-c/5421/notes.001.1      stats functions*/
+data phone;
+	input Phone $35.;
+	Phone1=compress(Phone);
+	Phone2x=compress(Phone, "()");
+	Phone2=compress(Phone, "(-)");
+	Phone3=compress(Phone, , "kd");
+
+	/*keeps listed characters instead of removing them(k) d=numerals (digits)*/
+	Phone4=compress(Phone, , "a");
+
+	/*Compress or Delete all upper and lower case characters from String*/
+	Phone5=compress(Phone, , "ak");
+
+	/*Compress or Delete alphabetic characters(1,2,3 etc) from String.*/
+	Mail_name=compress(substr(Phone, 1, find(Phone, "@")-1));
+	Mail_domain=translate(scan(Phone, 2, "@"), " ", "_");
+	Mail_domain1=compress(propcase(substr(Mail_domain, 1, find(Mail_domain, ".")-1)));
+	First_name=compress(propcase(substr(Mail_name, 1, find(Mail_name, ".")-1)));
+	Last_name=propcase(compress(scan(Mail_name, -1)));
+	datalines;
+(908)235-4490 
+(201) 555-77 99
+ronny123
+Ronnysentongo@hotmail.com
+ronny.kizito@gmail.com
+ronny.sentongo@uc.se
+;
+run;
+
+data old;
+	input name $60.;
+	datalines;
+Judith S Reaveley
+Ralf F. Morgan
+Jess Ennis
+Carol Echols
+Kelly Hansen Huff
+Judith
+Nick
+Jones
+George W. Bush
+George W Bush
+George Bush
+Dr. Smith T. Bauer MD
+Samuel I Rodriguez M.D.
+Will Glader MD
+;
+run;
+
+data old;
+set old;
+Find_replace=left(tranwrd(name, "Dr.", ""));
+Find_replace1=left(tranwrd(Find_replace, "M.D.", ""));
+Find_replace2=left(tranwrd(Find_replace1, "MD", ""));
+name=Find_replace2;
+run;
+
+
+/**like*/
+
+data test;
+   input name $;
+   datalines; 
+John
+Diana
+Diane
+Sally
+Doug
+David
+DIANNA
+;
+run;
+
+data test;
+   set test;
+   if name =: "D";
+run;
+
+/***************/
+
+data new;
+	length first middle last $40;
+	set old;
+	first=scan(name, 1, " " );
+	middle=scan(name, 2, " ");
+	last=scan(name, 3, " ");
+
+	if middle=" " then
+		delete;
+	else if last=" " then
+		do;
+			last=middle;
+			middle=" ";
+		end;
+run;
+
+
+data v1;
+	input name $40.;
+	length first middle last $ 40;
+	re=prxparse('/([A-Z][a-z]*)([A-Z][a-z]*)?([A-Z][a-z]*)?/o');
+
+	if prxmatch(re, name) then
+		do;
+			first=prxposn(re, 1, name);
+			middle=prxposn(re, 2, name);
+			last=prxposn(re, 3, name);
+			output;
+		end;
+	put _all_;
+	cards4;
+
+SanjeevKumar
+YaswanthJuluri
+Juluri
+MaryAnneSmith
+CecildeMille
+Ronnysentongo
+;;;;
+run;
+
+data Units;
+	input @1 Wt $10.;
+	Wt_Lbs=input(compress(Wt, , 'kd'), 8.);
+
+	if findc(Wt, 'K', 'i') then
+		Wt_Lbs=2.2*Wt_Lbs;
+	datalines;
+155lbs
+90Kgs.
+;
+run;
+
+data _null_;
+	text_string="this is 'a' string of text 12345.";
+	cmp_text1=compress(text_string, 's', 'K') 
+		/* Example 1: Keep occurences of 's' in the character string*/;
+	cmp_text2=compress(text_string, , 'D') 
+		/*  * Example 2: Remove all digits from the character string*/;
+	cmp_text3=compress(text_string, , 'P') 
+		/*  * Example 3: Remove punctuation from the character string;*/;
+	cmp_text4=compress(text_string, , 'U') 
+		/*  * Example 4: Remove uppercase characters from the character string;*/;
+	cmp_text5=compress(text_string, 's', 'KDPU')
+	/*  * Example 5: Keep occurences of 's', digits, punctuation
+	and uppercase characters in the character string;*/;
+	put (_all_)(=/);
+run;
+
+/***********************************************/
+data v1;
+	set sashelp.heart;
+
+	select (Smoking_Status);
+		when ("Non-smoker") Smoking_Cat=1;
+		when ('Light (1-5)') Smoking_Cat=2;
+		when ('Moderate (6-15)') Smoking_Cat=3;
+		when ('Heavy (16-25)') Smoking_Cat=4;
+		when ('Very Heavy (> 25)') Smoking_Cat=5;
+		otherwise Smoking_Cat=.;
+	end;
+run;
+
+data v1;
+	set sashelp.heart;
+
+	select (Smoking_Status);
+		when ("Non-smoker", "Light (1-5)") Smoking_Cat=1;
+		when ('Moderate (6-15)') Smoking_Cat=3;
+		when ('Heavy (16-25)') Smoking_Cat=4;
+		when ('Very Heavy (> 25)') Smoking_Cat=5;
+		otherwise Smoking_Cat=.;
+	end;
+
+	select (ageatstart);
+		when (ageatstart<30) test=1;
+		otherwise test=0;
+	end;
+run;
+
+data one;
+	set sashelp.heart;
+
+	select(Smoking_Status);
+		when ("Non-smoker", "Light (1-5)") Smoking_Cat=1;
+		when ("Moderate (6-15)", "Heavy (16-25)", "Very Heavy (> 25)") 
+			do;
+				Smoking_Cat=2;
+				Smoking_Cat1=2;
+			end;
+		otherwise 
+			do;
+				Smoking_Cat=.;
+				Smoking_Cat1=.;
+			end;
+	end;
+run;
+
+Data V1;
+	set sashelp.class;
+	Date='01sep2016'd;
+	format Date yymmddd10.;
+	V_=cats('"', age, '"');
+	Find_replace=tranwrd(age, 14, 40);
+	Remove_space=strip(Find_replace);
+	kformj_textc=compbl(kformj_text) /*remove leading blanks*/;
+	compress_var=compress(Find_replace);
+	trim_var=trim(Find_replace);
+	Catx_space=catx(' ', age, height);
+	Catx_comma=catx(', ', age, height);
+	nospace=cat(age, sex);
+	call missing(sales) /*instead of sales=" "*/;
+	AR=strip(put(nvalue2, numx20.10)) /***  from punkt till comma ***/;
+	Find_replace=tranwrd(left(put(riskprog_medel, 20.15)), ".", 
+		",")/***  from punkt till comma ***/;
+	char_num=input(strip(trim_var), best.)/***  char to numeric numbers ***/;
+	numeric_var=input(char_var, 8.)/***  char to numeric numbers ***/;
+	numeric_var=input(putn(AR, "year4."), 8.)/***  date to numeric numbers ***/;
+	char_var=left(put(char_num, 6.)) /* numeric to strig*/;
+	Date_char=PUT(Date, yymmddd10.) /* date to string*/;
+	date_as_num=putn(date, 'yymmn6.')/*date to numeric*/
+	newvar=input(Date_char, yymmdd10.)/* string to date*/;
+	format newvar yymmddd10.;
+	Age1=put(age, z2.)/*leading zeros*/;
+	y=TRANWRD(v1, ".", ",") /* search and replace*/;
+	indikan=substrn(FIle_name, max(1, length(FIle_name)-3), 4)/*last 4 digits*/;
+	prod_ind=putc(FIle_name, catt('$', 
+		length(FIle_name)-5))/*exlude last n digits*/;
+	Kundid=substr(kundnamn, 1, find(kundnamn, '.')-1);
+	test=strip(put(v1, numx8.5));
+	format char_num3 8.7;
+
+	/* comma to numeric*/
+	char_num3=input(summa, best.);
+run;
+
+data one;
+	length before after1a after1b after2a after2b $25;
+	before='Hello My Name is Boo';
+	after1a=compress(before);
+	after1b='HelloMyNameisBoo';
+	after2a=compress(before, ' lo');
+	after2b='HeMyNameisB';
+run;
+
+Data V1;
+	set test indsname=source;
+	dset=source;
+	datasets=substr(source, 3, 3);
+	lab_type=translate(scan(source, 2, '.'), ' ', '_');
+
+	/*splitta*/
+	Type=strip(scan(lab_type, 3, ' '));
+
+	/*välj */
+run;
+
+proc sort data=Temppers.Kreditbarometern_201710 out=test;
+	by kontonr;
+run;
+
+/**********************spss*/
+aggregate /outfile='table1.sav' /break=var1 var2 /count=n Proc sql;
+create table V2 as select *, max(lopnr) as lopnr_1 from finale group by orgnr, 
+	period;
+quit;
+
+Proc sql;
+	create table V2 as select *, max(lopnr) as Max_lopnr , input(catx('-', 
+		substr(period, 1, 4), substr(period, 5, 2), "01"), yymmdd10.) as test 
+		format=yymmdd10.
+from Jp.Arba_1303 where belopp>0 group by orgnr, period having lopnr=max(lopnr);
+quit;
+
+/********_n_ by group******/
+proc sort data=Ktp;
+	by kund;
+run;
+
+data Ktp;
+	set Ktp;
+	by kund;
+	retain ID 0;
+
+	if first.kund then
+		ID=ID+1;
+run;
+
+Data Ktpx;
+	Set Ktp;
+	By kund;
+	retain ID 0;
+
+	if first.kund then
+		ID=0;
+	ID + 1;
+Run;
+
+/******om en var exists*/
+
+%let dset_Variable=&lib..v1;
+%let Check_Variable=Nummer;
+%put &dset_variable;
+
+data &dset_Variable.;
+	set &dset_Variable.;
+
+	if _n_=1 then
+		do;
+			Retain &Check_Variable.;
+			dsid=open("&dset_Variable.");
+
+			if varnum(dsid, "&Check_Variable.")=0 then
+				&Check_Variable.="0";
+			rc=close(dsid);
+		end;
+	drop rc dsid;
+run;
+
+/**************************change length*/
+options minoperator mindelimiter=",";
+
+%macro max_length;
+	%let The_var_list=&Vars.;
+	%let i = %sysfunc(CountW(&The_var_list.));
+
+	%do Variables=1 %to &i.;
+		%let Next_Variable=%scan(&The_var_list., &Variables.);
+
+		%if not (&Next_Variable. in &Num_vars_comma.) %then
+			%do;
+
+				Proc sql noprint;
+					select max(lengthn(&Next_Variable.)) into :  max_length separated by ' ' 
+						from &Infile.;
+				quit;
+
+				proc sql noprint;
+					alter table &Infile.
+modify &Next_Variable. char(&max_length.) 
+						format=$&max_length.. informat=$&max_length..;
+				quit;
+
+				%put &Next_Variable. &max_length;
+			%end;
+	%end;
+%mend;
+
+%max_length;
+
+proc sql noprint;
+	alter table &lib..Dsets modify div char(&max_length_div.) 
+		format=$&max_length_div.. informat=$&max_length_div.., hometeam 
+		char(&max_length_hometeam.) 
+		format=$&max_length_hometeam.. informat=$&max_length_hometeam.., awayteam 
+		char(&max_length_awayteam.) 
+		format=$&max_length_awayteam.. informat=$&max_length_awayteam..;
+quit;
+
+%let Id_vars=bp_status chol_status sex;
+
+%macro Create_id_vars (Indataset=, Outdataset=);
+	%let The_var_list=&Id_vars.;
+	%let i = %sysfunc(CountW(&The_var_list.));
+
+	%do Variables=1 %to &i.;
+		%let Next_Variable=%scan(&The_var_list., &Variables.);
+
+		proc sort data=&Indataset. out=&Outdataset.;
+			by &Next_Variable.;
+		run;
+
+		data &Outdataset.;
+			set &Outdataset.;
+			by &Next_Variable.;
+			retain ID_&Next_Variable. 0;
+
+			if first.&Next_Variable. then
+				ID_&Next_Variable.=ID_&Next_Variable.+1;
+		run;
+
+	%end;
+%mend;
+
+%Create_id_vars (Indataset=sashelp.heart, Outdataset=v1);
+
+/**********'''delete file*/
+filename myfile "&Process_dir\resultat\&file_name._UC_Data_test - kopia.xlsx";
+
+data _null_;
+	rc=fdelete("myfile");
+run;
+
+filename myfile;
+
+
+/*********label*/
+
+
+Proc sql;
+create table yyy as
+select a.*,case when a.age=14 then 1 else 0 end as endast_blanco "Frågare med bara blanco"
+from sashelp.class a;
+quit;
