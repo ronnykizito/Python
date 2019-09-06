@@ -1,0 +1,204 @@
+*******************************************************;
+%let Indata_month=Januari Februari Mars April Maj Juni Juli Augusti 
+August September Oktober November December Jan Feb Mar Apr Jun Jul Aug Sept Okt Nov Dec;
+%let month=%sysfunc(upcase("%sysfunc(tranwrd(%sysfunc(compbl(&Indata_month)),%str( ),%bquote(", ")))"));
+%put &month;
+%let lib=work;
+%let prefix=a;
+%let Retain_vars=Artikel Pris Antal Summa Nummer Month Date ID Curr_date FIle_name;
+%let Retain_vars1=%qsysfunc(tranwrd(%sysfunc(compbl(&prefix..&Retain_vars.)), 
+	%str( ), %bquote(,&prefix..)));
+%put &Retain_vars;
+***********************************;
+
+proc datasets library=&lib. KILL NOLIST;
+	run;
+	**********************************************************************************************;
+
+data &lib..kunder;
+	Kunder="46. Sweden Rent A Car (AVIS) fakturamall 2018.xlsm";
+	output;
+	Kunder="146. Bruker Nordic AB 2018.xlsm";
+	output;
+	Kunder="4142. Comparex Finland Fakturamall 2018.xlsm";
+	output;
+run;
+
+data &lib..kunder;
+	set &lib..kunder;
+	Ar=2018;
+	Id=_n_;
+run;
+
+Proc sql noprint;
+	select max(id) into : Antal_kunder separated by ' ' from &lib..kunder;
+quit;
+
+%put &Antal_kunder;
+
+%macro loop_dsets;
+	option nomlogic nomprint nosource nonotes nosymbolgen;
+	%let The_var_list=&myxl_tables.;
+	%let i = %sysfunc(CountW(&The_var_list.));
+
+	%do Variables=1 %to &i.;
+		%let Next_month=%scan(&The_var_list., &Variables.);
+
+		proc contents data=&lib..&Next_month. noprint out=&lib..vars (keep=name 
+				varnum);
+		run;
+
+		proc sort data=&lib..vars;
+			by varnum;
+		run;
+
+		data &lib..vars_2 &lib..vars_3;
+			set &lib..vars;
+			The_new_var_="The_new_var_";
+			Rename_my_vars=cats('"', name, '"', "n", "=", The_new_var_, varnum);
+			My_new_vars=cats("", The_new_var_, varnum);
+			Modify_us=catx(" ", "modify", My_new_vars, "char(100)", "format=$100.", 
+				"informat=$100.");
+			Oldvars=cats('"', name, '"', "n");
+
+			if varnum in (9, 10, 11, 12, 13) then
+				output &lib..vars_2;
+			else
+				output &lib..vars_3;
+		run;
+
+		Proc sql noprint;
+			select distinct oldvars into 
+:Old_vars separated by ',' from &lib..vars_3;
+		quit;
+
+		proc sql noprint;
+			alter table &lib..&Next_month.
+	drop &old_vars.;
+		quit;
+
+		Proc sql noprint;
+			select distinct Rename_my_vars, My_new_vars, Modify_us into 
+:rename_vars separated by ' ', :My_new_vars_1 separated by ' ', :Modify_us 
+				separated by ' ' from &lib..vars_2;
+		quit;
+
+		proc datasets lib=&lib. nolist nodetails;
+			modify &Next_month.;
+			rename &rename_vars.;
+		quit;
+
+		proc sql noprint;
+			alter table &lib..&Next_month. 
+	&Modify_us.;
+		quit;
+
+		data &lib..v1 (keep=&Retain_vars.);
+			set &lib..&Next_month. (firstobs=5 obs=120) indsname=dset;
+			Month=upcase(compress(scan(dset, -1)));
+			month3=substr(month, 1, 3);
+
+			if month3 in ("MAJ") then
+				month3="MAY";
+
+			if month3 in ("OKT") then
+				month3="OCT";
+			id=input(put(input(catt(month3, '1960'), monyy.), month.), 2.);
+
+			if not missing(The_new_var_9);
+
+			if The_new_var_9 not in ("Artikel", "0");
+
+			if The_new_var_9 ne :"Summa";
+			Pris=input(strip(The_new_var_10), best.);
+			Antal=input(strip(The_new_var_11), best.);
+			Summa=input(strip(The_new_var_12), best.);
+			Nummer=input(strip(The_new_var_13), best.);
+			rename The_new_var_9=Artikel;
+			Date=mdy(id, 1, &ar.);
+			format Date yymmdd10.;
+
+			if Summa>0;
+			Curr_date="Ovr";
+
+			/*if date="&Today"d then
+			Curr_date="1";
+			
+			if date<="&Today"d;*/
+			length FIle_name $300.;
+			format FIle_name $300.;
+			informat FIle_name $300.;
+			FIle_name="&kunder.";
+
+			if nummer=. then
+				nummer=0;
+		run;
+
+		%LET dsid=%SYSFUNC(OPEN(&lib..v1));
+		%LET nobs=%SYSFUNC(ATTRN(&dsid., NOBS));
+		%LET rc=%SYSFUNC(CLOSE(&dsid.));
+
+		%if &nobs.>0 %then
+			%do;
+
+				Data &lib..status (keep=The_new_var_10 Month Status);
+					set &lib..&Next_month. (keep=The_new_var_10) indsname=dset;
+					Month=upcase(compress(scan(dset, -1)));
+
+					if The_new_var_10="EJ KLAR";
+					Status="EJ KLAR";
+				run;
+
+				proc sql;
+					create table &lib..v2 as select &Retain_vars1., case when 
+						b.Status="EJ KLAR" then "EJ KLAR" else "KLAR" end as Status from &lib..v1 
+						a left join &lib..status b on a.month=b.month;
+				quit;
+
+				proc append base=&lib..kund data=&lib..v2 force;
+				run;
+
+				%put &Next_month.;
+			%end;
+	%end;
+%mend;
+
+%macro alla_kunder;
+	option nomlogic nomprint nosource nonotes nosymbolgen;
+
+	%do id=1 %to &Antal_kunder.;
+
+		Proc sql noprint;
+			select distinct kunder, ar into 
+:Kunder separated by ' ', :ar separated by ' ' from &lib..kunder where id=&id.;
+		quit;
+
+		libname myxl xlsx 
+			"/home/ronnykizito0/sasuser.v94/Syntaxes and Macros/Clean/&kunder.";
+
+		proc sql noprint;
+			select distinct memname into :myxl_tables separated by " " from 
+				dictionary.tables where libname=upcase("myxl") and memname in (&month.);
+		quit;
+
+		proc copy in=myxl out=&lib.;
+			select &myxl_tables.;
+		run;
+
+		libname myxl clear;
+		%let prefix=&lib.;
+		%let Xl_files=%qsysfunc(tranwrd(%sysfunc(compbl(&prefix..&myxl_tables)), 
+			%str( ), %bquote( &prefix..)));
+		%loop_dsets;
+
+		proc datasets lib=&lib. memtype=data nolist;
+			delete &Indata_month.;
+		quit;
+
+		%put &kunder. &id;
+	%end;
+%mend;
+
+%alla_kunder;
+option mlogic mprint source notes symbolgen;
+**************************************************************************************************;
