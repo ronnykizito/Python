@@ -315,6 +315,8 @@ df1=df.loc[df['Home'].str.contains('^M[a-z]*|^b[a-z]*',flags=re.I,regex=True)   
 #ends with 
 df1=df.loc[df['Home'].str.contains('city$[a-z]*',flags=re.I,regex=True)   ]
 
+df.loc[(df['Starttime'].str.contains('/',flags=re.I,regex=True) ), 'Test'] = 'yes'
+
 Abonnent=("C2622","A8VX1","D3130")
 date1="2018-03-31"
 date2="2018-04-30"
