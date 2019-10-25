@@ -263,6 +263,9 @@ for file in files:
 
 df3=pd.merge(table1,table2[["COL1","COL2"]],how="left",left_on=["VAR1","T1"],right_on=["VAR2",T3],indicator=True)
 
+MergeCols=['DateKey','EmployeeKey']
+df=pd.merge(df_fSales,df_EmployeeTeam,how="left",left_on=MergeCols,right_on=MergeCols)
+
 #sort
 
 df.sort_values(['Date1', 'HomeTeam'], ascending=[True, False],inplace=True)
