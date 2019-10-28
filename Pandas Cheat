@@ -1739,3 +1739,15 @@ df['test']=np.where(df.Kontoplan.between(1000, 1999),'Tillgångar',
 syntax=r'\Calendar.py'
 
 exec(open(syntax).read())
+
+'''''
+df['One']=1
+
+BudgetGranularity=['EOMonth','Product']
+
+df['idxx'] = df.groupby(BudgetGranularity)['One'].cumsum()
+df['MaxCount'] = df.groupby(BudgetGranularity)['idxx'].transform(lambda x : x.max())
+
+df['BudgetDays']=df.Budget/df.MaxCount
+
+''''''
