@@ -3,6 +3,9 @@
 https://communities.sas.com/t5/SAS-Communities-Library/SAS-9-4-Macro-Language-Reference-Has-a-New-Appendix/ta-p/291716;
 
 **********/
+
+options validvarname=v7; /*removes all spaces in columns to _   put this before import*/
+
 %let Ignore_ampersand=%nrstr(139. GL&V fakturamall 2018.xlsm);
 %SYMDEL Mod_date/NOWARN;
 %let lib=sashelp;
