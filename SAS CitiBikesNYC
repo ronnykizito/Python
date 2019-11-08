@@ -1,0 +1,116 @@
+/* Get data from website:
+This is a zip fil */
+/* the url */
+
+
+%let start_date=201407;
+%let   end_date=201408;
+%let DownLoadPath=/home/ronnykizito0/sasuser.v94/FOOTBALL/Data/Database;
+%put &start_date. &end_date. ;
+%let intervall=month;
+%let start=%sysfunc(inputn(%sysfunc(inputn(&start_date., yymmn6.), date9.), 
+	anydtdte9.));
+%let end=%sysfunc(inputn(%sysfunc(inputn(&end_date., yymmn6.), date9.), 
+	anydtdte9.));
+%let dif=%sysfunc(intck(&intervall., &start., &end.));
+option nomlogic nomprint nosource nonotes nosymbolgen;
+
+proc datasets library=work KILL NOLIST;
+	run;
+
+	%macro CitiBikesNYC;
+		%do j=0 %to &dif;
+			%let date=%sysfunc(putn(%sysfunc(intnx(&intervall., &start., &j., b)), 
+				date9.));
+			%let month=%sysfunc(inputn(&date, date9.), yymmn6.);
+			%let yyyy_mm_dd=%sysfunc(inputn(&date, date9.), yymmdd10.);
+			%let FileMonth=%substr(&yyyy_mm_dd., 1, 7);
+
+			/*%if &month>="201408" %then %let FileMonth=&month.;*/
+			filename resp "&DownLoadPath./&month..zip";
+			%put &FileMonth. &month;
+
+		proc http 
+				url="https://s3.amazonaws.com/tripdata/&month.-citibike-tripdata.zip" 
+				method="GET" out=resp;
+		run;
+
+		/* unzip the file */
+		filename inzip ZIP "&DownLoadPath./&month..zip";
+		filename csv "&DownLoadPath./&month..csv";
+
+		data _null_;
+			/* using member syntax here */
+			infile inzip("&FileMonth. - Citi Bike trip data.csv") lrecl=256 recfm=F 
+				length=length eof=eof unbuf;
+			file csv lrecl=256 recfm=N;
+			input;
+			put _infile_ $varying256. length;
+			return;
+eof:
+			stop;
+		run;
+
+		* Read data use proc import to get variable names;
+		options obs=2;
+		options validvarname=v7;
+
+		PROC IMPORT DATAFILE=csv OUT=temp DBMS=csv REPLACE;
+			DELIMITER=",";
+			GETNAMES=YES;
+		RUN;
+
+		options obs=max;
+		run;
+		* Put variable names into macro variable;
+
+		PROC CONTENTS DATA=temp out=vars NOPRINT;
+		RUN;
+
+		data vars;
+			set vars;
+			length="50";
+		run;
+
+		PROC SQL NOPRINT;
+			SELECT CATT(name, ' : $', length, '.') INTO :vars SEPARATED BY ' ' FROM vars 
+				ORDER BY varnum;
+		QUIT;
+
+		%put &vars;
+		* Read real data;
+
+		DATA v1;
+			INFILE csv DELIMITER="," MISSOVER DSD FIRSTOBS=2 LRECL=32767;
+			INPUT &vars.;
+			array chars {*} _character_;
+
+			/* this array removes all leading spaces*/
+			do _n_=1 to dim(chars);
+				chars{_n_}=strip(chars{_n_});
+			end;
+		RUN;
+
+		proc append base=CitiBikes data=v1 force;
+		run;
+
+		data _null_;
+			rc=fdelete('csv');
+			put rc=;
+			msg=sysmsg();
+			put msg=;
+		run;
+
+		data _null_;
+			rc=fdelete('inzip');
+			put rc=;
+			msg=sysmsg();
+			put msg=;
+		run;
+
+		%put &month &FileMonth. - Citi Bike trip data.csv;
+	%end;
+%mend;
+
+%CitiBikesNYC;
+
