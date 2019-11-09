@@ -1,5 +1,5 @@
-%let start_date_Calendar=201301;
-%let end_date_Calendar=201912;
+%let start_date_Calendar=200001;
+%let end_date_Calendar=202112;
 %Let start_Calendar=%Sysfunc(Intnx(Month, 
 	"(%sysfunc(inputn(&start_date_Calendar.,yymmn6.),date9.)"d, 0, b), date9.);
 %Let end_Calendar=%Sysfunc(Intnx(Month, 
@@ -19,41 +19,51 @@ data Calendar;
 		Year_Month_01=intnx('month', date, 0, "b");
 		YearMonth=date;
 		YearCode=date;
-		/*IsLeapYear=ifc(input(catt(YearCode), ? date9.), 'yes', 'no');*/
+		leapyr=29=day(mdy(3, 1, year(date))-1);
+
+		if leapyr=1 then
+			IsLeapYear='Yes';
+		else
+			IsLeapYear='No';
+
 		FirstDateOfYear=intnx('year', date, 0, "b");
 		LastDateOfYear=intnx('year', date, 0, "e");
-		QuarterCode=cat(PUT(date, year4.), put(input(left(put(qtr(date), 6.)),best4.),z2.));
-		QuarterCode0=put(input(left(put(qtr(date), 6.)),best4.),z2.);
+		QuarterCode=cat(PUT(date, year4.), put(input(left(put(qtr(date), 6.)), 
+			best4.), z2.));
+		QuarterCode0=put(input(left(put(qtr(date), 6.)), best4.), z2.);
 		QuaterNumber=qtr(date);
-		QuaterName=cat('Q',left(put(qtr(date), 6.)));
-		QuaterLongName=cat(PUT(date, year4.),cat('W',QuarterCode0));
+		QuaterName=cat('Q', left(put(qtr(date), 6.)));
+		QuaterLongName=cat(PUT(date, year4.), cat('W', QuarterCode0));
 		FirstMonthOfQuarter=intnx('quarter', date, 0, "b");
 		LastMonthOfQuarter=intnx('quarter', date, 0, "e");
 		MonthOfYearNumber=month(date);
-		MonthOfYearNumber0=put(input(left(put(month(date), 6.)),best4.),z2.);
+		MonthOfYearNumber0=put(input(left(put(month(date), 6.)), best4.), z2.);
 		MonthNameEnglishLong=left(put(date, MONNAME.));
 		MonthNameEnglishShort=left(put(date, MONNAME3.));
 		FirstDateOfMonth=intnx('year', date, 0, "b");
 		LastDateOfMonth=intnx('year', date, 0, "e");
-		NumberOfDaysInMonth=day(intnx('month',date,0,'end'));
-		WeekCode =cat(PUT(date, year4.), put(input(left(put(week(date, 'v'), 6.)),best4.),z2.));
+		NumberOfDaysInMonth=day(intnx('month', date, 0, 'end'));
+		WeekCode=cat(PUT(date, year4.), put(input(left(put(week(date, 'v'), 6.)), 
+			best4.), z2.));
 		WeekOfYearNumber=week(date, 'v');
-		WeekOfYearNumber0=put(input(left(put(week(date, 'v'), 6.)),best4.),z2.);
-		WeekName=cat('W',WeekOfYearNumber0);
-		WeekLongName=cat(PUT(date, year4.),cat('W',WeekOfYearNumber0));
+		WeekOfYearNumber0=put(input(left(put(week(date, 'v'), 6.)), best4.), z2.);
+		WeekName=cat('W', WeekOfYearNumber0);
+		WeekLongName=cat(PUT(date, year4.), cat('W', WeekOfYearNumber0));
 		FirstDateOfWeek=intnx('week.2', date, 0, "b");
 		LastDateOfWeek=intnx('week.2', date, 0, "e");
-		DateSameWeekDayLastYear=intnx('day',today(),-364);
+		DateSameWeekDayLastYear=intnx('day', today(), -364);
 		FirstDateWkSameWkDayLY=intnx('week.2', DateSameWeekDayLastYear, 0, "b");
 		LastDateWkSameWkDayLY=intnx('week.2', DateSameWeekDayLastYear, 0, "e");
 		PreviousDateYear=intnx('year', date, -1);
 		output;
 	end;
 	format date TodaysDate Year_Month_01 FirstDateOfYear LastDateOfYear 
-	FirstMonthOfQuarter LastMonthOfQuarter FirstDateOfMonth LastDateOfMonth 
-	FirstDateOfWeek LastDateOfWeek DateSameWeekDayLastYear FirstDateWkSameWkDayLY 
-	LastDateWkSameWkDayLY yymmdd10. 
+		FirstMonthOfQuarter LastMonthOfQuarter FirstDateOfMonth LastDateOfMonth 
+		FirstDateOfWeek LastDateOfWeek DateSameWeekDayLastYear FirstDateWkSameWkDayLY 
+		LastDateWkSameWkDayLY yymmdd10. 
 	DateKey YearMonthDay YearMonth01 yymmddn8.
 	YearMonth yymmn6. 
 	YearCode PreviousDateYear year4.;
+	drop leapyr;
 run;
+
