@@ -25,7 +25,6 @@ data Calendar;
 			IsLeapYear='Yes';
 		else
 			IsLeapYear='No';
-
 		FirstDateOfYear=intnx('year', date, 0, "b");
 		LastDateOfYear=intnx('year', date, 0, "e");
 		QuarterCode=cat(PUT(date, year4.), put(input(left(put(qtr(date), 6.)), 
@@ -40,6 +39,36 @@ data Calendar;
 		MonthOfYearNumber0=put(input(left(put(month(date), 6.)), best4.), z2.);
 		MonthNameEnglishLong=left(put(date, MONNAME.));
 		MonthNameEnglishShort=left(put(date, MONNAME3.));
+
+		if MonthNameEnglishLong="September" then
+			MonthNameSwedishLong="september";
+		else if MonthNameEnglishLong="January" then
+			MonthNameSwedishLong="januari";
+		else if MonthNameEnglishLong="February" then
+			MonthNameSwedishLong="februari";
+		else if MonthNameEnglishLong="March" then
+			MonthNameSwedishLong="mars";
+		else if MonthNameEnglishLong="April" then
+			MonthNameSwedishLong="april";
+		else if MonthNameEnglishLong="May" then
+			MonthNameSwedishLong="maj";
+		else if MonthNameEnglishLong="June" then
+			MonthNameSwedishLong="juni";
+		else if MonthNameEnglishLong="July" then
+			MonthNameSwedishLong="juli";
+		else if MonthNameEnglishLong="August" then
+			MonthNameSwedishLong="augusti";
+		else if MonthNameEnglishLong="October" then
+			MonthNameSwedishLong="oktober";
+		else if MonthNameEnglishLong="November" then
+			MonthNameSwedishLong="november";
+		else if MonthNameEnglishLong="December" then
+			MonthNameSwedishLong="december";
+		MonthNameSwedishShort=substr(MonthNameSwedishLong, 1, 3);
+		EngMonth_Year=catx('-', MonthNameEnglishShort, PUT(Date, year4.) );
+		SweMonth_Year=catx('-', MonthNameSwedishShort, PUT(Date, year4.) );
+		
+		
 		FirstDateOfMonth=intnx('year', date, 0, "b");
 		LastDateOfMonth=intnx('year', date, 0, "e");
 		NumberOfDaysInMonth=day(intnx('month', date, 0, 'end'));
@@ -66,4 +95,3 @@ data Calendar;
 	YearCode PreviousDateYear year4.;
 	drop leapyr;
 run;
-
