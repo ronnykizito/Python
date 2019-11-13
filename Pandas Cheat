@@ -3,6 +3,9 @@
 
 df=pd.read_csv('http://bit.ly/kaggletrain')
 
+# list in a column
+df=pd.DataFrame({'Col':['a','b','c'],'Two_Cols':[[10,40],[20,50],[30,60]]})
+df=pd.concat([df,df.Two_Cols.apply(pd.Series)],axis='columns')
 
 DW_Raw
 DW_Staging
