@@ -40,6 +40,13 @@ datelist =[(datetime.today() + dateutil.relativedelta.relativedelta(months=x)).s
 df['One']=1
 df['MaxDate'] = df.groupby(['One'])['Datum'].transform(lambda x : x.max())
 
+
+df['One']=1
+BudgetGranularity=['EOMonth','Product']
+df['MaxCount']=df.groupby(BudgetGranularity).One.transform('sum')
+
+
+
 df=pd.DataFrame({'Date':datelist})
 
 variables = locals()
