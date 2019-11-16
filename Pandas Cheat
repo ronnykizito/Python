@@ -1761,3 +1761,9 @@ df['MaxCount'] = df.groupby(BudgetGranularity)['idxx'].transform(lambda x : x.ma
 df['BudgetDays']=df.Budget/df.MaxCount
 
 ''''''
+
+#loop in loop
+for OutCome in itertools.product(Leagues,Periods):
+    ListOutCome=list(OutCome)
+    url='https://www.skysports.com/'+ListOutCome[0]+'/'+ListOutCome[1]
+
