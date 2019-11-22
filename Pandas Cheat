@@ -1767,3 +1767,10 @@ for OutCome in itertools.product(Leagues,Periods):
     ListOutCome=list(OutCome)
     url='https://www.skysports.com/'+ListOutCome[0]+'/'+ListOutCome[1]
 
+#binning
+df=pd.DataFrame({'A':[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,5.1]})
+bins=[1,5,10,15]
+group_names=['a','b','c']
+EndBin='16+'
+
+df['B']=pd.cut(df['A'],bins,labels=group_names,include_lowest=True).cat.add_categories(str(EndBin)).fillna(str(EndBin))
