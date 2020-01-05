@@ -1775,7 +1775,11 @@ EndBin='16+'
 
 df['B']=pd.cut(df['A'],bins,labels=group_names,include_lowest=True).cat.add_categories(str(EndBin)).fillna(str(EndBin))
 
-from pandasql import sqldf
 
-df1=sqldf(''' select datekey from df 
+from pandasql import sqldf
+df=pd.DataFrame({'v1':[1,2]})
+
+df1=pd.DataFrame({'v1':[1,2],'v2':[3,4]})
+
+df2=sqldf(''' select df.v1,df1.v2 from df join df1 on df.v1=df1.v1
       ''')
