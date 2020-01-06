@@ -1783,3 +1783,15 @@ df1=pd.DataFrame({'v1':[1,2],'v2':[3,4]})
 
 df2=sqldf(''' select df.v1,df1.v2 from df join df1 on df.v1=df1.v1
       ''')
+      
+      
+  
+from pandasql import sqldf
+from pandasql import load_meat, load_births
+
+meat=load_meat()
+births=load_births()
+
+df=sqldf(''' select m.*,b.* from meat m join births b on m.date=b.date
+      ''')
+    
