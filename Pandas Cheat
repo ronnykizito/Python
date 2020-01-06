@@ -1792,6 +1792,8 @@ from pandasql import load_meat, load_births
 meat=load_meat()
 births=load_births()
 
-df=sqldf(''' select m.*,b.* from meat m join births b on m.date=b.date
-      ''')
+read_sqldf=''' select m.*,b.* from meat m join births b on m.date=b.date
+      '''
+
+df=sqldf(read_sqldf)
     
