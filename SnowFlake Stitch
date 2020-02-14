@@ -1,1 +1,7 @@
 
+
+select * from TEST_DB.PUBLIC.MYTEST_TABLE;
+
+
+INSERT INTO TEST_DB.PUBLIC.MYTEST_TABLE (C1, C2, C3)
+VALUES ('ww', 'Tom Bwww. Erichsen', 'Skagen 21www' )
