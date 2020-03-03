@@ -178,7 +178,7 @@ list = ["boat", "car", "plane"]
 for i, v in enumerate(list):
     print(i, v)
 
-df.drop(['IDx', 'idxx'], axis=1,inplace=True) 
+df.drop(['IDx', 'idxx'], axis=1,inplace=True, errors='ignore') 
 df1=df.describe(include=[np.number]).T
 df1=df.describe(include=[np.object,pd.Categorical]).T
 
