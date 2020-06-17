@@ -1,0 +1,172 @@
+
+
+
+'''========================================================================'''
+
+#type df.columns and copypaste here
+keepcols=['invoice_id', 'invoice_invoice_nr', 'invoice_foreign_id',
+       'invoice_po_nr', 'invoice_agreement_nr', 'invoice_subscription_nr',
+       'invoice_your_reference', 'invoice_invoice_email',
+       'invoice_delivery_name', 'invoice_delivery_email',
+       'invoice_invoice_date', 'invoice_due_date', 'invoice_delivery_date',
+       'invoice_currency', 'invoice_currency_rate', 'invoice_certified',
+       'invoice_sent', 'invoice_notes', 'invoice_delivery_type',
+       'invoice_vat_nr', 'invoice_country_code', 'invoice_remaining',
+       'invoice_disabled', 'invoice_automatic_actions_disabled',
+       'invoice_client_ref_id', 'invoice_client_invoice_template_ref_id',
+       'invoice_our_reference_id', 'invoice_invoice_address_address1',
+       'invoice_invoice_address_address2', 'invoice_invoice_address_zip_code',
+       'invoice_invoice_address_state', 'invoice_invoice_address_country',
+       'invoice_delivery_address_address1',
+       'invoice_delivery_address_address2',
+       'invoice_delivery_address_zip_code', 'invoice_delivery_address_state',
+       'invoice_delivery_address_country', 'invoice_period_start_date',
+       'invoice_period_end_date', 'invoice_client_agreement_ref_id',
+       'invoice_gln', 'invoice_last_payment_date', 'invoice_debit_invoice_nr',
+       'credit', 'invoice_automatic_actions_message', 'files', 'rows_id',
+       'rows_quantity', 'rows_price', 'rows_vat', 'rows_product_id',
+       'rows_unit', 'rows_description', 'rows_account_nr', 'rows_project_id',
+       'rows_period_start_date', 'rows_period_end_date', 'rows_delivery_date',
+       'rows_discount_percentage', 'accruals', 'credit_id', 'files_filename',
+       'entries_id', 'entries_percentage', 'entries', 'accruals_month',
+       'accruals_sum', 'last_updated_api_from_source', 'api_source',
+       'start_date_api', 'end_date_api']
+
+gdpr_emptycols=['Phone','Fax','BILLING_CONTACT_NAME__C','BILLINGCITY','BILLINGPOSTALCODE',
+       'BILLINGSTATE','BILLINGSTREET','FAX','OUR_REFERENCE__C',
+       'scrive__Email__c','SHIPPINGCITY','SHIPPINGLATITUDE',
+       'SHIPPINGLONGITUDE','SHIPPINGPOSTALCODE','SHIPPINGSTATE',
+       'SHIPPINGSTATECODE','SHIPPINGSTREET','WEBSITE',
+       'YOUNIUM__Y_OUR_REFERENCE__C','YOUNIUM__Y_YOUR_REFERENCE__C']
+
+df=pd.DataFrame({'Date':[datetime.today()]})
+# df=pd.DataFrame({'Date':['2019-01-01']})
+# df['Date'] = df['Date'].values.astype("datetime64[s]")
+df['V1']= df.Date.dt.to_period("Y").dt.start_time - pd.DateOffset(years=0)
+df['period_start']=df.V1.dt.strftime('%Y-%m-%d')
+df['period_End']= df.Date.dt.to_period("m").dt.end_time
+df['period_End']=df.period_End.dt.strftime('%Y-%m-%d')
+
+
+periods=pd.date_range(df.period_start.min()[0:10], df.period_End.min()[0:10],freq='W')
+df=pd.DataFrame({'period_End':periods})
+df['PreviousWeek'] = df.period_End - pd.DateOffset(weeks=1)
+df['PreviousWeek'] = df.PreviousWeek + pd.DateOffset(days=1)
+
+df['period_End']=df.period_End.dt.strftime('%Y-%m-%d')
+df['period_start']=df.PreviousWeek.dt.strftime('%Y-%m-%d')
+
+df['PeriodStructure']= df.PreviousWeek.dt.strftime('%Y/%m/%d/')
+
+year=df.period_End.min()[0:4]
+period_starts=list(df.period_start.astype('str').str.slice(0, 10))
+period_ends=list(df.period_End.astype('str').str.slice(0, 10))
+
+
+
+
+
+URL='https://my.accounting.pe/api/v1/company/73/client/invoice?invoiceDateLower='
+
+get_all_API_responses=[requests.get(URL+period_start+'+&invoiceDateUpper='+period_end ,params=params_token, headers=headers) for period_start,period_end in zip(period_starts,period_ends) ]
+
+
+# df = pd.json_normalize(response.json())
+table='test_client_invoice'
+
+ConnectionSnowFlake.execute("DROP TABLE IF EXISTS "+str(table.lower())) 
+
+record_path='client-invoices'
+
+key=0
+
+df= pd.json_normalize(get_all_API_responses[int(key)].json(), record_path=record_path)#,record_prefix='a1_')
+
+df=df.add_prefix('invoice_')
+
+
+
+colexists='invoice_rows.rows'
+rename_colexists='rows'
+if colexists in df.columns:    
+    df.rename(columns={colexists:rename_colexists},inplace=True)
+    df = df.explode(rename_colexists)
+    df = pd.json_normalize(json.loads(df.to_json(orient="records")))
+
+
+
+colexists='invoice_credit-invoices.client-invoices'
+rename_colexists='credit'
+if colexists in df.columns:    
+    df.rename(columns={colexists:rename_colexists},inplace=True)
+    df = df.explode(rename_colexists)
+    df = pd.json_normalize(json.loads(df.to_json(orient="records")))
+
+
+colexists='invoice_files.files'
+rename_colexists='files'
+if colexists in df.columns:    
+    df.rename(columns={colexists:rename_colexists},inplace=True)
+    df = df.explode(rename_colexists)
+    df = pd.json_normalize(json.loads(df.to_json(orient="records")))
+
+
+df.drop(['files.data'], axis=1,inplace=True, errors='ignore')
+
+
+colexists='rows.dimensions.dimension-entries'
+rename_colexists='entries'
+if colexists in df.columns:    
+    df.rename(columns={colexists:rename_colexists},inplace=True)
+    df = df.explode(rename_colexists)
+    df = pd.json_normalize(json.loads(df.to_json(orient="records")))
+
+colexists='rows.accruals.accruals'
+rename_colexists='accruals'
+if colexists in df.columns:    
+    df.rename(columns={colexists:rename_colexists},inplace=True)
+    df = df.explode(rename_colexists)
+    df = pd.json_normalize(json.loads(df.to_json(orient="records")))
+
+
+#source info
+df['last_updated_api_from_source'] = time.strftime("%Y-%m-%d %H:%M:%S")
+df['api_source'] = URL
+df['start_date_api'] = period_start
+df['end_date_api'] = period_end
+
+
+
+df=df.rename(columns={cols: cols.replace(' ','') for cols in df.columns}) # Remove spaces from columns
+df=df.applymap(lambda x: x.strip() if type(x) is str else x) #strip all columns
+df.columns = df.columns.str.replace('.', '_')
+df.columns = df.columns.str.replace('-', '_')
+df.columns = df.columns.str.lower() 
+df.reset_index(drop=True, inplace=True)
+ 
+for emptycol in gdpr_emptycols:
+    if emptycol in df.columns:
+        df[emptycol]=''
+
+for cols in keepcols:
+    if cols not in df.columns:
+        df[cols]=''
+        
+df.replace('', np.nan, inplace=True) 
+df=df[keepcols]
+    
+    
+df1=df.head()
+
+
+''' create schema
+import io
+buffer = io.StringIO()
+df.info(buf=buffer)
+s = buffer.getvalue()
+
+path=r'C:\Users\ronny\Esron BI Analyzr AB\Gruppwebbplats - Dokument\AmazonTripdata\df_info.txt'
+with open(path, "w", encoding="utf-8") as f:
+    f.write(s)
+
+'''   
