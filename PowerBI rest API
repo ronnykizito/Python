@@ -1,3 +1,6 @@
 
 1. fix rest api https://dev.powerbi.com/Apps , native, choose name tex Test_PwrBI_rest_API d60242ed-3c62-4a67-9431-aa65d82e296b api for hm
 2. Azure Active Directory--App regestrations--select the app--API permissions--add permisionns and choose "power bi services"--application permissions read/write
+
+3. https://docs.microsoft.com/en-us/rest/api/power-bi/
+4. I powerBI Authorization
