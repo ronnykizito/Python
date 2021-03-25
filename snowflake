@@ -23,3 +23,7 @@ grant select on all tables in schema IDENTIFIER($the_database).IDENTIFIER($the_s
 
 grant role IDENTIFIER($the_role) to user IDENTIFIER($the_user);
 show grants to role IDENTIFIER($the_role);
+
+
+
+DROP ROLE developer;
