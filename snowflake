@@ -1,0 +1,14 @@
+use role accountadmin;
+
+create role if not exists  developer;
+grant usage on warehouse PBM_WH to role developer;
+
+
+grant usage on database PBM_DB to role developer;
+grant usage on schema PBM_DB.PBM_SCHEMA to role developer;
+
+grant select on all tables in schema PBM_DB.PBM_SCHEMA to role developer;
+
+
+grant role developer to user pbm_databricks_user_API;
+show grants to role developer;
