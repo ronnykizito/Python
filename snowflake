@@ -1,3 +1,4 @@
+
 use role accountadmin;
 
 set the_user='pbm_databricks_user_API';
@@ -9,7 +10,7 @@ set the_schema='PBM_SCHEMA';
 
 
 set the_db_schema=concat($the_database, '.',$the_schema);
-
+create role if not exists  IDENTIFIER($the_role);
 GRANT USAGE ON DATABASE IDENTIFIER($the_database) TO ROLE IDENTIFIER($the_role);
 
 GRANT ALL ON SCHEMA IDENTIFIER($the_db_schema) TO ROLE IDENTIFIER($the_role);
