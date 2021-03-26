@@ -8,17 +8,14 @@ set the_schema='PBM_SCHEMA';
 
 
 
-/*select $the_db_wh;
+set the_db_schema=concat($the_database, '.',$the_schema);
 
-SHOW VARIABLES;*/
-/* dont chage here*/
-set the_db_wh=concat($the_database, '.',$the_schema);
-create role if not exists  IDENTIFIER($the_role);
-grant usage on warehouse IDENTIFIER($the_warehouse) to role IDENTIFIER($the_role);
-grant usage on database IDENTIFIER($the_database) to role IDENTIFIER($the_role);
-grant usage on schema IDENTIFIER($the_db_wh) to role IDENTIFIER($the_role);
-grant select on all tables in schema IDENTIFIER($the_db_wh)  to role IDENTIFIER($the_role);
-grant role IDENTIFIER($the_role) to user IDENTIFIER($the_user);
+GRANT USAGE ON DATABASE IDENTIFIER($the_database) TO ROLE IDENTIFIER($the_role);
+
+GRANT ALL ON SCHEMA IDENTIFIER($the_db_schema) TO ROLE IDENTIFIER($the_role);
+
+GRANT USAGE ON WAREHOUSE IDENTIFIER($the_warehouse) TO ROLE IDENTIFIER($the_role);
+
 show grants to role IDENTIFIER($the_role);
 
 
