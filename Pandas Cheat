@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 
+setx PATH "%PATH%;C:\Users\rosnt\AppData\Local\Programs\Python\Python39\Scripts"
+
 df=pd.read_csv('http://bit.ly/kaggletrain')
 
 # list in a column
