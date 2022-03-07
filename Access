@@ -22,3 +22,6 @@ for table in tables:
 
 
 conn.close()
+
+
+https://portal.azure.com/#@hennesandmauritz.onmicrosoft.com/resource/providers/microsoft.gallery/myareas/4ed77211-30d9-4bde-addf-f95d68b741d6/galleryitems/databricks_vnet_injection_arm-template
