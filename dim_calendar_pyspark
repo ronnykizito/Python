@@ -1,0 +1,169 @@
+# Databricks notebook source
+import pandas as pd
+from datetime import datetime
+from pyspark.sql.types import StructField, StructType, StringType, IntegerType,DateType,TimestampType, LongType,DoubleType
+from delta.tables import *
+from pyspark.sql.functions import *
+
+# COMMAND ----------
+
+#pathToTable='/mnt/powerbi/gold/marts/parquet/dim_calendar'
+
+# COMMAND ----------
+
+
+
+keepcols=['date', 'datekey', 'yearmonthday', 'yearmonth01',
+       'year_month_01', 'yearmonth', 'yearcode', 'isleapyear',
+       'firstdateofyear', 'lastdateofyear', 'quartercode', 'quaternumber',
+       'quatername', 'quaterlongname', 'firstmonthofquarter',
+       'lastmonthofquarter', 'firstdateofquarter', 'lastdateofquarter',
+       'monthcode', 'monthofyearnumber', 'monthnameenglishlong',
+       'monthnameenglishshort','monthnameswedishlong','monthnameswedishshort', 'firstdateofmonth', 'lastdateofmonth',
+       'numberofdaysinmonth', 'weekcode', 'weekofyearnumber', 'weekname',
+       'weeklongname', 'firstdateofweek', 'lastdateofweek',
+       'dateofsameweekdaylastyear', 'firstdateofweeksameweekdaylastyear',
+       'lastdateofweeksameweekdaylastyear', 'dayofyear', 'dayofquarter',
+       'dayofmonth', 'dayofweek', 'dayofweeknameenglishlong',
+       'dayofweeknameenglishshort','dayofweeknameswedishlong','dayofweeknameswedishshort', 'previousdateyear', 'previousdatemonth',
+       'previousdatemonthstart', 'previousdatemonthend', 'previousdateweek',
+       'previousdateday', 'nextdateday', 'isweekend', 'hold']
+
+# COMMAND ----------
+
+
+# COMMAND ----------
+
+
+dates=pd.date_range('20180101', '20251231',freq='D')
+
+
+df=pd.DataFrame({'Date':dates})
+#df['Today']=time.strftime("%Y-%m-%d")
+df['Today']=datetime.today()
+df['Today'] =(df.Today + pd.DateOffset(hours=1)).dt.strftime('%Y-%m-%d')
+df['Today']=df.Today.astype("datetime64[s]")
+df["DateKey"] = df.Date.dt.strftime('%Y%m%d')
+df["YearMonthDay"] = df.Date.dt.strftime('%Y%m%d')
+df["YearMonth01"] = df.Date.dt.strftime('%Y%m01')
+df["Year_Month_01"] = df.Date.dt.strftime('%Y-%m-01')
+df["YearMonth"] = df.Date.dt.strftime('%Y%m')
+df["DayDate"] = df.Date
+df['YearCode']= df.Date.dt.strftime('%Y')
+df["IsLeapYear"] = df.Date.dt.is_leap_year
+df['FirstDateOfYear']= df.Date.dt.to_period("Y").dt.start_time
+df['LastDateOfYear']= df.Date.dt.to_period("Y").dt.end_time
+df['QuarterCode']= df.Date.dt.strftime('%Y').astype(str)+df.Date.dt.quarter.astype(str).str.pad(width=2,fillchar='0')
+df['QuaterNumber']= df.Date.dt.quarter
+df['QuaterName']= 'Q'+df.Date.dt.quarter.astype(str)
+df['QuaterLongName']= df.Date.dt.strftime('%Y').astype(str)+'Q'+df.Date.dt.quarter.astype(str)
+df['FirstMonthOfQuarter'] = (df.Date.dt.to_period("Q").dt.start_time).dt.strftime('%m')
+df['LastMonthOfQuarter'] = (df.Date.dt.to_period("Q").dt.end_time).dt.strftime('%m')
+df['FirstDateOfQuarter'] = df.Date.dt.to_period("Q").dt.start_time
+df['LastDateOfQuarter'] = df.Date.dt.to_period("Q").dt.end_time
+df["MonthCode"] = df.Date.dt.strftime('%Y%m')
+df["MonthOfYearNumber"] = df.Date.dt.strftime('%m')
+df['MonthNameEnglishLong']= df.Date.dt.strftime('%B')
+df['MonthNameEnglishShort']= df.Date.dt.strftime('%b')
+
+df.loc[df['MonthNameEnglishLong'].isin(['January']), 'MonthNameSwedishLong'] = 'januari'
+df.loc[df['MonthNameEnglishLong'].isin(['February']), 'MonthNameSwedishLong'] = 'februari'
+df.loc[df['MonthNameEnglishLong'].isin(['March']), 'MonthNameSwedishLong'] = 'mars'
+df.loc[df['MonthNameEnglishLong'].isin(['April']), 'MonthNameSwedishLong'] = 'april'
+df.loc[df['MonthNameEnglishLong'].isin(['May']), 'MonthNameSwedishLong'] = 'maj'
+df.loc[df['MonthNameEnglishLong'].isin(['June']), 'MonthNameSwedishLong'] = 'juni'
+df.loc[df['MonthNameEnglishLong'].isin(['july']), 'MonthNameSwedishLong'] = 'juli'
+df.loc[df['MonthNameEnglishLong'].isin(['August']), 'MonthNameSwedishLong'] = 'augusti'
+df.loc[df['MonthNameEnglishLong'].isin(['September']), 'MonthNameSwedishLong'] = 'september'
+df.loc[df['MonthNameEnglishLong'].isin(['October']), 'MonthNameSwedishLong'] = 'oktober'
+df.loc[df['MonthNameEnglishLong'].isin(['November']), 'MonthNameSwedishLong'] = 'november'
+df.loc[df['MonthNameEnglishLong'].isin(['December']), 'MonthNameSwedishLong'] = 'december'
+
+
+df['MonthNameSwedishShort']= df.MonthNameSwedishLong.str[0:3]
+
+
+df['FirstDateOfMonth']= df.Date.dt.to_period("m").dt.start_time
+df['LastDateOfMonth']= df.Date.dt.to_period("m").dt.end_time
+df['NumberOfDaysInMonth']= df.Date.dt.daysinmonth
+df['WeekCode']= df.Date.dt.strftime('%Y').astype(str)+df.Date.dt.isocalendar().week.astype(str).str.pad(width=2,fillchar='0') 
+df['WeekOfYearNumber']= df.Date.dt.isocalendar().week
+df['WeekName']= 'W'+df.Date.dt.isocalendar().week.astype(str).str.pad(width=2,fillchar='0')
+df['WeekLongName']= df.Date.dt.strftime('%Y').astype(str)+'W'+df.Date.dt.isocalendar().week.astype(str).str.pad(width=2,fillchar='0') 
+df['FirstDateOfWeek']= df.Date.dt.to_period("W").dt.start_time
+df['LastDateOfWeek']= df.Date.dt.to_period("W").dt.end_time
+df['DateOfSameWeekDayLastYear'] = df.Today - pd.DateOffset(days=364)
+df['FirstDateOfWeekSameWeekDayLastYear'] = \
+    df.DateOfSameWeekDayLastYear.dt.to_period("W").dt.start_time   
+df['LastDateOfWeekSameWeekDayLastYear'] = \
+    df.DateOfSameWeekDayLastYear.dt.to_period("W").dt.end_time
+df["DayOfYear"] = df.Date.dt.dayofyear
+df['DayOfQuarter'] = df.groupby(['QuarterCode']).cumcount()+1
+df["DayOfMonth"] = df.Date.dt.day
+df["DayOfWeek"] = df.Date.dt.dayofweek+1
+df['DayOfWeekNameEnglishLong']= df.Date.dt.strftime('%A') #df.Date.dt.weekday_name
+df['DayOfWeekNameEnglishShort']= df.Date.dt.strftime('%a')
+
+
+
+df.loc[df['DayOfWeekNameEnglishLong'].isin(['Monday']), 'DayOfWeekNameSwedishLong'] = 'måndag'
+df.loc[df['DayOfWeekNameEnglishLong'].isin(['Tuesday']), 'DayOfWeekNameSwedishLong'] = 'tisdag'
+df.loc[df['DayOfWeekNameEnglishLong'].isin(['Wednesday']), 'DayOfWeekNameSwedishLong'] = 'onsdag'
+df.loc[df['DayOfWeekNameEnglishLong'].isin(['Thursday']), 'DayOfWeekNameSwedishLong'] = 'torsdag'
+df.loc[df['DayOfWeekNameEnglishLong'].isin(['Friday']), 'DayOfWeekNameSwedishLong'] = 'fredag'
+df.loc[df['DayOfWeekNameEnglishLong'].isin(['Saturday']), 'DayOfWeekNameSwedishLong'] = 'lördag'
+df.loc[df['DayOfWeekNameEnglishLong'].isin(['Sunday']), 'DayOfWeekNameSwedishLong'] = 'söndag'
+
+df['DayOfWeekNameSwedishShort']= df.DayOfWeekNameSwedishLong.str[0:3]
+
+
+df['PreviousDateYear'] = df.Date - pd.DateOffset(years=1)
+df['PreviousDateMonth'] = df.Date - pd.DateOffset(months=1)
+df['PreviousDateMonthStart'] = (df.Date - pd.DateOffset(months=1)).dt.to_period("m").dt.start_time
+df['PreviousDateMonthEnd'] = (df.Date - pd.DateOffset(months=1)).dt.to_period("m").dt.end_time
+df['PreviousDateWeek'] = df.Date - pd.DateOffset(weeks=1)
+df['PreviousDateDay'] = df.Date - pd.DateOffset(days=1)
+df['NextDateDay'] = df.Date + pd.DateOffset(days=1)
+# df['Datum_swe']= df.MonthNameSwedishShort+'-'+df.Date.dt.strftime('%Y')
+df['IsWeekend']='False'
+df.loc[df['DayOfWeek'].isin([6,7]), 'IsWeekend'] = 'True'
+df['Hold']=1
+# df.drop(['Today','Man'], axis=1,inplace=True)    
+df=df.applymap(lambda x: x.strip() if type(x) is str else x) #strip all nonNumeric columns
+df=df.rename(columns={cols: cols.replace(' ','') for cols in df.columns}) # Remove spaces from columns
+df.columns = df.columns.str.lower()
+df=df[keepcols]
+
+# COMMAND ----------
+
+cast_as_IntegerType=['datekey','quartercode','yearmonthday','yearmonth01','yearmonth','yearcode','quaternumber','monthcode',
+                'numberofdaysinmonth','weekcode','weekofyearnumber','dayofyear','dayofquarter','dayofmonth','dayofweek',
+                'hold']
+
+cast_as_DateType=['date','year_month_01','firstdateofyear','lastdateofyear','firstdateofquarter','lastdateofquarter',
+                 'firstdateofmonth','lastdateofmonth','firstdateofweek','lastdateofweek','dateofsameweekdaylastyear',
+                 'firstdateofweeksameweekdaylastyear','lastdateofweeksameweekdaylastyear','previousdateyear','previousdatemonth',
+                 'previousdatemonthstart','previousdatemonthend','previousdateweek','previousdateday','nextdateday']
+
+df_spark = spark.createDataFrame(df)
+
+for col_name in df_spark.columns: df = df_spark.withColumn(col_name, df_spark[col_name].cast(StringType()))
+for col_name in cast_as_IntegerType: df = df.withColumn(col_name, df[col_name].cast(IntegerType()))
+for col_name in cast_as_DateType: df = df.withColumn(col_name, df[col_name].cast(DateType()))
+for col_name in df.columns: df = df.withColumnRenamed(col_name, col_name.lower())
+df=df.select(*keepcols)
+
+
+display(df)
+
+
+#table_name='dim_calendar'
+#pathToTable='/mnt/powerbi/gold/delta/'+table_name
+#dbutils.fs.rm(pathToTable, recurse=True)
+
+df.write \
+  .format("delta") \
+  .mode("overwrite") \
+  .option("overwriteSchema","true") \
+  .partitionBy("yearcode") \
+  .save(pathToTable)
