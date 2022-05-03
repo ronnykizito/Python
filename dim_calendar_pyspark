@@ -167,3 +167,33 @@ df.write \
   .option("overwriteSchema","true") \
   .partitionBy("yearcode") \
   .save(pathToTable)
+
+
+
+
+
+
+from pyspark.sql.functions import *
+
+df=spark.createDataFrame([["1"]],["id"])
+df=df.withColumn("updated",from_utc_timestamp(current_timestamp(),'Europe/Stockholm'))
+df=df.drop(col("id"))
+
+
+df.write \
+  .format("delta") \
+  .option("overwriteSchema","True") \
+  .mode("overwrite") \
+  .save('/mnt/powerbi/gold/delta/marts/updated')
+  
+  
+  table_names=['dim_calendar']
+database='microdeb_db'
+the_delta_path = '/mnt/powerbi/gold/marts/parquet/'
+
+for table_name in table_names:
+
+    spark.sql("DROP TABLE if exists " + database+'.'+table_name)
+    delta_path=the_delta_path+table_name
+    spark.sql("CREATE TABLE  " + database+'.'+table_name + " USING DELTA LOCATION '" + delta_path + "'")
+    #display(spark.sql('DESCRIBE DETAIL pbm_db.calendar'))
