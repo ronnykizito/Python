@@ -1,0 +1,35 @@
+Install Office365-REST-Python-Client
+openpyxl
+
+
+
+
+scope_name="pbmsweden-scope-name"
+sharepoint_site_url=dbutils.secrets.get(scope = scope_name, key = "pbm-sharepoint-site-url")
+sharepoint_client_id=dbutils.secrets.get(scope = scope_name, key = "pbm-sharepoint-client-id")
+sharepoint_client_secret=dbutils.secrets.get(scope = scope_name, key = "pbm-sharepoint-client-secret")
+
+
+credentials = ClientCredential(sharepoint_client_id,sharepoint_client_secret)
+ctx = ClientContext(sharepoint_site_url).with_credentials(credentials)
+web = ctx.web.get().execute_query()
+print("Web title: {0}".format(web.properties['Title']))
+
+#KoddelarVismaEffectPlan='dKoddelarVismaEffectPlan_p2'
+
+replace_values={'Psykiatripartner':'PPÖ','Psykiatripartners':'PPÖ'}
+#pd.io.sql.execute('DROP table IF EXISTS ' +str(KoddelarVismaEffectPlan), sqlite_db)
+
+doc_url='/sites/pbmswedenab/Delade%20dokument/'
+
+folder_url='1.Indata/KoddelarVismEffectPlan/'
+
+url_filename='KodDelarVismaNet_EffectPlan.xlsx'
+
+relative_url = doc_url+folder_url+url_filename
+
+
+response = File.open_binary(ctx, relative_url)
+
+
+df = pd.read_excel(response.content,dtype='str', engine='openpyxl',sheet_name=0)
