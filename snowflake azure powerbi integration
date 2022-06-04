@@ -1,0 +1,199 @@
+use role accountadmin;
+USE DATABASE pbm_db;
+USE schema pbm_schema;
+
+
+CREATE STORAGE INTEGRATION azure_int
+  TYPE = EXTERNAL_STAGE
+  STORAGE_PROVIDER = AZURE
+  ENABLED = TRUE
+  AZURE_TENANT_ID = '2f2532dc-d889-40ba-8dc6-aaf0d1b42bf5'
+  STORAGE_ALLOWED_LOCATIONS = ('azure://savsmaefkp.blob.core.windows.net/powerbi/');
+ 
+ DESC STORAGE INTEGRATION AZURE_INT;
+ 
+
+create or replace notification INTEGRATION PBM_BIANALYZR_SNOWFLAKE_QUEUE  
+  ENABLED = TRUE
+   TYPE = QUEUE
+  NOTIFICATION_PROVIDER = AZURE_STORAGE_QUEUE
+  AZURE_STORAGE_QUEUE_PRIMARY_URI = 'https://savsmaefkp.queue.core.windows.net/mytest'
+  AZURE_TENANT_ID = '2f2532dc-d889-40ba-8dc6-aaf0d1b42bf5';
+  
+ DESC  notification INTEGRATION PBM_BIANALYZR_SNOWFLAKE_QUEUE; 
+
+show INTEGRATIONs;
+
+
+
+grant usage on INTEGRATION azure_int to PBM_DEVELOPER;
+grant usage on INTEGRATION PBM_BIANALYZR_SNOWFLAKE_QUEUE to PBM_DEVELOPER;
+--grant usage on notification INTEGRATION PBM_BIANALYZR_SNOWFLAKE_QUEUE to AAD_PBMSWEDEN;
+
+
+CREATE or replace FILE FORMAT PBM_DB.PBM_SCHEMA.CSV_FORMAT TYPE= 'CSV' COMPRESSION = 'AUTO' FIELD_DELIMITER = ';' 
+RECORD_DELIMITER = '\n' SKIP_HEADER = 1 ENCODING = 'utf-8' FIELD_OPTIONALLY_ENCLOSED_BY = '\042' 
+TRIM_SPACE = FALSE ERROR_ON_COLUMN_COUNT_MISMATCH = TRUE ESCAPE = '\\' 
+ESCAPE_UNENCLOSED_FIELD = '\134' DATE_FORMAT = 'AUTO' TIMESTAMP_FORMAT = 'AUTO' NULL_IF = ('NULL');
+grant usage on  FILE FORMAT CSV_FORMAT to PBM_DEVELOPER;
+
+
+
+CREATE or replace STAGE PBM_DB.PBM_SCHEMA.STAGE_UPDATED 
+storage_integration = AZURE_INT
+URL = 'azure://savsmaefkp.blob.core.windows.net/powerbi/gold/temp/updated/' 
+file_format = PBM_DB.PBM_SCHEMA.CSV_FORMAT;
+
+
+
+list @PBM_DB.PBM_SCHEMA.STAGE_UPDATED;
+select * from @PBM_DB.PBM_SCHEMA.STAGE_UPDATED;
+
+create or replace pipe PBM_DB.PBM_SCHEMA.PIPE_UPDATED 
+auto_ingest=true
+integration='PBM_BIANALYZR_SNOWFLAKE_QUEUE'
+as
+copy into PBM_DB.PBM_SCHEMA.ATEST
+from @PBM_DB.PBM_SCHEMA.STAGE_UPDATED
+--purge=true;
+on_error=CONTINUE;
+--ON_ERROR = 'skip_file';
+
+--truncate PBM_DB.PBM_SCHEMA.ATEST;
+--alter pipe PBM_DB.PBM_SCHEMA.PIPE_UPDATED refresh;
+
+
+select * from PBM_DB.PBM_SCHEMA.ATEST order by 1 desc;
+select $1 from @PBM_DB.PBM_SCHEMA.STAGE_UPDATED;
+
+
+select * from PBM_DB.PBM_SCHEMA.dupdatedinfo;
+
+
+
+SET the_role='AAD_PBMSWEDEN';
+
+
+
+alter account set saml_identity_provider=
+'{
+"certificate": "MIIC8DCCAdigAwIBAgIQZu6LNSrF/IFE2yNYUfv7iDANBgkqhkiG9w0BAQsFADA0MTIwMAYDVQQD
+EylNaWNyb3NvZnQgQXp1cmUgRmVkZXJhdGVkIFNTTyBDZXJ0aWZpY2F0ZTAeFw0yMjA0MDkxNTI2
+NDVaFw0yNTA0MDkxNTI2NDVaMDQxMjAwBgNVBAMTKU1pY3Jvc29mdCBBenVyZSBGZWRlcmF0ZWQg
+U1NPIENlcnRpZmljYXRlMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA057Nh7hWavBT
+EfcWOHxbaTfJ2+OrYYYc00KRz1jf/Qx24/ScvBrOZciv8zOfg/BJNBYvBD0nlzD7mYG5fLcUN54H
+kfo0xLqupuDOBjEtc0QN4B6muIt1TjFOUJ45pkzRYN6cjiDfgE9cRRvd68A3Cqky7UNj+9qFejmi
+N8omc+KoFig3PoLQqZ8bgWVPH0jxXYQEwBu7jd0H2qFsaEgKD0fYP/f52CC6MDJp7YaNCw+0aKWw
+Y5dkY42rL7unfijsZhWRp+bPGlXVuOtG3XaxL+me5ffKqTWDkbDEyaa91aIQEuVTzAh6NlstKqYM
+dip4w4XbvMIm33G2kFNB1hgeZQIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQB/XnWOqf1fo4oIaqAj
+caLHF5thMNGncIINyOOKMO0JjnQiIxxVN0XabrEZBTqghXFiA2+veS6QVWmnNc3D8SEK9y3bIguw
+c8Qyti7vghN/DuJW20kMIA9UdaHGjIeZE1TYsSzvEZhqroC/ev7F6O/7ctNFVvvec+KwHyJkMEOG
+S7GbgYajZgj4040Y3NaIlfwQ4X2AtKl7O3wZns6bGBg45g5QNq+1W6NIiZFo+c4WFgQp0gXvFSKC
+b32FCP42vaOuZE2xSQq3ebSQrn3SgnHWNTNRoUTgv/CMSONo8JwQIM7IjrPx5P50WLukO0Zn7UR8
+tlfg5Jn1CffQr/FMjyyw",
+"ssoUrl": "https://login.microsoftonline.com/2f2532dc-d889-40ba-8dc6-aaf0d1b42bf5/saml2",
+"type": "custom",
+"label": "AzureAD"
+}';
+alter account set sso_login_page = TRUE;
+
+
+create or replace role IDENTIFIER($the_role);
+grant create user on account to role IDENTIFIER($the_role);
+grant create role on account to role IDENTIFIER($the_role);
+grant role IDENTIFIER($the_role)  to role accountadmin;
+
+create or replace security integration aad_provisioning
+  type=scim
+  scim_client='azure'
+  run_as_role='AAD_PBMSWEDEN'; /*change the role to upcase*/
+select system$generate_scim_access_token('AAD_PROVISIONING');
+
+
+
+
+#########give rights;
+
+SET the_role='AAD_PBMSWEDEN';
+
+set the_warehouse='PBM_WH';
+set the_database='PBM_DB';
+set the_schema='PBM_SCHEMA';
+set the_user='RAPPORTER@PBM.SE';
+
+
+--REVOKE  USAGE ON DATABASE ARLANDASTADBIL_db FROM ROLE pbm_developer;
+
+set the_db_schema=concat($the_database, '.',$the_schema);
+--create role if not exists  IDENTIFIER($the_role);
+
+
+GRANT OPERATE ON WAREHOUSE IDENTIFIER($the_warehouse) TO ROLE IDENTIFIER($the_role);
+GRANT USAGE,monitor ON DATABASE IDENTIFIER($the_database) TO ROLE IDENTIFIER($the_role);
+grant usage, monitor on all schemas in database IDENTIFIER($the_database) to role IDENTIFIER($the_role);
+GRANT ALL ON SCHEMA IDENTIFIER($the_db_schema) TO ROLE IDENTIFIER($the_role);
+GRANT USAGE,monitor ON WAREHOUSE IDENTIFIER($the_warehouse) TO ROLE IDENTIFIER($the_role);
+grant select on all tables in schema IDENTIFIER($the_db_schema) to role IDENTIFIER($the_role);
+grant select on future tables in schema IDENTIFIER($the_db_schema)to role IDENTIFIER($the_role);
+
+show grants to role IDENTIFIER($the_role);
+
+
+
+alter user "RAPPORTER@PBM.SE" set default_role=$the_role  DEFAULT_WAREHOUSE = $the_warehouse DEFAULT_NAMESPACE = $the_db_schema;
+grant role IDENTIFIER($the_role) to USER  "RAPPORTER@PBM.SE";
+GRANT USAGE,monitor ON WAREHOUSE IDENTIFIER($the_warehouse) TO ROLE IDENTIFIER($the_role);
+GRANT ROLE IDENTIFIER($the_role) TO USER "RAPPORTER@PBM.SE";
+
+USE ROLE ACCOUNTADMIN;
+grant USE_ANY_ROLE on integration AAD_PROVISIONING to IDENTIFIER($the_role);
+
+grant USE_ANY_ROLE on integration AAD_PROVISIONING to IDENTIFIER($the_role);
+
+alter security integration AAD_PROVISIONING set EXTERNAL_OAUTH_ISSUER = 'sts<string_literal>/';
+
+
+
+SHOW VARIABLES;
+
+invoke 
+
+
+set n1='RAPPORTER';
+set n2='@';
+set n3='PBM';
+set n4='SE';
+
+set the_user=concat($n1, $n2,$n3,'.',$n4);
+
+grant role IDENTIFIER($the_role) to user RAPPORTER;
+
+
+select * from "PBM_DB"."PBM_SCHEMA"."DUPDATEDINFO";
+
+
+
+  
+    
+create security integration powerbi_v1
+    type = external_oauth
+    enabled = true
+    external_oauth_type = azure
+    external_oauth_issuer = 'https://sts.windows.net/2f2532dc-d889-40ba-8dc6-aaf0d1b42bf5/'
+    external_oauth_jws_keys_url = 'https://login.windows.net/common/discovery/keys'
+    external_oauth_audience_list = ('https://analysis.windows.net/powerbi/connector/Snowflake')
+    external_oauth_token_user_mapping_claim = 'upn'
+    external_oauth_snowflake_user_mapping_attribute = 'login_name'
+    external_oauth_any_role_mode = 'ENABLE';
+    
+  --bianalyz  
+ create security integration powerbi_binalyzr
+    type = external_oauth
+    enabled = true
+    external_oauth_type = azure
+    external_oauth_issuer = 'https://sts.windows.net/f4e0f4b0-f8f9-472c-8047-5948ac139ea1/'
+    external_oauth_jws_keys_url = 'https://login.windows.net/common/discovery/keys'
+    external_oauth_audience_list = ('https://analysis.windows.net/powerbi/connector/Snowflake')
+    external_oauth_token_user_mapping_claim = 'upn'
+    external_oauth_snowflake_user_mapping_attribute = 'login_name'
+    external_oauth_any_role_mode = 'ENABLE';   
