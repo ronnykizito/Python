@@ -33,6 +33,34 @@ remove_files=['EXFINANCEENTRY 4000-7000.csv','EXACCOUNT.csv']
 
 files=[x for x in File_name if x not in remove_files]
 
+
+ct=1
+for r in range(0, 1155948, 50000):
+    print(ct)
+    read_query=f'''
+    index>={r} and index<{r+50000}
+    '''
+    globals()[f'df{ct}']=COS_customer_df.query(read_query)
+    out_file_csv='mnt/source-systems/sas/cos-persona-segments/to-digitas/df'+str(ct)
+    df=globals()[f'df{ct}'].to_spark()
+    
+    df.coalesce(1)\
+    .write.format('csv')\
+    .mode('overwrite')\
+    .option("sep",',')\
+    .option("header",True)\
+    .save(out_file_csv)
+    
+    files=dbutils.fs.ls(out_file_csv)
+    csv_file=[x.path for x in files if x.path.endswith(".csv")][0]
+    dbutils.fs.mv(csv_file, out_file_csv.rstrip('/') + ".csv")
+    dbutils.fs.rm(out_file_csv, recurse=True)
+    
+    #del globals()[f'df{ct}']
+    #print(r,read_query,ct)
+    
+    ct+=1
+
 .reset_index()
 
 pip install dask[dataframe]
