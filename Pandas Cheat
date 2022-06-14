@@ -370,6 +370,7 @@ sql=''' SELECT distinct Engagemangs_Datum,Abonnentnr FROM data1 WHERE Engagemang
 df2 = pd.read_sql_query(sql  ,conn)
 
 #remove all non numeric values
+df['C'] = df['Cdd'].str.extract('(\d+)', expand=False)
 df['B'] = df['B'].str.replace(r'[^\d.]+', '')
 
 #if one abbonent
