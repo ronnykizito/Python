@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+(datetime.today()+relativedelta(months=-24)).strftime('%Y-%m-%d')
 """
 remove folder
 dbutils.fs.rm("/mnt/export/ron", True)
