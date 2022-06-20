@@ -1849,3 +1849,19 @@ client = Client("AC882835d3a5ebd524de6e76e3a69f6357", "ca51292e4a603945658d56609
 client.messages.create(to="+46737470246", 
                        from_="+12057368459",                     
                        body="Hello from Python!")
+		       
+		       
+parquet
+
+dbutils.fs.rm(pathToTable+"."+file_format, recurse=True)
+
+spark.sql(read_sql_query).coalesce(1).write \
+  .format(file_format) \
+  .mode("overwrite") \
+  .save(temp_folder)
+
+
+files=dbutils.fs.ls(temp_folder)
+temp_file=[x.path for x in files if x.path.endswith("."+file_format)][0]
+dbutils.fs.mv(temp_file, pathToTable.rstrip('/') + "."+file_format)
+dbutils.fs.rm(temp_folder, recurse=True)
