@@ -1853,15 +1853,23 @@ client.messages.create(to="+46737470246",
 		       
 parquet
 
-dbutils.fs.rm(pathToTable+"."+file_format, recurse=True)
+delta_path='/mnt/powerbi/gold/delta/sarafiles/'+table_name.lower()
+  file_format='parquet'
+  parquet_path='/mnt/powerbi/gold/'+file_format+'/marts/sara/'+table_name.lower()
 
-spark.sql(read_sql_query).coalesce(1).write \
+  temp_folder='/mnt/powerbi/gold/temp/'+table_name.lower()
+
+  dbutils.fs.rm(parquet_path+"."+file_format, recurse=True)
+
+
+  spark.read.format("delta")\
+  .load(delta_path)\
+  .coalesce(1).write \
   .format(file_format) \
   .mode("overwrite") \
   .save(temp_folder)
 
-
-files=dbutils.fs.ls(temp_folder)
-temp_file=[x.path for x in files if x.path.endswith("."+file_format)][0]
-dbutils.fs.mv(temp_file, pathToTable.rstrip('/') + "."+file_format)
-dbutils.fs.rm(temp_folder, recurse=True)
+  files=dbutils.fs.ls(temp_folder)
+  temp_file=[x.path for x in files if x.path.endswith("."+file_format)][0]
+  dbutils.fs.mv(temp_file, parquet_path.rstrip('/') + "."+file_format)
+  dbutils.fs.rm(temp_folder, recurse=True)
