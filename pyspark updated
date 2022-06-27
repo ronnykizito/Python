@@ -1,0 +1,8 @@
+from pyspark.sql.functions import *
+
+df=spark.createDataFrame([["1"]],["id"])
+df=df.withColumn("updated",from_utc_timestamp(current_timestamp(),'Europe/Stockholm'))
+df=df.drop(col("id"))
+
+
+display(df)
