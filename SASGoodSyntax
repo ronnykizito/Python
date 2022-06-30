@@ -28,6 +28,7 @@ data &lib..kunder;
 	set &lib..kunder;
 	Ar=2018;
 	Id=_n_;
+	call symput('nobs',_n_);
 run;
 
 Proc sql noprint;
