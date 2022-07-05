@@ -1,9 +1,11 @@
 
 
 ############################################################################################
-from pyspark.sql.functions import row_number, monotonically_increasing_id,col
+from pyspark.sql.functions import row_number, monotonically_increasing_id,col,lag,lead
 from pyspark.sql import Window
 from pyspark.sql import functions as F
+
+
 
 
 group_by_cols=["Job_scheduled"]
@@ -16,5 +18,10 @@ df=spark.sql("select * from delta.`/mnt/gca-assets-lakehouse/marts/schedule_info
 .withColumn('MinIndex',F.min('index').over(Window.partitionBy(group_by_cols)))\
 .withColumn('AverageIndex',F.avg('index').over(Window.partitionBy(group_by_cols)))\
 .withColumn('ct_all',F.count("*").over(Window.partitionBy()))\
-.withColumn("pct", col("ct")/col("ct_all"))
+.withColumn("pct", col("ct")/col("ct_all"))\
+.withColumn("cum_",row_number().over(Window.partitionBy(group_by_cols).orderBy("index")))\
+.withColumn("lag",lag("cum_",2).over(Window.partitionBy(group_by_cols).orderBy("index")))\
+.withColumn("lead",lead("cum_",2).over(Window.partitionBy(group_by_cols).orderBy("index")))
+
+df.display()
 ############################################################################################
