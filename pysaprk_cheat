@@ -1,0 +1,5 @@
+df=spark.sql("select * from delta.`/mnt/gca-assets-lakehouse/marts/schedule_info`")\
+.withColumn("index",row_number().over(Window.orderBy(monotonically_increasing_id())))\
+.withColumn('Freq',F.count("*").over(Window.partitionBy(group_by_cols)))\
+.withColumn('MaxFreq',F.max('Freq').over(Window.partitionBy()))\
+.withColumn('MinFreq',F.min('Freq').over(Window.partitionBy()))
