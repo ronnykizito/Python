@@ -1,9 +1,9 @@
 
 
 ############################################################################################
-from pyspark.sql.functions import row_number, monotonically_increasing_id,col,lag,lead
-from pyspark.sql import Window
-from pyspark.sql import functions as F
+
+from pyspark.sql.functions import *
+from pyspark.sql import Window,functions as F
 
 
 
@@ -21,7 +21,15 @@ df=spark.sql("select * from delta.`/mnt/gca-assets-lakehouse/marts/schedule_info
 .withColumn("pct", col("ct")/col("ct_all"))\
 .withColumn("cum_",row_number().over(Window.partitionBy(group_by_cols).orderBy("index")))\
 .withColumn("lag",lag("cum_",2).over(Window.partitionBy(group_by_cols).orderBy("index")))\
-.withColumn("lead",lead("cum_",2).over(Window.partitionBy(group_by_cols).orderBy("index")))
+.withColumn("lead",lead("cum_",2).over(Window.partitionBy(group_by_cols).orderBy("index")))\
+.withColumn("pct1", concat("Destination",lit("."),"Updated_file"))\
+.withColumn("one", lit(1))\
+.withColumn("substr", substring("Destination",1,3))\
+.withColumn("substr1",  col("Destination").substr(2,4))\
+.withColumn('split', split(col('Destination'), '_').getItem(0))\
+.withColumn('part_date', date_format('Last_updated_time_in_Azure',"MMMM"))\
+
+df.display()
 
 df.display()
 ############################################################################################
