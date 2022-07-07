@@ -1,0 +1,86 @@
+DataFactory: Extract data from SharePoint Online
+_layouts/15/appinv.aspx
+
+Programdomän= localhost.com
+url= https://localhost.com
+
+xml
+<AppPermissionRequests AllowAppOnlyPolicy="true">
+    <AppPermissionRequest Scope="http://sharepoint/content/sitecollection/web" Right="Read"/>
+</AppPermissionRequests>
+
+
+
+https://bianalyzr.sharepoint.com/_layouts/15/appinv.aspx
+
+https://bianalyzr.sharepoint.com/sites/test_folder
+
+
+
+
+
+pip install Office365-REST-Python-Client
+pip install openpyxl
+
+from office365.sharepoint.client_context import ClientContext
+from office365.runtime.auth.client_credential import ClientCredential
+from office365.sharepoint.files.file import File
+import pandas as pd
+from pyspark.sql.types import StructField, StructType, StringType, IntegerType,DateType,TimestampType, LongType,DoubleType
+from pyspark.sql.functions import *
+from pyspark.sql import Window,functions as F
+
+scope_name="scopename"
+
+sharepoint_site_url="https://bianalyzr.sharepoint.com/sites/test_folder"
+
+sharepoint_client_id=dbutils.secrets.get(scope = scope_name, key = "x-service-principal-clientid")
+
+sharepoint_client_secret=dbutils.secrets.get(scope = scope_name, key = "x-service-principal-secretid")
+
+credentials = ClientCredential(sharepoint_client_id,sharepoint_client_secret)
+
+ctx = ClientContext(sharepoint_site_url).with_credentials(credentials)
+
+web = ctx.web.get().execute_query()
+
+print("Web title: {0}".format(web.properties['Title']))
+
+#relative_url begins after sharepoint.com
+
+#the response must be equal 200
+#relative_url = "/sites/test_folder/file.xlsx"
+#response = File.open_binary(ctx, relative_url)
+#response
+
+##################grab all files in a folder
+
+relative_folder="/sites/test_folder/"
+
+def folder_details(ctx, folder_in_sharepoint):
+    folder = ctx.web.get_folder_by_server_relative_url(folder_in_sharepoint)  
+    fold_names = []  
+    sub_folders = folder.files   
+    ctx.load(sub_folders)  
+    ctx.execute_query()  
+    for s_folder in sub_folders:    
+        fold_names.append(s_folder.properties["Name"]) 
+    return fold_names
+files_folder=folder_details(ctx, relative_folder)
+
+
+df_pd=pd.DataFrame()
+for xlfile in files_folder:
+    file_url=relative_folder+xlfile
+    response = File.open_binary(ctx, file_url)
+    df1 = pd.read_excel(response.content,dtype='str', engine='openpyxl',sheet_name=0)
+    df1=df1.applymap(lambda x: x.strip() if type(x) is str else x) #strip all nonNumeric columns
+    df1=df1.rename(columns={cols: cols.replace(' ','') for cols in df1.columns}) # Remove spaces from columns
+    df1=df1.rename(columns={cols: cols.replace('.','') for cols in df1.columns}) # Remove spaces from columns
+    df1=df1.rename(columns={cols: cols.replace('-','') for cols in df1.columns}) # Remove spaces from columns
+    df1.columns = df1.columns.str.title() #upcase--str.upper(), lowcase--str.lower() propcase--str.title()
+    df1['Filename']=xlfile
+    df1.rename(columns={'Product':'Productcode','Prodcutcode':'Productcode','Artno':'Articlecode'},inplace=True)
+    df_pd = df_pd.append(df1,ignore_index=True)
+
+
