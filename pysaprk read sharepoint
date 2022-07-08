@@ -84,3 +84,5 @@ for xlfile in files_folder:
     df_pd = df_pd.append(df1,ignore_index=True)
 
 
+df = pd.read_csv(StringIO(response.text), sep=";")
+display(df)
