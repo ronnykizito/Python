@@ -28,6 +28,7 @@ df=spark.sql("select * from delta.`/mnt/gca-assets-lakehouse/marts/schedule_info
 .withColumn("substr1",  col("Destination").substr(2,4))\
 .withColumn('split', split(col('Destination'), '_').getItem(0))\
 .withColumn('part_date', date_format('Last_updated_time_in_Azure',"MMMM"))\
+.withColumn("Last_updated_time_in_Azure",from_utc_timestamp(current_timestamp(),'Europe/Stockholm'))\
 
 df.display()
 
