@@ -1,5 +1,9 @@
 
 
+from multiprocessing.pool import ThreadPool
+parallels=ThreadPool(8)
+parallels.map(UDF, [company for company in companys])
+
 ############################################################################################
 
 from pyspark.sql.functions import *
