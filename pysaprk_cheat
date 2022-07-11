@@ -7,10 +7,10 @@ parallels.map(UDF, [company for company in companys])
 
 
 from multiprocessing.pool import ThreadPool
-pool = ThreadPool(5)
+
 notebooks=["/Repos/gca-projects/azure-sas-prod/Analytic_Env/02_segments/04_cos_menswear_segments",
            "/Repos/gca-projects/azure-sas-prod/Analytic_Env/02_segments/03_cos_womenswear_segments"]
-
+pool = ThreadPool(len(notebooks))
 pool.map(lambda path: dbutils.notebook.run(path, timeout_seconds= 6000, arguments={"input-data": path}),notebooks)
 ############################################################################################
 
