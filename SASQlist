@@ -1,4 +1,21 @@
 
+%macro count_list;
+%DO LOOP=1 %to %sysfunc(countw(&_country.));
+		%LET Country = %SCAN(&_country., &LOOP.);
+
+
+
+		
+
+		%put &Country.;
+	%end;
+%mend count_list;
+
+%count_list;
+
+
+
+
 Proc sql noprint;
 		select compbl(quote(Team)) 
 		into :hometeam separated by "," 
