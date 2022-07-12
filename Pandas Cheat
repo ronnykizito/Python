@@ -6,6 +6,9 @@ from dateutil.relativedelta import relativedelta
 remove folder
 dbutils.fs.rm("/mnt/export/ron", True)
 
+##read all excel sheets
+df = pd.concat(pd.read_excel(file_name, dtype='str', engine='openpyxl',sheet_name=None), axis=0, ignore_index=True)
+
 setx PATH "%PATH%;C:\Users\rosnt\AppData\Local\Programs\Python\Python39\Scripts"
 
 df=pd.read_csv('http://bit.ly/kaggletrain')
