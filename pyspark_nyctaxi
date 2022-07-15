@@ -1,0 +1,18 @@
+!pip install azureml-opendatasets
+!pip install azureml-dataset-runtime
+
+from azureml.opendatasets import NycTlcGreen,NycTlcYellow
+
+from datetime import datetime
+from dateutil import parser
+
+start_date = parser.parse('2018-05-01')
+end_date = parser.parse('2018-06-06')
+
+nyc_tlc = NycTlcGreen(start_date=start_date, end_date=end_date)
+
+df = nyc_tlc.to_spark_dataframe()
+display(df)
+#nyc_tlc_df = nyc_tlc.to_pandas_dataframe()
+
+#nyc_tlc_df.info()
