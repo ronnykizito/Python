@@ -15,4 +15,6 @@ df = nyc_tlc.to_spark_dataframe()
 display(df)
 #nyc_tlc_df = nyc_tlc.to_pandas_dataframe()
 
+df = (nyc_tlc.to_spark_dataframe()).pandas_api()
+
 #nyc_tlc_df.info()
