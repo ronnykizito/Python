@@ -18,3 +18,7 @@ display(df)
 df = (nyc_tlc.to_spark_dataframe()).pandas_api()
 
 #nyc_tlc_df.info()
+
+df = nyc_tlc.to_spark_dataframe()\
+.where('month(lpepPickupDatetime) == 6')
+display(df)
