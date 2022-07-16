@@ -42,6 +42,12 @@ df=spark.sql("select * from delta.`/mnt/gca-assets-lakehouse/marts/schedule_info
 .withColumn('part_date', date_format('Last_updated_time_in_Azure',"MMMM"))\
 .withColumn("Last_updated_time_in_Azure",from_utc_timestamp(current_timestamp(),'Europe/Stockholm'))\
 
+
+.withColumn("Organisationsnamn", when(df.CompanyId == "2520362","PBM")
+                                 .when(df.lineNumber == "2520375","Bemce")
+                                 .when(df.lineNumber=="2680244" ,"PPÖ")
+                                 .otherwise("error"))
+
 df.display()
 
 df.display()
