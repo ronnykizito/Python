@@ -1,4 +1,5 @@
 
+tuple(list(df.toPandas()['Organisationsnamn'].unique()))
 
 from multiprocessing.pool import ThreadPool
 parallels=ThreadPool(8)
