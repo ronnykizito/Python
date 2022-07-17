@@ -52,7 +52,10 @@ when passengerCount between 2 and 3 then '2and3' else 'test' end
 df = nyc_tlc.to_spark_dataframe()\
 .withColumn("casewhere", expr(casewhen))\
 
-df.display()
+from pyspark.sql import functions as F
 
-df.display()
+df = spark.read.format('csv')\
+.option("header",True)\
+.option("delimiter",';')\
+.load('/mnt/dev/source-systems/test/*.csv').withColumn("filename", F.input_file_name())
 ############################################################################################
