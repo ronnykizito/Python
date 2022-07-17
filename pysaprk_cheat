@@ -46,7 +46,7 @@ df=spark.sql("select * from delta.`/mnt/gca-assets-lakehouse/marts/schedule_info
 
 casewhen="""
 case when passengerCount =1 then 'one' 
-when passengerCount between 2 and 3 then '2and3' else 'test' end as yes
+when passengerCount between 2 and 3 then '2and3' else 'test' end 
 """
 
 df = nyc_tlc.to_spark_dataframe()\
