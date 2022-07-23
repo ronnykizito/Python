@@ -15,6 +15,21 @@ notebooks=["/Repos/gca-projects/azure-sas-prod/Analytic_Env/02_segments/04_cos_m
            "/Repos/gca-projects/azure-sas-prod/Analytic_Env/02_segments/03_cos_womenswear_segments"]
 pool = ThreadPool(len(notebooks))
 pool.map(lambda path: dbutils.notebook.run(path, timeout_seconds= 6000, arguments={"input-data": path}),notebooks)
+
+
+
+multi argument
+
+from multiprocessing.dummy import Pool as ThreadPool 
+import itertools
+
+def test_fuction(i, x):
+    print(i, "---", x)
+
+pool = ThreadPool(72)
+pool.starmap(test_fuction, itertools.product(periods,CompanyIds)) 
+pool.close() 
+pool.join()
 ############################################################################################
 
 from pyspark.sql.functions import *
