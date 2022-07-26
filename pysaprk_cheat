@@ -29,16 +29,13 @@ pool.map(lambda path: dbutils.notebook.run(path, timeout_seconds= 6000, argument
 
 multi argument
 
-from multiprocessing.dummy import Pool as ThreadPool 
+from multiprocessing.dummy import Pool as ThreadPool
 import itertools
 
-def test_fuction(i, x):
-    print(i, "---", x)
-
-pool = ThreadPool(72)
-pool.starmap(test_fuction, itertools.product(periods,CompanyIds)) 
-pool.close() 
-pool.join()
+pool = ThreadPool(16)
+pool.starmap(get_data_from_vismanet_glt, itertools.product(periods,CompanyIds))
+pool.close()
+pool.join() 
 ############################################################################################
 
 from pyspark.sql.functions import *
