@@ -48,6 +48,9 @@ group_by_cols=["Job_scheduled"]
 
 df=spark.sql("select * from delta.`/mnt/gca-assets-lakehouse/marts/schedule_info`")\
 .withColumn("index",row_number().over(Window.orderBy(monotonically_increasing_id())))\
+.withColumn("index",monotonically_increasing_id()+1)\
+.withColumn("cum_",row_number().over(Window.partitionBy(group_by_cols).orderBy("kontonivå3")))\
+.withColumn("hash_key",sha2(col("kontonivå3").cast("string"),512))\
 .withColumn('ct',F.count("*").over(Window.partitionBy(group_by_cols)))\
 .withColumn('SumIndex',F.sum('index').over(Window.partitionBy(group_by_cols)))\
 .withColumn('MaxIndex',F.max('index').over(Window.partitionBy(group_by_cols)))\
