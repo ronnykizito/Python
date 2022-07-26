@@ -85,3 +85,6 @@ df = spark.read.format('csv')\
 .option("delimiter",';')\
 .load('/mnt/dev/source-systems/test/*.csv').withColumn("filename", F.input_file_name())
 ############################################################################################
+
+pivot_columns = ['Period','Type','Account','Cost Center','Market','Business Unit','Product']
+df = ps.melt(df, id_vars=pivot_columns, var_name="Objecttypbeskrivning", value_name="Budget")
