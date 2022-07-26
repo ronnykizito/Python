@@ -67,6 +67,9 @@ df=spark.sql("select * from delta.`/mnt/gca-assets-lakehouse/marts/schedule_info
 .withColumn("Last_updated_time_in_Azure",from_utc_timestamp(current_timestamp(),'Europe/Stockholm'))\
 
 
+for col_name in df.columns:df = df.withColumn(col_name, df[col_name].cast(StringType()))
+
+
 casewhen="""
 case when passengerCount =1 then 'one' 
 when passengerCount between 2 and 3 then '2and3' else 'test' end 
