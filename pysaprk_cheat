@@ -68,6 +68,7 @@ df=spark.sql("select * from delta.`/mnt/gca-assets-lakehouse/marts/schedule_info
 .withColumn('split', split(col('Destination'), '_').getItem(0))\
 .withColumn('part_date', date_format('Last_updated_time_in_Azure',"MMMM"))\
 .withColumn("Last_updated_time_in_Azure",from_utc_timestamp(current_timestamp(),'Europe/Stockholm'))\
+.sort(['Value','ID'], ascending=[False,True])
 
 
 for col_name in df.columns:df = df.withColumn(col_name, df[col_name].cast(StringType()))
