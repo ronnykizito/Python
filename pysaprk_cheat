@@ -72,6 +72,8 @@ df=spark.sql("select * from delta.`/mnt/gca-assets-lakehouse/marts/schedule_info
 
 for col_name in df.columns:df = df.withColumn(col_name, df[col_name].cast(StringType()))
 
+=spark.sql(read_sql_query).drop_duplicates(['Verifikationsnr','Konto','Organisationsnamn','Belopp'])
+
 
 casewhen="""
 case when passengerCount =1 then 'one' 
