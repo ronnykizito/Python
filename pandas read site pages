@@ -1,0 +1,26 @@
+CompanyId=''
+page=1
+finale_list=[]
+while True:
+  headers={'Authorization': 'Bearer ' + dbutils.secrets.get(scope = "tokenvismanet", key = "tokenvismanet"),
+  "Accept":"application/json",
+  "Ipp-application-type":"Visma.net Financials",
+  "Ipp-company-id": str(CompanyId)}
+  url='https://integration.visma.net/API/controller/api/v1/GeneralLedgerTransactions?ledger=1&fromPeriod='+str(202207)+'&toPeriod='+str(202207)+'&pageNumber='+str(page)
+
+  response=requests.get(url=url,headers = headers)
+  data=response.json()
+
+  if len(data)==0:
+    break 
+
+  finale_list.extend(data)
+  page=page+1
+
+df=pd.json_normalize(finale_list, meta='All',
+                             meta_prefix='level1_',
+                             record_path =,
+                             record_prefix=,
+                             errors='ignore')
+
+display(df)
