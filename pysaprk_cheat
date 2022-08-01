@@ -76,6 +76,9 @@ for col_name in df.columns:df = df.withColumn(col_name, df[col_name].cast(String
 df = spark.createDataFrame(data).sort(['Value'], ascending=[False]).drop_duplicates(['Category','ID'])\
 
 
+df = spark.createDataFrame([("mytest", 34)], ["createdby", "age"]).drop('age')\
+.withColumn("updated",from_utc_timestamp(current_timestamp(),'Europe/Stockholm'))
+
 casewhen="""
 case when passengerCount =1 then 'one' 
 when passengerCount between 2 and 3 then '2and3' else 'test' end 
