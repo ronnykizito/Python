@@ -1,0 +1,19 @@
+filename cvetemp "&_outfile.";
+
+data &saslib.;
+length business_partner_id $10 online_profit_12m 8 online_frequency_12m 8 
+online_return_rate_12m 8 profit_online_value_segment $32 
+profit_online_frequency_segment $4 country $2 last_updated 8 ;
+infile cvetemp
+delimiter = ","
+missover 
+dsd
+firstobs=2;
+informat last_updated yymmdd10.;
+format last_updated yymmdd10.;
+
+ 
+input business_partner_id online_profit_12m online_frequency_12m online_return_rate_12m 
+profit_online_value_segment profit_online_frequency_segment country last_updated ;
+ 
+run;
