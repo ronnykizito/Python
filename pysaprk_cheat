@@ -97,3 +97,28 @@ df = spark.read.format('csv')\
 
 pivot_columns = ['Period','Type','Account','Cost Center','Market','Business Unit','Product']
 df = ps.melt(df, id_vars=pivot_columns, var_name="Objecttypbeskrivning", value_name="Budget")
+
+readcsv
+from pyspark.sql.functions import *
+from pyspark.sql import Window,functions as F
+from pyspark.sql.types import *
+
+df = spark.read.format("csv")\
+.option("header",True)\
+.option("inferSchema",False)\
+.option("delimiter",",")\
+.option("treatEmptyValuesAsNulls", False)\
+.option("encoding", "iso-8859-1")\
+.load("/mnt/source-systems/customer-value/from-customer-value/csv")\
+.withColumn("filename", F.input_file_name())\
+.withColumn('last_updated', substring("cve_last_updated",1,10).cast(TimestampType()))\
+.drop("cve_last_updated")\
+.withColumn('split_l', split(col('profit_online_value_segment'), '_').getItem(0))\
+.withColumn('split_r', split(col('profit_online_value_segment'), '_').getItem(1))\
+.withColumn("concat", concat("country",lit("."),"profit_online_frequency_segment","split_r"))\
+.withColumn("online_profit_12m", col("online_profit_12m").cast(DoubleType()))\
+.withColumn("online_return_rate_12m", col("online_return_rate_12m").cast(DoubleType()))\
+.withColumn("online_frequency_12m", col("online_frequency_12m").cast(IntegerType()))\
+.withColumn("casewhen", expr("case when online_frequency_12m between 2 and 7 then '2-7' else 'else' end"))
+
+display(df)
