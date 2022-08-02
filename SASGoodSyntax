@@ -1,3 +1,15 @@
+/* Start timer */
+%let _timer_start = %sysfunc(datetime());
+
+/* Stop timer */ 
+data _null_;
+  dur = datetime() - &_timer_start;
+  put 30*'-' / ' TOTAL DURATION:' dur time13.2 / 30*'-';
+run;
+
+
+
+
 *******************************************************;
 %let Indata_month=Januari Februari Mars April Maj Juni Juli Augusti 
 August September Oktober November December Jan Feb Mar Apr Jun Jul Aug Sept Okt Nov Dec;
