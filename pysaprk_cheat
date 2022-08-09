@@ -123,3 +123,23 @@ df = spark.read.format("csv")\
 .withColumn("casewhen", expr("case when online_frequency_12m between 2 and 7 then '2-7' else 'else' end"))
 
 display(df)
+
+##########################################################################################
+df1=df.withColumn('ct',F.count("*").over(Window.partitionBy('country')))\
+.withColumn('ct_all',F.count("*").over(Window.partitionBy()))\
+.withColumn("pct", col("ct")/col("ct_all"))\
+.dropDuplicates(['country'])\
+.withColumn('ct_country',F.count("*").over(Window.partitionBy()))\
+.sort("country")\
+.withColumn('SumIndex',F.sum('pct').over(Window.partitionBy()))\
+.select('country','ct','ct_all','pct')
+
+%sql
+
+with q1 as (
+select country,count(*) as ct, 1 as id from csv group by 1),
+q2 as (select count(*) as ct_all, 1 as id,count(DISTINCT country) as ct_country from csv)
+
+select q1.*,q2.*, ct/ct_all as ct_pct from q1 join q2 on q1.id=q2.id order by 1
+
+########################################################################################################
