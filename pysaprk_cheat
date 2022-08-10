@@ -96,8 +96,8 @@ df = spark.read.format('csv')\
 .load('/mnt/dev/source-systems/test/*.csv').withColumn("filename", F.input_file_name())
 ############################################################################################
 
-pivot_columns = ['Period','Type','Account','Cost Center','Market','Business Unit','Product']
-df = ps.melt(df, id_vars=pivot_columns, var_name="Objecttypbeskrivning", value_name="Budget")
+pivot_hold_columns = ['Period','Type','Account','Cost Center','Market','Business Unit','Product']
+df = ps.melt(df, id_vars=pivot_hold_columns, var_name="Objecttypbeskrivning", value_name="Budget")
 
 readcsv
 from pyspark.sql.functions import *
