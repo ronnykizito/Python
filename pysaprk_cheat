@@ -143,3 +143,20 @@ q2 as (select count(*) as ct_all, 1 as id,count(DISTINCT country) as ct_country 
 select q1.*,q2.*, ct/ct_all as ct_pct from q1 join q2 on q1.id=q2.id order by 1
 
 ########################################################################################################
+
+#read_sql_query=f'''
+#CREATE database IF NOT EXISTS {database} COMMENT 'This is reporting database fro longrunning jobs' LOCATION "{lakehouse_path}"
+#'''
+
+#spark.sql(read_sql_query)
+
+#spark.sql("DROP TABLE if exists " + database+'.'+table_name)
+#spark.sql("CREATE TABLE  " + database+'.'+table_name + " USING DELTA LOCATION '" + pathToMart + "'")
+
+from delta.tables import *
+# Vaccum (100) means in following command that remove all files older then 100 days from lakehouse.
+
+#deltaTable = DeltaTable.forPath(spark, pathToTable)
+#deltaTable.vacuum(100)
+#optimize_table='''OPTIMIZE delta.`%s`'''%(pathToTable)
+#spark.sql(optimize_table)
