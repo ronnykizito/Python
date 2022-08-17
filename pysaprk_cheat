@@ -150,6 +150,9 @@ select q1.*,q2.*, ct/ct_all as ct_pct from q1 join q2 on q1.id=q2.id order by 1
 
 #spark.sql(read_sql_query)
 
+spark.sql(f"drop table if exists {business_assets_db}.{test}")
+spark.sql(f"create table {business_assets_db}.{test} using delta location '{delta_path}' ")
+
 #spark.sql("DROP TABLE if exists " + database+'.'+table_name)
 #spark.sql("CREATE TABLE  " + database+'.'+table_name + " USING DELTA LOCATION '" + pathToMart + "'")
 
