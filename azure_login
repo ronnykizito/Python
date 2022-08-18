@@ -1,0 +1,45 @@
+import pandas as pd
+
+the_scope_name='gca-scopename-prod'
+
+#######################################################################################################################################
+#the principal should a role of Storage Blob Data Contributor to the ADLS Gen2 storage account, don’t forget to give the SP access to the keyvault
+#######################################################################################################################################
+
+the_service_principal_clientid=dbutils.secrets.get(scope =the_scope_name, key = "gca-service-principal-clientid")
+
+the_service_principal_tenantid=dbutils.secrets.get(scope =the_scope_name, key = "gca-service-principal-tenantid")
+
+the_service_principal_secret=dbutils.secrets.get(scope =the_scope_name, key = "gca-service-principal-secretid")
+
+
+#######################################################################################################################################
+
+# https://adb-7611417985607633.13.azuredatabricks.net/?o=7611417985607633#/secrets/createScope
+
+#######################################################################################################################################
+#######################################################################################################################################
+# Dont change below
+#######################################################################################################################################
+
+configs = {"fs.azure.account.auth.type": "OAuth",
+          "fs.azure.account.oauth.provider.type": "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider",
+          "fs.azure.account.oauth2.client.id": the_service_principal_clientid,
+          "fs.azure.account.oauth2.client.secret": the_service_principal_secret,
+          "fs.azure.account.oauth2.client.endpoint": "https://login.microsoftonline.com/"+the_service_principal_tenantid+"/oauth2/token"}
+
+
+##change here
+
+#the_container_name='business-assets-lakehouse'
+the_container_name='gca-assets-lakehouse'
+the_storage_account_name='gcastorageaccountprod'
+
+
+
+# Optionally, you can add <directory-name> to the source URI of your mount point.
+dbutils.fs.mount(
+  source = "abfss://"+the_container_name+"@"+the_storage_account_name+".dfs.core.windows.net/",
+  mount_point = "/mnt/"+the_container_name,
+  extra_configs = configs)
+dbutils.fs.ls("/mnt/"+the_container_name)
