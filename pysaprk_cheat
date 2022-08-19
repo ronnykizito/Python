@@ -7,8 +7,10 @@ end_date = date.today() #+ offsets.YearEnd()
 periods = [dt.strftime("%Y%m") for dt in rrule(MONTHLY, dtstart=start_date,until=end_date+relativedelta(months=0))]
 
 for col_name in df.columns: df = df.withColumn(col_name, df[col_name].cast(StringType()))
-for col_name in cast_as_decimal: df = df.withColumn(col_name, df[col_name].cast(DoubleType()))
-for col_name in cast_as_int: df = df.withColumn(col_name, df[col_name].cast(IntegerType()))
+for col_name in cast_as_DoubleType: df = df.withColumn(col_name, df[col_name].cast(DoubleType()))
+for col_name in cast_as_IntegerTyp: df = df.withColumn(col_name, df[col_name].cast(IntegerType()))
+for col_name in cast_as_TimestampType: df = df.withColumn(col_name, df[col_name].cast(TimestampType()))
+for col_name in cast_as_DateType: df = df.withColumn(col_name, df[col_name].cast(DateType()))
 
 #https://docs.microsoft.com/en-us/azure/open-datasets/dataset-us-population-zip?tabs=azureml-opendatasets
 
