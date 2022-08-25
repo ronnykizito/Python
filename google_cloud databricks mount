@@ -25,6 +25,11 @@ df = spark.read.format("csv")\
 .load("gs://ronsen_bucket/business-assets/pbidata/MicrodebAB2020.csv")
 display(df)
 
+df.write.format("delta")\
+.option("overwriteSchema","True")\
+.mode("overwrite")\
+.save("gs://ronsen_bucket/business-assets/delta/hello_world")
+
 ########
 BigQuery Read Session User
 BigQuery Data Viewer
@@ -34,3 +39,23 @@ BigQuery Job User
 BigQuery Data Editor
 storage admin
 bigquery admin
+
+
+###############################
+read bigquery
+df = (
+spark.read
+.format("bigquery")
+.option("credentialsFile",gcp_credentials)
+.option("parentProject","ronsen")
+.option("project", "ronsen")
+.option("dataset","mydata_test")
+.option("table","mytable2")
+.load()
+)
+
+display(df)
+
+
+
+
