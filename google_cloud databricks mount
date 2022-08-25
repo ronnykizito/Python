@@ -24,3 +24,13 @@ df = spark.read.format("csv")\
 .option("encoding", "iso-8859-1")\
 .load("gs://ronsen_bucket/business-assets/pbidata/MicrodebAB2020.csv")
 display(df)
+
+########
+BigQuery Read Session User
+BigQuery Data Viewer
+To give permission to write data, grant the following roles:
+
+BigQuery Job User
+BigQuery Data Editor
+storage admin
+bigquery admin
