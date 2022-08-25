@@ -1,0 +1,26 @@
+import pandas as pd
+#install fsspec
+#install gcsfs 
+#https://docs.gcp.databricks.com/data/data-sources/google/gcs.html
+
+#####obs when read pyspark use "gs://bucket" when using pandas "gcs://bucket"
+
+gcp_credentials=dbutils.secrets.get(scope ="gca-scopename-prod", key = "gcp-ronsen-credentials")
+spark._jsc.hadoopConfiguration().set("google.cloud.auth.service.account.json.keyfile",gcp_credentials)
+file_path="gcs://ronsen_bucket/business-assets/pbidata/MicrodebAB2020.csv"
+save_to_gcp="gcs://ronsen_bucket/business-assets/pbidata/save_test.csv"
+
+df = pd.read_csv(file_path,encoding='iso-8859-1', sep=";",storage_options={"token":gcp_credentials})
+df['test']="test"
+display(df)
+
+df.to_csv(save_to_gcp,index=False,encoding='iso-8859-1', sep=";",storage_options={"token":gcp_credentials })
+
+df = spark.read.format("csv")\
+.option("header",True)\
+.option("inferSchema",False)\
+.option("delimiter",";")\
+.option("treatEmptyValuesAsNulls", False)\
+.option("encoding", "iso-8859-1")\
+.load("gs://ronsen_bucket/business-assets/pbidata/MicrodebAB2020.csv")
+display(df)
