@@ -1,4 +1,45 @@
 import pandas as pd
+from google.cloud import bigquery
+import os
+#install fsspec
+#install gcsfs 
+#google-cloud-bigquery
+#install pandas-gbq
+#https://docs.gcp.databricks.com/data/data-sources/google/gcs.html
+gcp_credentials=dbutils.secrets.get(scope ="gca-scopename-prod", key = "gca-gcp-service-principal-test")
+spark._jsc.hadoopConfiguration().set("google.cloud.auth.service.account.json.keyfile",gcp_credentials)
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=gcp_credentials
+client=bigquery.Client()
+df.to_gbq("ronsen.mydata_test.mytable4",if_exists="replace")
+
+df1 = (
+spark.read
+.format("bigquery")
+.option("parentProject","ronsen")
+.load("ronsen.mydata_test.mytable2")
+    
+)
+display(df1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
 #install fsspec
 #install gcsfs 
 #https://docs.gcp.databricks.com/data/data-sources/google/gcs.html
