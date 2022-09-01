@@ -125,6 +125,7 @@ df = spark.read.format("csv")\
 .withColumn("online_return_rate_12m", col("online_return_rate_12m").cast(DoubleType()))\
 .withColumn("online_frequency_12m", col("online_frequency_12m").cast(IntegerType()))\
 .withColumn("casewhen", expr("case when online_frequency_12m between 2 and 7 then '2-7' else 'else' end"))
+.withColumn('v1', regexp_replace('v1', 'a', 'AAA'))
 
 
 for col_name in df.columns: df = df.withColumn(col_name, df[col_name].cast(StringType())) # Assign String type to all variables of a table
