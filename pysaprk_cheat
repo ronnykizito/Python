@@ -126,6 +126,15 @@ df = spark.read.format("csv")\
 .withColumn("online_frequency_12m", col("online_frequency_12m").cast(IntegerType()))\
 .withColumn("casewhen", expr("case when online_frequency_12m between 2 and 7 then '2-7' else 'else' end"))
 
+
+for col_name in df.columns: df = df.withColumn(col_name, df[col_name].cast(StringType())) # Assign String type to all variables of a table
+for col_name in cast_as_integer: df = df.withColumn(col_name, df[col_name].cast(IntegerType())) # Assign Integer type to numeric variables
+for col_name in cast_as_decimal: df = df.withColumn(col_name, df[col_name].cast(DoubleType())) # Assign Dobule type to decimal variables
+for col_name in cast_as_timestamp: df = df.withColumn(col_name, df[col_name].cast(TimestampType())) # Assign Datetime type to Date or Datetime variables
+
+df=df.na.fill(value=0) #Replace 0 for null for all integer columns. Otherwise PowerBI can define them as text 
+df=df.na.fill("") #Replace null with empty for all text columns
+
 display(df)
 
 ##########################################################################################
