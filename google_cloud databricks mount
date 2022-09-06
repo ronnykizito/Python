@@ -22,6 +22,15 @@ spark.read
 display(df1)
 
 
+spark.sql("select * from delta.`/mnt/business-assets-lakehouse/history/loyalty_reward_mart` limit 500000")\
+.write\
+ .format("bigquery")\
+.option("parentProject","gca-test-project-11ff")\
+.option("temporaryGcsBucket", 'temp_bucket_dbricks/mytest')\
+ .mode("overwrite")\
+.save("gca-test-project-11ff.mytesting.pyspark_")
+
+
 
 
 
