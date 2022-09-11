@@ -180,3 +180,22 @@ from delta.tables import *
 #deltaTable.vacuum(100)
 #optimize_table='''OPTIMIZE delta.`%s`'''%(pathToTable)
 #spark.sql(optimize_table)
+
+
+from pyspark import pandas as ps
+from geopy.geocoders import Nominatim
+geolocator = Nominatim(user_agent="geoapiExercises")
+def city_state_country(row):
+    coord = f"{row['LATITUDE']}, {row['LONGITUDE']}"
+    location = geolocator.reverse(coord, exactly_one=True)
+    address = location.raw['address']
+    city = address.get('city', '')
+    state = address.get('state', '')
+    country = address.get('country', '')
+    row['city'] = city
+    row['state'] = state
+    row['country'] = country
+    return row
+
+df = (df.pandas_api().apply(city_state_country, axis=1)).to_spark()
+display(df)
