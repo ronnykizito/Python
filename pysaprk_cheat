@@ -79,6 +79,34 @@ df=spark.sql("select * from delta.`/mnt/gca-assets-lakehouse/marts/schedule_info
 .withColumn('ar', substring("CLOSED_DATE",6,4))\
 .withColumn('monthNumber', date_format(to_date(col('man'), 'MMM'), 'MM'))\
 
+
+casewhen="""
+case 
+when man ="JAN" then '01' 
+when man ="FEB" then '02'
+when man ="MAR" then '03'
+when man ="APR" then '04'
+when man ="MAY" then '05'
+when man ="JUN" then '06'
+when man ="JUL" then '07'
+when man ="AUG" then '08'
+when man ="SEP" then '09'
+when man ="OCT" then '10'
+when man ="NOV" then '11'
+when man ="DEC" then '12'
+
+end 
+"""
+
+for month_col in month_cols:
+    df=df.withColumn("dag", substring(month_col,1,2))\
+    .withColumn('dag', lpad("dag",2, '0'))\
+    .withColumn("man", upper(substring(month_col,4,3)))\
+    .withColumn("ar", substring(month_col,8,4))\
+    .withColumn("monthnr", expr(casewhen))\
+    .withColumn(month_col, concat("ar",lit("-"),"monthnr",lit("-"),"dag"))\
+    .drop('dag','man','ar','monthnr')
+
 for col_name in df.columns:df = df.withColumn(col_name, df[col_name].cast(StringType()))
 
 df = spark.createDataFrame(data).sort(['Value'], ascending=[False]).drop_duplicates(['Category','ID'])\
