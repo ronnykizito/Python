@@ -13,3 +13,10 @@ for file in filenames:
     df=df.append(df1,ignore_index=True)
     
 print(df)
+
+
+path="/mnt/powerbi/test/excel/MicrobdeAB2020.xlsx"
+
+
+df=spark.read.format("com.crealytics.spark.excel").option("header",True).option("inferSchema",False).load(path)
+display(df)
