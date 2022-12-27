@@ -1,0 +1,10 @@
+path=""
+
+filenames=glob.glob(path + "\*.xlsx"
+
+df=pd.Dataframe()
+
+for file in filenamnes:
+df1=pd.concat(pd.read_excel(file, sheetname=None), ignore_index=True, sort=False)
+df1['filename']=file
+df=df.append(df1,ignore_index=True)
