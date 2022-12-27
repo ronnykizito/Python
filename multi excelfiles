@@ -1,10 +1,15 @@
-path=""
+import pandas as pd
+import glob 
 
-filenames=glob.glob(path + "\*.xlsx"
+path=r"C:\Users\PC\Esron BI Analyzr AB\Gruppwebbplats - Dokument\Microdeb\Indata\Fortnox\MicrodebAB"
 
-df=pd.Dataframe()
+filenames=glob.glob(path + "\*.xlsx")
 
-for file in filenamnes:
-df1=pd.concat(pd.read_excel(file, sheetname=None), ignore_index=True, sort=False)
-df1['filename']=file
-df=df.append(df1,ignore_index=True)
+df=pd.DataFrame()
+
+for file in filenames:
+    df1=pd.concat(pd.read_excel(file, sheet_name=None), ignore_index=True, sort=False)
+    df1['filename']=file
+    df=df.append(df1,ignore_index=True)
+    
+print(df)
