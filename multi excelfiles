@@ -1,4 +1,30 @@
 import pandas as pd
+
+
+df=pd.DataFrame()
+path="/mnt/powerbi/test/excel"
+
+for filename in dbutils.fs.ls(path):
+  file_name=f"/dbfs{path}/{filename.name}"
+  sheet_names = [sheet for sheet in pd.ExcelFile(file_name).sheet_names]
+
+  for sheet_name in sheet_names:
+    df1=pd.read_excel(file_name,sheet_name=sheet_name,engine='openpyxl',dtype="str")
+    df1["path"]=file_name
+    df1['filename']=f"{filename.name}"
+    df1['sheet_name']=sheet_name
+    
+	
+	
+    df=df.append(df1,ignore_index=True)
+
+
+
+
+
+
+
+import pandas as pd
 import glob 
 
 path=r"C:\Users\PC\Esron BI Analyzr AB\Gruppwebbplats - Dokument\Microdeb\Indata\Fortnox\MicrodebAB"
