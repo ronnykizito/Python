@@ -1,1 +1,35 @@
 
+
+from pathlib import Path
+
+def save_format_with_user_friendly_name(delta_path_table):
+  table_name=Path(delta_path_table).stem
+  file_format='parquet'
+  outfile_path=f"/mnt/powerbi/test/parquet/{table_name}" #change here
+  temp_folder=f'/mnt/powerbi/test/temp/{table_name}'    #change here
+  dbutils.fs.rm(outfile_path+"."+file_format)
+
+  
+
+  spark.read.format("delta")\
+  .load(delta_path_table)\
+  .coalesce(1).write \
+  .format(file_format) \
+  .mode("overwrite") \
+  .save(temp_folder)
+
+  files=dbutils.fs.ls(temp_folder)
+  temp_file=[x.path for x in files if x.path.endswith(f".{file_format}")][0]
+  dbutils.fs.mv(temp_file, outfile_path.rstrip('/') + "."+file_format)
+  dbutils.fs.rm(temp_folder, recurse=True)
+
+
+from multiprocessing.pool import ThreadPool
+parallels=ThreadPool(8)
+
+delta_path_tables=['/mnt/powerbi/bronze/delta/sharepoint/koddelar_vismanet_effectplan',
+'/mnt/powerbi/bronze/delta/vismanet/glt']
+
+parallels.map(save_format_with_user_friendly_name, [delta_path_table for delta_path_table in delta_path_tables])
+
+
