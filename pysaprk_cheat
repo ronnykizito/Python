@@ -25,9 +25,7 @@ parallels=ThreadPool(2)
 
 parallels.map(export_segments_to_sas, gender_wear)
 
-from multiprocessing.pool import ThreadPool
-parallels=ThreadPool(8)
-parallels.map(UDF, [company for company in companys])
+
 
 
 
