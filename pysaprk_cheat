@@ -236,3 +236,18 @@ def city_state_country(row):
 
 df = (df.pandas_api().apply(city_state_country, axis=1)).to_spark()
 display(df)
+
+json normalization
+
+def create_delta_files(period,CompanyId):
+  global df
+  getdata_vismanet(period,CompanyId)
+  df =spark.createDataFrame( pd.json_normalize(finale_list))
+  
+  df=df.withColumn("CompanyId", lit(CompanyId))\
+  .withColumn("organisation_name", expr("case when CompanyId=2520375 then 'Bemce' \
+  when CompanyId=2520362 then 'PBM'  when CompanyId=2680244 then 'PPÖ' else 'Error' end"))\
+  .withColumn("updated",from_utc_timestamp(current_timestamp(),'Europe/Stockholm'))\
+  .withColumn("selected_year", substring("period",1,4))\
+  .withColumn("selected_period",  lit(period))
+
