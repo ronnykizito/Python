@@ -16,9 +16,20 @@ for col_name in cast_as_DateType: df = df.withColumn(col_name, df[col_name].cast
 
 tuple(list(df.toPandas()['Organisationsnamn'].unique()))
 
+
+gender_wear=["Menswear","Womenswear"]
+
+from multiprocessing.pool import ThreadPool
+parallels=ThreadPool(2)
+
+
+parallels.map(export_segments_to_sas, gender_wear)
+
 from multiprocessing.pool import ThreadPool
 parallels=ThreadPool(8)
 parallels.map(UDF, [company for company in companys])
+
+
 
 
 
