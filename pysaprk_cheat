@@ -41,6 +41,8 @@ notebooks=["/Repos/gca-projects/azure-sas-prod/Analytic_Env/02_segments/04_cos_m
 pool = ThreadPool(len(notebooks))
 pool.map(lambda path: dbutils.notebook.run(path, timeout_seconds= 6000, arguments={"input-data": path}),notebooks)
 
+dbutils.notebook.run("/Repos/rapporter@pbm.se/PBM_REPORTS_PROD/test1", 60, {"widget_name": "my-data"})
+
 
 
 
