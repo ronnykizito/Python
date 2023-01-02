@@ -33,10 +33,15 @@ parallels.map(export_segments_to_sas, gender_wear)
 
 from multiprocessing.pool import ThreadPool
 
-notebooks=["/Repos/gca-projects/azure-sas-prod/Analytic_Env/02_segments/04_cos_menswear_segments",
+dbutils.widgets.text("widget_name","")
+my_var=dbutils.widgets.get("widget_name")
+
+notebooks=["/Repos/gca-projects/azure-sas-prod/Analytic_Env/02_segments/04_cos_menswear_segments" $widget_name="test",
            "/Repos/gca-projects/azure-sas-prod/Analytic_Env/02_segments/03_cos_womenswear_segments"]
 pool = ThreadPool(len(notebooks))
 pool.map(lambda path: dbutils.notebook.run(path, timeout_seconds= 6000, arguments={"input-data": path}),notebooks)
+
+
 
 
 
