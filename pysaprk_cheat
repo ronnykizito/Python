@@ -173,6 +173,9 @@ for col_name in cast_as_integer: df = df.withColumn(col_name, df[col_name].cast(
 for col_name in cast_as_decimal: df = df.withColumn(col_name, df[col_name].cast(DoubleType())) # Assign Dobule type to decimal variables
 for col_name in cast_as_timestamp: df = df.withColumn(col_name, df[col_name].cast(TimestampType())) # Assign Datetime type to Date or Datetime variables
 
+df=df.toDF(*(c.replace('.', '_') for c in df.columns))
+  df=df.select([F.col(col).alias(col.lower()) for col in df.columns])\
+
 df=df.na.fill(value=0) #Replace 0 for null for all integer columns. Otherwise PowerBI can define them as text 
 df=df.na.fill("") #Replace null with empty for all text columns
 
