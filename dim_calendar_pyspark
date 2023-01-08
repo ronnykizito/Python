@@ -1,4 +1,135 @@
 # Databricks notebook source
+
+#EEE MMM
+from pyspark.sql.types import *
+
+from pyspark.sql.functions import *
+from pyspark.sql import Window,functions as F
+beginDate = '2023-01-01'
+endDate = '2024-12-31'
+
+#https://www.obstkel.com/spark-sql-date-functions
+#https://dwgeek.com/spark-sql-date-and-timestamp-functions-and-examples.html/
+#https://towardsdatascience.com/the-most-useful-date-manipulation-functions-in-spark-7d827f790b
+
+df=spark.sql(f"select explode(sequence(to_date('{beginDate}'), to_date('{endDate}'), interval 1 day)) as date")\
+.withColumn("Last_updated_time_in_Azure",from_utc_timestamp(current_timestamp(),'Europe/Stockholm'))\
+.withColumn('date_key',date_format('date', 'yyyyMMdd').cast(IntegerType()))\
+.withColumn("first_date_of_year", trunc("date", "year"))\
+.withColumn("last_date_of_year", concat(year("date"),lit("-12-31")).cast(DateType()))\
+.withColumn("first_date_of_quarter", trunc("date", "quarter"))\
+.withColumn("last_date_of_quarter", add_months(last_day("first_date_of_quarter"),2))\
+.withColumn("first_date_of_month", trunc("date", "month"))\
+.withColumn("last_date_of_month", last_day("Date"))\
+.withColumn("first_date_of_week", trunc("date", "week"))\
+.withColumn("last_date_of_week", date_add("first_date_of_week",6))\
+.withColumn('date_of_same_weekday_last_year', date_add("date", -364))\
+.withColumn("first_date_of_same_weekday_last_year", trunc("date_of_same_weekday_last_year", "week"))\
+.withColumn("last_date_of_same_weekday_last_year", date_add("first_date_of_same_weekday_last_year",6))\
+.withColumn('year_code', year('date'))\
+.withColumn("quarter_code", concat(date_format('date', 'yyyy'),lpad(quarter("date"),2, '0')).cast(IntegerType()))\
+.withColumn('month_code',date_format('date', 'yyyyMM').cast(IntegerType()))\
+.withColumn('month_nummer', lpad(month('date'),2,"0"))\
+.withColumn('week_code', concat(year("date"), lpad(weekofyear('date'),2,"0")).cast(IntegerType()))\
+.withColumn('week_number', lpad(weekofyear('date'),2,"0"))\
+.withColumn('week_name', concat(lit("W"),"week_number"))\
+.withColumn('week_long_name', concat("year_code","week_name"))\
+.withColumn("is_leap_year",year("date") )\
+.withColumn('quater_number', lpad(quarter("date"),2,"0"))\
+.withColumn("quater_name", concat(lit("Q"),quarter("date")))\
+.withColumn("quater_code", concat(date_format('date', 'yyyy'),"quater_name"))\
+.withColumn("month_name_english_long",date_format("date", "MMMM")) \
+.withColumn("month_name_english_short",date_format("date", "MMM")) \
+.withColumn('month_name_swedish_long', F.to_csv(F.struct('date'), {'dateFormat': 'MMMM', 'locale': 'sv'}))\
+.withColumn('month_name_swedish_short', F.to_csv(F.struct('date'), {'dateFormat': 'MMM', 'locale': 'sv'}))\
+.withColumn("number_of_days_in_month",dayofmonth("last_date_of_month") )\
+.withColumn('day_of_year', dayofyear('date'))\
+.withColumn('day_of_month', dayofmonth('date'))\
+.withColumn('day_of_week', F.expr('weekday(date) + 1'))\
+.withColumn('day_of_quarter', datediff(date_add("last_date_of_quarter",1),"date"))\
+.withColumn("week_name_english_long",date_format("date", "EEEE")) \
+.withColumn("week_name_english_short",date_format("date", "EEE")) \
+.withColumn('week_name_swedish_long', F.to_csv(F.struct('date'), {'dateFormat': 'EEEE', 'locale': 'sv'}))\
+.withColumn('week_name_swedish_short', F.to_csv(F.struct('date'), {'dateFormat': 'EEE', 'locale': 'sv'}))\
+.withColumn('week_name_swedish_short', F.to_csv(F.struct('date'), {'dateFormat': 'EEE', 'locale': 'sv'}))\
+.withColumn('previous_date', date_add("date", -1))\
+.withColumn("last_year_date", add_months("date",-12))\
+.withColumn("first_date_of_last_year", trunc("last_year_date", "year"))\
+.withColumn("last_date_of_last_year", concat(year("first_date_of_last_year"),lit("-12-31")).cast(DateType()))\
+.withColumn("previous_month_date", add_months("date",-1))\
+.withColumn("previous_month_date_start", trunc("previous_month_date", "month"))\
+.withColumn("previous_month_date_end", last_day("previous_month_date_start"))\
+.withColumn('previous_WEEK', date_add("date", -7))\
+.select([F.col(col).alias(col.lower()) for col in df.columns])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+display(df)
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import pandas as pd
 from datetime import datetime
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType,DateType,TimestampType, LongType,DoubleType
