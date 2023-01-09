@@ -1,5 +1,3 @@
-# Databricks notebook source
-
 #EEE MMM
 from pyspark.sql.types import *
 
@@ -34,7 +32,6 @@ df=spark.sql(f"select explode(sequence(to_date('{beginDate}'), to_date('{endDate
 .withColumn('week_number', lpad(weekofyear('date'),2,"0"))\
 .withColumn('week_name', concat(lit("W"),"week_number"))\
 .withColumn('week_long_name', concat("year_code","week_name"))\
-.withColumn("is_leap_year",year("date") )\
 .withColumn('quater_number', lpad(quarter("date"),2,"0"))\
 .withColumn("quater_name", concat(lit("Q"),quarter("date")))\
 .withColumn("quater_code", concat(date_format('date', 'yyyy'),"quater_name"))\
@@ -44,14 +41,20 @@ df=spark.sql(f"select explode(sequence(to_date('{beginDate}'), to_date('{endDate
 .withColumn('month_name_swedish_short', F.to_csv(F.struct('date'), {'dateFormat': 'MMM', 'locale': 'sv'}))\
 .withColumn("number_of_days_in_month",dayofmonth("last_date_of_month") )\
 .withColumn('day_of_year', dayofyear('date'))\
+.withColumn('ct',F.count("*").over(Window.partitionBy('quater_code')))\
+.withColumn('days_of_quarter', datediff(date_add("last_date_of_quarter",1),"date"))\
+.withColumn('day_of_quarter',col('ct')-col('days_of_quarter')+lit(1))\
+.drop('days_of_quarter','ct')\
 .withColumn('day_of_month', dayofmonth('date'))\
 .withColumn('day_of_week', F.expr('weekday(date) + 1'))\
-.withColumn('day_of_quarter', datediff(date_add("last_date_of_quarter",1),"date"))\
 .withColumn("week_name_english_long",date_format("date", "EEEE")) \
 .withColumn("week_name_english_short",date_format("date", "EEE")) \
 .withColumn('week_name_swedish_long', F.to_csv(F.struct('date'), {'dateFormat': 'EEEE', 'locale': 'sv'}))\
 .withColumn('week_name_swedish_short', F.to_csv(F.struct('date'), {'dateFormat': 'EEE', 'locale': 'sv'}))\
-.withColumn('week_name_swedish_short', F.to_csv(F.struct('date'), {'dateFormat': 'EEE', 'locale': 'sv'}))\
+.withColumn('MaxIndex',F.max('day_of_year').over(Window.partitionBy(['year_code'])))\
+.withColumn("is_leap_year",expr("case when MaxIndex>365 then 'true' else 'false' end " ) )\
+.withColumn("is_weekend",expr("case when week_name_swedish_short in ('lö','sö') then 'true' else 'false' end " ) )\
+.drop("MaxIndex")\
 .withColumn('previous_date', date_add("date", -1))\
 .withColumn("last_year_date", add_months("date",-12))\
 .withColumn("first_date_of_last_year", trunc("last_year_date", "year"))\
@@ -60,8 +63,12 @@ df=spark.sql(f"select explode(sequence(to_date('{beginDate}'), to_date('{endDate
 .withColumn("previous_month_date_start", trunc("previous_month_date", "month"))\
 .withColumn("previous_month_date_end", last_day("previous_month_date_start"))\
 .withColumn('previous_WEEK', date_add("date", -7))\
-.select([F.col(col).alias(col.lower()) for col in df.columns])
+#.select([F.col(col).alias(col.lower()) for col in df.columns])
 
+
+
+display(df)
+   
 
 
 
@@ -84,8 +91,6 @@ df=spark.sql(f"select explode(sequence(to_date('{beginDate}'), to_date('{endDate
 
 
 
-
-display(df)
    
 
 
