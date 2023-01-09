@@ -16,6 +16,8 @@ for col_name in cast_as_DateType: df = df.withColumn(col_name, df[col_name].cast
 
 tuple(list(df.toPandas()['Organisationsnamn'].unique()))
 
+list(map(lambda x: x.upper(), test))
+
 
 gender_wear=["Menswear","Womenswear"]
 
