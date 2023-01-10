@@ -8,6 +8,107 @@ endDate = '2024-12-31'
 
 #https://www.obstkel.com/spark-sql-date-functions
 #https://dwgeek.com/spark-sql-date-and-timestamp-functions-and-examples.html/
+#https://towardsdatascience.com/the-most-useful-date-manipulation-functions-in-sark-7d827f790b
+
+df=spark.sql(f"select explode(sequence(to_date('{beginDate}'), to_date('{endDate}'), interval 1 day)) as date")\
+.select('*',
+from_utc_timestamp(current_timestamp(),'Europe/Stockholm').alias("Last_updated_time_in_Azure"),
+date_format('date', 'yyyyMMdd').cast(IntegerType()).alias("date_key"),
+trunc("date", "year").alias("first_date_of_year"),
+concat(year("date"),lit("-12-31")).cast(DateType()).alias("last_date_of_year"),
+trunc("date", "quarter").alias("first_date_of_quarter"),
+add_months(last_day("first_date_of_quarter"),2).alias("last_date_of_quarter"),
+trunc("date", "month").alias("first_date_of_month"),
+last_day("Date").alias("last_date_of_month"),
+trunc("date", "week").alias("first_date_of_week"),
+date_add("first_date_of_week",6).alias("last_date_of_week"),
+date_add("date", -364).alias("date_of_same_weekday_last_year"),
+trunc("date_of_same_weekday_last_year", "week").alias("first_date_of_same_weekday_last_year"),
+date_add("first_date_of_same_weekday_last_year",6).alias("last_date_of_same_weekday_last_year"),
+year('date').alias("year_code"),
+concat(date_format('date', 'yyyy'),lpad(quarter("date"),2, '0')).cast(IntegerType()).alias("quarter_code"),
+date_format('date', 'yyyyMM').cast(IntegerType()).alias("month_code"),
+lpad(month('date'),2,"0").alias("month_nummer"),
+concat(year("date"), lpad(weekofyear('date'),2,"0")).cast(IntegerType()).alias("week_code"),
+lpad(weekofyear('date'),2,"0").alias("week_number"),
+concat(lit("W"),"week_number").alias("week_name"),
+concat("year_code","week_name").alias("week_long_name"),
+lpad(quarter("date"),2,"0").alias("quater_number"),
+concat(lit("Q"),quarter("date")).alias("quater_name"),
+concat(date_format('date', 'yyyy'),"quater_name").alias("quater_code"),
+date_format("date", "MMMM").alias("month_name_english_long"),
+date_format("date", "MMM").alias("month_name_english_short"),
+F.to_csv(F.struct('date'), {'dateFormat': 'MMMM', 'locale': 'sv'}).alias("month_name_swedish_long"),
+F.to_csv(F.struct('date'), {'dateFormat': 'MMM', 'locale': 'sv'}).alias("month_name_swedish_short"),
+dayofmonth("last_date_of_month").alias("number_of_days_in_month"),
+dayofyear('date').alias("day_of_year"))\
+.withColumn('ct',F.count("*").over(Window.partitionBy('quater_code')))\
+.select("*",
+datediff(date_add("last_date_of_quarter",1),"date").alias("days_of_quarter"),
+(col('ct')-col('days_of_quarter')+lit(1)).alias("day_of_quarter"),
+dayofmonth('date').alias("day_of_month"),
+F.expr('weekday(date) + 1').alias("day_of_week"),
+date_format("date", "EEEE").alias("week_name_english_long"),
+date_format("date", "EEE").alias("week_name_english_short"),
+F.to_csv(F.struct('date'), {'dateFormat': 'EEEE', 'locale': 'sv'}).alias("week_name_swedish_long"),
+F.to_csv(F.struct('date'), {'dateFormat': 'EEE', 'locale': 'sv'}).alias("week_name_swedish_short"))\
+.withColumn('MaxIndex',F.max('day_of_year').over(Window.partitionBy(['year_code'])))\
+.select("*",
+expr("case when MaxIndex>365 then 'true' else 'false' end " ).alias("is_leap_year"),
+expr("case when week_name_swedish_short in ('lö','sö') then 'true' else 'false' end " ).alias("is_weekend"),
+date_add("date", -1).alias("previous_date"),
+add_months("date",-12).alias("last_year_date"),
+trunc("last_year_date", "year").alias("first_date_of_last_year"),
+concat(year("first_date_of_last_year"),lit("-12-31")).cast(DateType()).alias("last_date_of_last_year"),
+add_months("date",-1).alias("previous_month_date"),
+trunc("previous_month_date", "month").alias("previous_month_date_start"),
+last_day("previous_month_date_start").alias("previous_month_date_end"),
+date_add("date", -7).alias("previous_WEEK")
+
+).drop('days_of_quarter','ct','MaxIndex').select([F.col(col).alias(col.lower()) for col in df.columns])
+
+
+
+display(df)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#EEE MMM
+from pyspark.sql.types import *
+
+from pyspark.sql.functions import *
+from pyspark.sql import Window,functions as F
+beginDate = '2023-01-01'
+endDate = '2024-12-31'
+
+#https://www.obstkel.com/spark-sql-date-functions
+#https://dwgeek.com/spark-sql-date-and-timestamp-functions-and-examples.html/
 #https://towardsdatascience.com/the-most-useful-date-manipulation-functions-in-spark-7d827f790b
 
 df=spark.sql(f"select explode(sequence(to_date('{beginDate}'), to_date('{endDate}'), interval 1 day)) as date")\
