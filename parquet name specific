@@ -1,5 +1,40 @@
 
 
+file_format='csv'
+outfile_path=f"gs://bronze-layer-lakehouse/test/exportdata" #change here
+temp_folder=f'gs://bronze-layer-lakehouse/temp/exportdata'    #change here
+dbutils.fs.rm(outfile_path+"."+file_format)
+
+(
+df.coalesce(1).write.format(file_format)
+.option("overwriteSchema", "True")
+.mode("overwrite")
+.save(temp_folder) #temp_folder
+
+)
+
+
+
+temp_file=[x.path for x in dbutils.fs.ls(temp_folder) if x.path.endswith(f".{file_format}")][0]
+dbutils.fs.mv(temp_file, outfile_path.rstrip('/') + "."+file_format)
+dbutils.fs.rm(temp_folder, recurse=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 from pathlib import Path
 
 def save_format_with_user_friendly_name(delta_path_table):
