@@ -49,6 +49,9 @@ dbutils.notebook.run("/Repos/rapporter@pbm.se/PBM_REPORTS_PROD/test1", 60, {"wid
 
 
 #Run Same Databricks Notebook for Multiple Times In Parallel (Concurrently) Using Python
+
+dbutils.widgets.text("widget_name","")
+input_file=dbutils.widgets.get("widget_name")
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 def execute_parallel_nootbooks(widgetname):
     dbutils.notebook.run(path = nootebook_path,timeout_seconds = 6000, arguments = {"widget_name":widgetname})
