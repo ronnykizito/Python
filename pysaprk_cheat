@@ -48,7 +48,14 @@ pool.map(lambda path: dbutils.notebook.run(path, timeout_seconds= 6000, argument
 dbutils.notebook.run("/Repos/rapporter@pbm.se/PBM_REPORTS_PROD/test1", 60, {"widget_name": "my-data"})
 
 
+#Run Same Databricks Notebook for Multiple Times In Parallel (Concurrently) Using Python
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+def execute_parallel_nootbooks(widgetname):
+    dbutils.notebook.run(path = nootebook_path,timeout_seconds = 6000, arguments = {"widget_name":widgetname})
 
+widgetnames = ["cmp_campaign","lct_print_audiences"]
+with ThreadPoolExecutor() as executor:
+    results = executor.map(execute_parallel_nootbooks, widgetnames)
 
 
 multi argument
