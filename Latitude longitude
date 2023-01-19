@@ -1,3 +1,46 @@
+
+#https://www.meridianoutpost.com/resources/etools/calculators/calculator-latitude-longitude-distance.php?
+#https://stackoverflow.com/questions/70315069/calculate-the-geographical-distance-in-pyspark-dataframe
+from geopy.distance import geodesic
+
+@F.udf(returnType=FloatType())
+def geodesic_udf(a, b):
+    return geodesic(a, b).km
+
+df = spark.read.format("csv")\
+.option("header",True) \
+.option("inferSchema",False) \
+    .option("delimiter",",") \
+    .option("treatEmptyValuesAsNulls", False)\
+    .option("encoding", "iso-8859-1")\
+    .load('/mnt/prod/business-assets/sashelp/test/t3/202211-citibike-tripdata.csv')\
+    .select("*",input_file_name().alias("path"),
+    split(F.element_at(F.split(F.input_file_name(), "/"),-1), '.csv').getItem(0).alias("file_name"),
+     geodesic_udf(F.array("start_lat", "start_lng"), F.array("end_lat", "end_lng")).alias("Lengths/km"),
+    #  col("Lengths/m").alias("test")
+
+
+    )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #df = ps.read_csv('https://s3.amazonaws.com/tripdata/202211-citibike-tripdata.csv.zip',sep=';')
 #https://www.meridianoutpost.com/resources/etools/calculators/calculator-latitude-longitude-distance.php?
 #https://stackoverflow.com/questions/70315069/calculate-the-geographical-distance-in-pyspark-dataframe
