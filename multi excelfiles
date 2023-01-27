@@ -12,6 +12,7 @@ for filename in dbutils.fs.ls(path):
     df1=pd.read_excel(file_name,sheet_name=sheet_name,engine='openpyxl',dtype="str")
     df1["path"]=file_name
     df1['filename']=f"{filename.name}"
+    df1['City']=df1.filename.str.rsplit(".", expand=True)[0]
     df1['sheet_name']=sheet_name
     
 	
