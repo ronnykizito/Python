@@ -6,6 +6,7 @@ start_date =  date.today() - offsets.YearBegin() - relativedelta(years=1)
 end_date = date.today() #+ offsets.YearEnd()
 periods = [dt.strftime("%Y%m") for dt in rrule(MONTHLY, dtstart=start_date,until=end_date+relativedelta(months=0))]
 
+from pyspark.sql.types import StructField, StructType, StringType, IntegerType,DateType,TimestampType, LongType,DoubleType
 for col_name in df.columns: df = df.withColumn(col_name, df[col_name].cast(StringType()))
 for col_name in cast_as_DoubleType: df = df.withColumn(col_name, df[col_name].cast(DoubleType()))
 for col_name in cast_as_IntegerTyp: df = df.withColumn(col_name, df[col_name].cast(IntegerType()))
