@@ -29,6 +29,8 @@ parallels=ThreadPool(2)
 
 parallels.map(export_segments_to_sas, gender_wear)
 
+list from pysaprk datafram:
+oldColumns = df.schema.names
 
 rename multiple columns
 from functools import reduce
