@@ -177,6 +177,21 @@ df = spark.read.format('csv')\
 .load('/mnt/dev/source-systems/test/*.csv').withColumn("filename", F.input_file_name())
 ############################################################################################
 
+
+from pyspark.sql.functions import sum,avg,max,count
+from pyspark.sql.functions import *
+display(
+
+    df.groupBy("product","city","salesrep")
+    .agg(sum("sales").alias("sum_sales"), 
+    avg("sales").alias("avg_sales"),
+    max("sales").alias("max_sales"),
+    count("*").alias("cnt"))\
+    .where("product in ('Carlota') and city in ('Seattle')") 
+    
+
+)
+
 #movingaverage
 
 windowval = Window.partitionBy('year_code').orderBy('month_code').rangeBetween(-2, 0)
