@@ -30,7 +30,19 @@ parallels=ThreadPool(2)
 parallels.map(export_segments_to_sas, gender_wear)
 
 
-
+rename multiple columns
+from functools import reduce
+old_names=["YearMonth","Land","Time_Period"]
+new_names=["Test","country","Time_Periodx"]
+df = spark.read.format("csv")\
+.option("header",True)\
+.option("inferSchema",False)\
+.option("delimiter",";")\
+.option("treatEmptyValuesAsNulls", False)\
+.option("encoding", "iso-8859-1")\
+.load(import_path)\
+.drop("Last_Modified_date_in_sas")
+df=reduce(lambda df, idx: df.withColumnRenamed(old_names[idx], new_names[idx]), range(len(old_names)), df)
 
 
 
