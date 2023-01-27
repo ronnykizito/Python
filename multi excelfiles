@@ -16,7 +16,7 @@ for filename in dbutils.fs.ls(path):
     
 	
 	
-    df=df.append(df1,ignore_index=True)
+    df=pd.concat([df1,df], ignore_index=True, sort=True,axis=0)
 
 
 
