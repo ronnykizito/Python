@@ -224,6 +224,7 @@ df=df.toDF(*(re.sub(r'[\.\s]+', '_', c) for c in df.columns))
 df=df.na.fill(value=0) #Replace 0 for null for all integer columns. Otherwise PowerBI can define them as text 
 df=df.na.fill("") #Replace null with empty for all text columns
 
+df=df.select([F.col(col).alias(col.lower()) for col in df.columns]).na.fill(value=0).na.fill("")
 display(df)
 
 ##########################################################################################
