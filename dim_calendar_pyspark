@@ -1,3 +1,207 @@
+
+from pyspark.sql.types import *
+
+from pyspark.sql.functions import *
+from pyspark.sql import Window, functions as F
+
+
+keepcols = [
+    "date",
+    "Last_updated_time_in_Azure",
+    "date_key",
+    "first_date_of_year",
+    "last_date_of_year",
+    "first_date_of_quarter",
+    "last_date_of_quarter",
+    "first_date_of_month",
+    "last_date_of_month",
+    "first_date_of_week",
+    "last_date_of_week",
+    "date_of_same_weekday_last_year",
+    "first_date_of_same_weekday_last_year",
+    "last_date_of_same_weekday_last_year",
+    "year_code",
+    "quarter_code",
+    "month_code",
+    "month_nummer",
+    "week_code",
+    "week_number",
+    "week_name",
+    "week_long_name",
+    "quater_number",
+    "quater_name",
+    "quater_code",
+    "month_name_english_long",
+    "month_name_english_short",
+    "month_name_swedish_long",
+    "month_name_swedish_short",
+    "number_of_days_in_month",
+    "day_of_year",
+    "day_of_quarter",
+    "day_of_month",
+    "day_of_week",
+    "week_name_english_long",
+    "week_name_english_short",
+    "week_name_swedish_long",
+    "week_name_swedish_short",
+    "is_leap_year",
+    "is_weekend",
+    "previous_date",
+    "last_year_date",
+    "first_date_of_last_year",
+    "last_date_of_last_year",
+    "previous_month_date",
+    "previous_month_date_start",
+    "previous_month_date_end",
+    "previous_week",
+]
+beginDate = "2020-01-01"
+endDate = "2024-12-31"
+
+# https://www.obstkel.com/spark-sql-date-functions
+# https://dwgeek.com/spark-sql-date-and-timestamp-functions-and-examples.html/
+# https://towardsdatascience.com/the-most-useful-date-manipulation-functions-in-sark-7d827f790b
+
+df = (
+    spark.sql(
+        f"select explode(sequence(to_date('{beginDate}'), to_date('{endDate}'), interval 1 day)) as date"
+    )
+    .withColumns(
+        {
+            "Last_updated_time_in_Azure": from_utc_timestamp(
+                current_timestamp(), "Europe/Stockholm"
+            ),
+            "date_key": date_format("date", "yyyyMMdd").cast(IntegerType()),
+            "first_date_of_year": trunc("date", "year"),
+            "last_date_of_year": concat(year("date"), lit("-12-31")).cast(DateType()),
+            "first_date_of_quarter": trunc("date", "quarter"),
+            "last_date_of_quarter": add_months(last_day(trunc("date", "quarter")), 2),
+            "first_date_of_month": trunc("date", "month"),
+            "last_date_of_month": last_day("Date"),
+            "first_date_of_week": trunc("date", "week"),
+            "last_date_of_week": date_add(trunc("date", "week"), 6),
+            "date_of_same_weekday_last_year": date_add("date", -364),
+            "first_date_of_same_weekday_last_year": trunc(
+                date_add("date", -364), "week"
+            ),
+            "last_date_of_same_weekday_last_year": date_add(
+                trunc(date_add("date", -364), "week"), 6
+            ),
+            "year_code": year("date"),
+            "quarter_code": concat(
+                date_format("date", "yyyy"), lpad(quarter("date"), 2, "0")
+            ).cast(IntegerType()),
+            "month_code": date_format("date", "yyyyMM").cast(IntegerType()),
+            "month_nummer": lpad(month("date"), 2, "0"),
+            "week_code": concat(year("date"), lpad(weekofyear("date"), 2, "0")).cast(
+                IntegerType()
+            ),
+            "week_number": lpad(weekofyear("date"), 2, "0"),
+            "week_name": concat(lit("W"), lpad(weekofyear("date"), 2, "0")),
+            "week_long_name": concat(
+                year("date"), concat(lit("W"), lpad(weekofyear("date"), 2, "0"))
+            ),
+            "quater_number": lpad(quarter("date"), 2, "0"),
+            "quater_name": concat(lit("Q"), quarter("date")),
+            "quater_code": concat(
+                date_format("date", "yyyy"), concat(lit("Q"), quarter("date"))
+            ),
+            "month_name_english_long": date_format("date", "MMMM"),
+            "month_name_english_short": date_format("date", "MMM"),
+            "month_name_swedish_long": F.to_csv(
+                F.struct("date"), {"dateFormat": "MMMM", "locale": "sv"}
+            ),
+            "month_name_swedish_short": F.to_csv(
+                F.struct("date"), {"dateFormat": "MMM", "locale": "sv"}
+            ),
+            "number_of_days_in_month": dayofmonth(last_day("Date")),
+            "day_of_year": dayofyear("date"),
+            "day_of_quarter": (
+                F.count("*").over(
+                    Window.partitionBy(
+                        concat(
+                            date_format("date", "yyyy"),
+                            concat(lit("Q"), quarter("date")),
+                        )
+                    )
+                )
+                - datediff(
+                    date_add(add_months(last_day(trunc("date", "quarter")), 2), 1),
+                    "date",
+                )
+                + lit(1)
+            ).cast(IntegerType()),
+            "day_of_month": dayofmonth("date"),
+            "day_of_week": F.expr("weekday(date) + 1"),
+            "week_name_english_long": date_format("date", "EEEE"),
+            "week_name_english_short": date_format("date", "EEE"),
+            "week_name_swedish_long": F.to_csv(
+                F.struct("date"), {"dateFormat": "EEEE", "locale": "sv"}
+            ),
+            "week_name_swedish_short": F.to_csv(
+                F.struct("date"), {"dateFormat": "EEE", "locale": "sv"}
+            ),
+            "MaxIndex": F.max(dayofyear("date")).over(
+                Window.partitionBy([year("date")])
+            ),
+            "is_leap_year": expr(
+                "case when ((year_code % 400 == 0) or  (year_code % 100 != 0) and  (year_code % 4 == 0)) then 'true' else 'false' end "
+            ),
+            "is_weekend": expr(
+                "case when week_name_swedish_short in ('lö','sö') then 'true' else 'false' end "
+            ),
+            "previous_date": date_add("date", -1),
+            "last_year_date": add_months("date", -12),
+            "first_date_of_last_year": trunc(add_months("date", -12), "year"),
+            "last_date_of_last_year": concat(
+                year(trunc(add_months("date", -12), "year")), lit("-12-31")
+            ).cast(DateType()),
+            "previous_month_date": add_months("date", -1),
+            "previous_month_date_start": trunc(add_months("date", -1), "month"),
+            "previous_month_date_end": last_day(trunc(add_months("date", -1), "month")),
+            "previous_week": date_add("date", -7),
+        }
+    )
+    .select(*keepcols)
+    .select([F.col(col).alias(col.lower()) for col in df.columns])
+)
+
+display(df)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #EEE MMM
 from pyspark.sql.types import *
 
