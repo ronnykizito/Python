@@ -1,4 +1,6 @@
-rom datetime import datetime,date,timedelta
+display(df.withColumnsRenamed({"date":"dat","date_key":"date_id","last_date_of_year":"last_date_of_yearx"}))
+
+from datetime import datetime,date,timedelta
 from pandas.tseries import offsets
 from dateutil.relativedelta import relativedelta
 from dateutil.rrule import rrule, MONTHLY,DAILY,YEARLY
