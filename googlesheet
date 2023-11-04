@@ -4,6 +4,8 @@ share the sheet in google first with read for everyone who has access
 import pandas as pd
 gsheet_id="12FPI4fj5L-mP-G-A-xLzshqtJ4CDQ-h0PZqdjwsiEC0"
 gid="587998369" #?gid= enables importing different sheets, find the gid in the URL.
+gid="0"
 gsheet_url=f"https://docs.google.com/spreadsheets/d/{gsheet_id}/export?format=csv&gid={gid}"
-df=pd.read_csv(gsheet_url,sep=",",dtype=str,encoding='utf-8')
+# df=pd.read_csv(gsheet_url,sep=",",dtype=str,encoding='utf-8')
+df = spark.createDataFrame(pd.read_csv(gsheet_url,sep=",",dtype=str,encoding='utf-8'))
 display(df)
