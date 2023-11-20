@@ -1,4 +1,7 @@
 display(df.withColumnsRenamed({"date":"dat","date_key":"date_id","last_date_of_year":"last_date_of_yearx"}))
+df = spark.createDataFrame([(1,2), (3,4)], ['x1', 'x2'])
+df = df.withColumnsRenamed({'x1':'aaa','x2':'bbb'})
+display(df)
 
 from datetime import datetime,date,timedelta
 from pandas.tseries import offsets
@@ -9,6 +12,14 @@ end_date = date.today() #+ offsets.YearEnd()
 periods = [dt.strftime("%Y%m") for dt in rrule(MONTHLY, dtstart=start_date,until=end_date+relativedelta(months=0))]
 
 from pyspark.sql.types import StructField, StructType, StringType, IntegerType,DateType,TimestampType, LongType,DoubleType
+cast_as_decimal=['Debet','Kredit']
+cast_to_numerics=['Konto']
+cast_as_timestamp=['Bokföringsdatum','Registreringsdatum']
+df=df.withColumns({i:F.col(i).cast(StringType()) for i in df.columns})\
+    .withColumns({i:F.col(i).cast(DoubleType()) for i in cast_as_decimal})\
+    .withColumns({i:F.col(i).cast(IntegerType()) for i in cast_to_numerics})\
+    .withColumns({i:F.col(i).cast(TimestampType()) for i in cast_as_timestamp})
+
 for col_name in df.columns: df = df.withColumn(col_name, df[col_name].cast(StringType()))
 for col_name in cast_as_DoubleType: df = df.withColumn(col_name, df[col_name].cast(DoubleType()))
 for col_name in cast_as_IntegerTyp: df = df.withColumn(col_name, df[col_name].cast(IntegerType()))
