@@ -1,0 +1,27 @@
+
+
+jdbcUsername = "cam-reader"
+jdbcHostname = "sql-tf-dap-dev-cam.database.windows.net"  
+jdbcDatabase = "dap-cam"  
+jdbcPort = 1433 
+
+jdbcPassword = mssparkutils.credentials.getSecret('kv-synapsev2-cf8b','cam-reader','ls-kv')
+
+# Define the JDBC URL using f-strings for better readability
+jdbcUrl = f"jdbc:sqlserver://{jdbcHostname}:{jdbcPort};database={jdbcDatabase}"
+
+# Define the connection properties
+connectionProperties = {
+    "user": jdbcUsername,
+    "password": jdbcPassword,
+    "driver": "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+}
+
+# Define the pushdown query
+pushdown_query = "(SELECT * FROM cam.pollarea) dtable"
+
+# Read the data from the SQL Server database
+df = spark.read.jdbc(url=jdbcUrl, table=pushdown_query, properties=connectionProperties)
+
+# Display the DataFrame
+display(df)
