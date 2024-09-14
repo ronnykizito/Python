@@ -1,3 +1,8 @@
+
+empty df
+df = spark.createDataFrame([], source_schema)
+
+
 display(df.withColumnsRenamed({"date":"dat","date_key":"date_id","last_date_of_year":"last_date_of_yearx"}))
 df = spark.createDataFrame([(1,2), (3,4)], ['x1', 'x2'])
 df = df.withColumnsRenamed({'x1':'aaa','x2':'bbb'})
