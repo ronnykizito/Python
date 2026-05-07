@@ -1,6 +1,30 @@
 %USERPROFILE%\.vscode\extensions
 
 
+{
+  "mcpServers": {
+    "powerbi-modeling-mcp": {
+      "command": "C:\\Users\\k_rose1\\.vscode\\extensions\\analysis-services.powerbi-modeling-mcp-0.4.0-win32-x64\\server\\powerbi-modeling-mcp.exe",
+      "args": [
+        "--start"
+      ]
+    },
+    "databricks": {
+      "command": "C:\\Users\\k_rose1\\.ai-dev-kit\\.venv\\Scripts\\python.exe",
+      "args": [
+        "C:\\Users\\k_rose1\\.ai-dev-kit\\repo\\databricks-mcp-server\\run_server.py"
+      ],
+      "env": {
+        "DATABRICKS_CONFIG_PROFILE": "DEFAULT"
+      }
+    }
+  }
+}
+
+
+
+
+**************************************************************
 
 {
   "mcpServers": {
