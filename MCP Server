@@ -13,3 +13,26 @@
     }
   }
 }
+
+
+
+https://www.google.com/search?q=claude+in+databricks&sca_esv=7f670160f65c8184&sxsrf=ANbL-n42eT6h__rinFDqnR58AjJc5Uczow%3A1778145118214&source=hp&ei=Xlf8aZrpCY6GwPAP-6HpwQg&iflsig=AFdpzrgAAAAAafxlbiesH0L0NvoyUHSTradZuPTqUj2N&oq=claude+in+data&gs_lp=Egdnd3Mtd2l6Ig5jbGF1ZGUgaW4gZGF0YSoCCAAyCBAAGIAEGMsBMggQABiABBjLATIIEAAYgAQYywEyBhAAGBYYHjIGEAAYFhgeMgYQABgWGB4yCBAAGBYYHhgKMgYQABgWGB4yBhAAGBYYHjIGEAAYFhgeSIdZUKIlWK1DcAF4AJABAJgBRqABuAaqAQIxNLgBAcgBAPgBAZgCD6AC-gaoAgrCAgcQIxjqAhgnwgIIEAAYgAQYsQPCAgsQABiABBixAxiDAcICDhAuGIAEGIoFGLEDGIMBwgILEC4YgAQYsQMYgwHCAg4QABiABBiKBRixAxiDAcICDhAuGIAEGLEDGMcBGNEDwgILEC4YgAQYxwEY0QPCAgQQIxgnwgIKECMYgAQYigUYJ8ICBRAAGIAEwgIIEC4YgAQYsQPCAgUQLhiABMICChAAGIAEGMsBGAqYAwjxBR0niXkvMtXskgcCMTWgB7NmsgcCMTS4B_EGwgcFMC44LjfIBy-ACAE&sclient=gws-wiz#fpstate=ive&vld=cid:299a0549,vid:DyAa7lLu5sU,st:0
+in vscode create a databricksfolder
+https://docs.databricks.com/aws/en/dev-tools/cli/install#winget-install
+
+in vas code
+python -m venv .venv
+
+.venv/Scripts/activate
+
+databricks auth login --host https://adb-3323597229865780.0.azuredatabricks.net
+
+enviroment variables
+
+C:\Users\k_rose1\.local\bin
+
+
+download claude
+curl -fsSL https://claude.ai/install.cmd -o install.cmd && install.cmd && del install.cmd
+
+youtube claude code ansh lamda
