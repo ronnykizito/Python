@@ -9,46 +9,34 @@
         "--start"
       ]
     },
-    "databricks": {
-      "command": "uv",
-      "args": [
-        "run",
-        "--directory",
-        "C:\\Users\\k_rose1\\.ai-dev-kit\\repo\\databricks-mcp-server",
-       "python",
-       "run_server.py"
-      ],
-      "env": {
-        "DATABRICKS_HOST": "https://adb-3323597229865780.0.azuredatabricks.net",
-        "DATABRICKS_TOKEN": ""
-      }
-    }
+"databricks": {
+  "command": "C:\\Users\\k_rose1\\.ai-dev-kit\\.venv\\Scripts\\python.exe",
+  "args": [
+    "C:\\Users\\k_rose1\\.ai-dev-kit\\repo\\databricks-mcp-server\\run_server.py"
+  ],
+  "env": {
+    "DATABRICKS_HOST": "",
+    "DATABRICKS_TOKEN": ""
+  }
+}
   },
   "preferences": {
-"coworkScheduledTasksEnabled": true,
-"ccScheduledTasksEnabled": true,
-"sidebarMode": "chat",
-"coworkWebSearchEnabled": false
-
-  }}
-
-
-
-
-**************************************************************
-
-{
-  "mcpServers": {
-    "powerbi-modeling-mcp": {
-      "command": "C:\\Users\\k_rose1\\.vscode\\extensions\\analysis-services.powerbi-modeling-mcp-0.4.0-win32-x64\\server\\powerbi-modeling-mcp.exe",
-      "args": [
-        "--start"
-      ],
-      "env": {}
+    "coworkScheduledTasksEnabled": true,
+    "ccdScheduledTasksEnabled": true,
+    "sidebarMode": "task",
+    "coworkWebSearchEnabled": true,
+    "epitaxyPrefs": {
+      "starred-local-code-sessions": [],
+      "starred-cowork-spaces": [],
+      "starred-session-groups": [],
+      "dframe-local-slice": {
+        "pinnedOrder": [],
+        "customGroupAssignments": {},
+        "customGroupOrder": {}
+      }
     }
   }
 }
-
 
 
 https://www.google.com/search?q=claude+in+databricks&sca_esv=7f670160f65c8184&sxsrf=ANbL-n42eT6h__rinFDqnR58AjJc5Uczow%3A1778145118214&source=hp&ei=Xlf8aZrpCY6GwPAP-6HpwQg&iflsig=AFdpzrgAAAAAafxlbiesH0L0NvoyUHSTradZuPTqUj2N&oq=claude+in+data&gs_lp=Egdnd3Mtd2l6Ig5jbGF1ZGUgaW4gZGF0YSoCCAAyCBAAGIAEGMsBMggQABiABBjLATIIEAAYgAQYywEyBhAAGBYYHjIGEAAYFhgeMgYQABgWGB4yCBAAGBYYHhgKMgYQABgWGB4yBhAAGBYYHjIGEAAYFhgeSIdZUKIlWK1DcAF4AJABAJgBRqABuAaqAQIxNLgBAcgBAPgBAZgCD6AC-gaoAgrCAgcQIxjqAhgnwgIIEAAYgAQYsQPCAgsQABiABBixAxiDAcICDhAuGIAEGIoFGLEDGIMBwgILEC4YgAQYsQMYgwHCAg4QABiABBiKBRixAxiDAcICDhAuGIAEGLEDGMcBGNEDwgILEC4YgAQYxwEY0QPCAgQQIxgnwgIKECMYgAQYigUYJ8ICBRAAGIAEwgIIEC4YgAQYsQPCAgUQLhiABMICChAAGIAEGMsBGAqYAwjxBR0niXkvMtXskgcCMTWgB7NmsgcCMTS4B_EGwgcFMC44LjfIBy-ACAE&sclient=gws-wiz#fpstate=ive&vld=cid:299a0549,vid:DyAa7lLu5sU,st:0
