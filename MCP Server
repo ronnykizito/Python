@@ -10,16 +10,27 @@
       ]
     },
     "databricks": {
-      "command": "C:\\Users\\k_rose1\\.ai-dev-kit\\.venv\\Scripts\\python.exe",
+      "command": "uv",
       "args": [
-        "C:\\Users\\k_rose1\\.ai-dev-kit\\repo\\databricks-mcp-server\\run_server.py"
+        "run",
+        "--directory",
+        "C:\\Users\\k_rose1\\.ai-dev-kit\\repo\\databricks-mcp-server",
+       "python",
+       "run_server.py"
       ],
       "env": {
-        "DATABRICKS_CONFIG_PROFILE": "DEFAULT"
+        "DATABRICKS_HOST": "https://adb-3323597229865780.0.azuredatabricks.net",
+        "DATABRICKS_TOKEN": ""
       }
     }
-  }
-}
+  },
+  "preferences": {
+"coworkScheduledTasksEnabled": true,
+"ccScheduledTasksEnabled": true,
+"sidebarMode": "chat",
+"coworkWebSearchEnabled": false
+
+  }}
 
 
 
