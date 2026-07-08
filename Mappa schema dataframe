@@ -32,19 +32,17 @@ baserat på denna dataframe." (Hela tabellen rensas).
 insertInto + overwrite + dynamic: Säger till Spark: "Titta på datan jag skickar in. Matcha file_name och sheet_name. 
 Rensa ENBART de partitionerna i den befintliga tabellen och tryck in den nya datan där. Låt resten av tabellen vara orörd."
 
-(
-    df.write
-    .format("delta")
-    .option("partitionOverwriteMode", "dynamic")
-    .mode("overwrite")
-    .insertInto(sink_table_name)
-)
-
-(
-    df.write
-    .format("delta")
-    .partitionBy("file_name", "sheet_name", "artikel_nummer", "periodyear", "periodmonth", "periodday")
-    .option("partitionOverwriteMode", "dynamic")
-    .mode("overwrite")
-    .saveAsTable(sink_table_name)
-)
+if not spark.catalog.tableExists(sink_table_name):
+    (df.write
+       .format("delta")
+       .partitionBy("file_name", "sheet_name")
+       .option("partitionOverwriteMode", "dynamic")
+       .mode("overwrite")
+       .saveAsTable(sink_table_name))
+else:
+    (df.select(spark.table(sink_table_name).columns)  # säkra kolumnordningen
+       .write
+       .format("delta")
+       .option("partitionOverwriteMode", "dynamic")
+       .mode("overwrite")
+       .insertInto(sink_table_name))
