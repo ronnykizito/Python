@@ -22,3 +22,12 @@ casting_map = {
 
 # 4. Verkställ på hela dataramen samtidigt
 df = df.withColumns(casting_map)
+
+(
+    df.write
+    .format("delta")
+    .partitionBy("file_name", "sheet_name", "artikel_nummer", "periodyear", "periodmonth", "periodday")
+    .option("partitionOverwriteMode", "dynamic")
+    .mode("overwrite")
+    .saveAsTable(sink_table_name)
+)
