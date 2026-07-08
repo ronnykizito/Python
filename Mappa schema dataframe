@@ -1,0 +1,24 @@
+from pyspark.sql import functions as F
+from pyspark.sql.types import DoubleType, DateType, LongType, StringType
+
+# 1. Definiera dina specifika kolumner
+cast_to_double = ['total']
+cast_to_date = ['invoice_date']
+cast_to_long = ['cnt']
+
+# Samla alla definierade kolumner i ett set för snabb matchning
+specified_cols = set(cast_to_double + cast_to_date + cast_to_long)
+
+# 2. Identifiera resterande kolumner som ska bli StringType
+cast_to_string = [col for col in df.columns if col not in specified_cols]
+
+# 3. Bygg en komplett dictionary för alla transformationer
+casting_map = {
+    **{i: F.col(i).cast(DoubleType()) for i in cast_to_double},
+    **{i: F.col(i).cast(DateType()) for i in cast_to_date},
+    **{i: F.col(i).cast(LongType()) for i in cast_to_long},
+    **{i: F.col(i).cast(StringType()) for i in cast_to_string}
+}
+
+# 4. Verkställ på hela dataramen samtidigt
+df = df.withColumns(casting_map)
