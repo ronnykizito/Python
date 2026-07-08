@@ -23,6 +23,23 @@ casting_map = {
 # 4. Verkställ på hela dataramen samtidigt
 df = df.withColumns(casting_map)
 
+
+
+Varför insertInto?
+saveAsTable + overwrite: Säger till Spark: "Ta bort allt som finns i den här tabell-platsen och skapa en helt ny tabell 
+baserat på denna dataframe." (Hela tabellen rensas).
+
+insertInto + overwrite + dynamic: Säger till Spark: "Titta på datan jag skickar in. Matcha file_name och sheet_name. 
+Rensa ENBART de partitionerna i den befintliga tabellen och tryck in den nya datan där. Låt resten av tabellen vara orörd."
+
+(
+    df.write
+    .format("delta")
+    .option("partitionOverwriteMode", "dynamic")
+    .mode("overwrite")
+    .insertInto(sink_table_name)
+)
+
 (
     df.write
     .format("delta")
